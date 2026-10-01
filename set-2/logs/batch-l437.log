@@ -1,0 +1,1234 @@
+OpenAI Codex v0.157.0
+--------
+workdir: /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+model: gpt-6-astra
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: xhigh
+reasoning summaries: none
+session id: 01a0ea09-5e87-76c1-b8a5-043b527d27f9
+--------
+user
+Use your image generation tool to create one image per style listed below, 1024x1024 square. Do NOT use any reference image — generate each one fresh from text.
+
+Character (the only constant): a woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater, enjoying a coffee (croissant nearby).
+
+The style is the priority, not the photo. For each image, let the style fully dictate proportions, anatomy, framing, camera angle, pose, setting details, color palette, lighting and medium — exactly as an authentic piece in that style would look. Do not make it look like a photo with a filter, and do not keep a common composition across images: vary the framing (close-up, full body, wide scene, profile, etc.) to whatever suits each style best. The images should look radically different from each other. No text, captions, signatures or watermarks.
+
+If a request is refused because it names a specific artist or franchise, retry with a purely descriptive wording of the visual style.
+
+Save each result to the exact path given (convert to PNG and resize to 1024x1024 with sips if needed). Do not skip any. At the end, list the files you saved.
+
+- ./styles/437-deep-dream.png : 2015 DeepDream psychedelic neural network image: fractal dog faces and eyes emerging everywhere in her hair, sweater and cup, hallucinatory swirls
+- ./styles/438-spectrogram.png : audio spectrogram visualization where the frequency heatmap forms her portrait, magma color map, time-frequency axes without labels, scientific software look
+- ./styles/439-emoji-mosaic.png : photo mosaic portrait made of thousands of tiny colorful emoji icons, visible when zoomed in, the overall image forms her face with a cup
+- ./styles/440-spreadsheet-art.png : pixel portrait painted with cell background colors in a spreadsheet program: tiny square cells, gridlines, column and row headers without readable text
+
+hook: SessionStart
+hook: SessionStart Completed
+codex
+I’m using the imagegen skill to generate four distinct images from text, then save each as a 1024×1024 PNG at the requested path.
+
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'cat /Users/manuelbieh/.agents/skills/using-superpowers/SKILL.md' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+---
+name: using-superpowers
+description: Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions
+---
+
+<SUBAGENT-STOP>
+If you were dispatched as a subagent to execute a specific task, skip this skill.
+</SUBAGENT-STOP>
+
+<EXTREMELY-IMPORTANT>
+If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
+
+IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
+
+This is not negotiable. This is not optional. You cannot rationalize your way out of this.
+</EXTREMELY-IMPORTANT>
+
+## Instruction Priority
+
+Superpowers skills override default system prompt behavior, but **user instructions always take precedence**:
+
+1. **User's explicit instructions** (CLAUDE.md, GEMINI.md, AGENTS.md, direct requests) — highest priority
+2. **Superpowers skills** — override default system behavior where they conflict
+3. **Default system prompt** — lowest priority
+
+If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill says "always use TDD," follow the user's instructions. The user is in control.
+
+## How to Access Skills
+
+**In Claude Code:** Use the `Skill` tool. When you invoke a skill, its content is loaded and presented to you—follow it directly. Never use the Read tool on skill files.
+
+**In Copilot CLI:** Use the `skill` tool. Skills are auto-discovered from installed plugins. The `skill` tool works the same as Claude Code's `Skill` tool.
+
+**In Gemini CLI:** Skills activate via the `activate_skill` tool. Gemini loads skill metadata at session start and activates the full content on demand.
+
+**In other environments:** Check your platform's documentation for how skills are loaded.
+
+## Platform Adaptation
+
+Skills use Claude Code tool names. Non-CC platforms: see `references/copilot-tools.md` (Copilot CLI), `references/codex-tools.md` (Codex) for tool equivalents. Gemini CLI users get the tool mapping loaded automatically via GEMINI.md.
+
+# Using Skills
+
+## The Rule
+
+**Invoke relevant or requested skills BEFORE any response or action.** Even a 1% chance a skill might apply means that you should invoke the skill to check. If an invoked skill turns out to be wrong for the situation, you don't need to use it.
+
+```dot
+digraph skill_flow {
+    "User message received" [shape=doublecircle];
+    "About to EnterPlanMode?" [shape=doublecircle];
+    "Already brainstormed?" [shape=diamond];
+    "Invoke brainstorming skill" [shape=box];
+    "Might any skill apply?" [shape=diamond];
+    "Invoke Skill tool" [shape=box];
+    "Announce: 'Using [skill] to [purpose]'" [shape=box];
+    "Has checklist?" [shape=diamond];
+    "Create TodoWrite todo per item" [shape=box];
+    "Follow skill exactly" [shape=box];
+    "Respond (including clarifications)" [shape=doublecircle];
+
+    "About to EnterPlanMode?" -> "Already brainstormed?";
+    "Already brainstormed?" -> "Invoke brainstorming skill" [label="no"];
+    "Already brainstormed?" -> "Might any skill apply?" [label="yes"];
+    "Invoke brainstorming skill" -> "Might any skill apply?";
+
+    "User message received" -> "Might any skill apply?";
+    "Might any skill apply?" -> "Invoke Skill tool" [label="yes, even 1%"];
+    "Might any skill apply?" -> "Respond (including clarifications)" [label="definitely not"];
+    "Invoke Skill tool" -> "Announce: 'Using [skill] to [purpose]'";
+    "Announce: 'Using [skill] to [purpose]'" -> "Has checklist?";
+    "Has checklist?" -> "Create TodoWrite todo per item" [label="yes"];
+    "Has checklist?" -> "Follow skill exactly" [label="no"];
+    "Create TodoWrite todo per item" -> "Follow skill exactly";
+}
+```
+
+## Red Flags
+
+These thoughts mean STOP—you're rationalizing:
+
+| Thought | Reality |
+|---------|---------|
+| "This is just a simple question" | Questions are tasks. Check for skills. |
+| "I need more context first" | Skill check comes BEFORE clarifying questions. |
+| "Let me explore the codebase first" | Skills tell you HOW to explore. Check first. |
+| "I can check git/files quickly" | Files lack conversation context. Check for skills. |
+| "Let me gather information first" | Skills tell you HOW to gather information. |
+| "This doesn't need a formal skill" | If a skill exists, use it. |
+| "I remember this skill" | Skills evolve. Read current version. |
+| "This doesn't count as a task" | Action = task. Check for skills. |
+| "The skill is overkill" | Simple things become complex. Use it. |
+| "I'll just do this one thing first" | Check BEFORE doing anything. |
+| "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
+| "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
+
+## Skill Priority
+
+When multiple skills could apply, use this order:
+
+1. **Process skills first** (brainstorming, debugging) - these determine HOW to approach the task
+2. **Implementation skills second** (frontend-design, mcp-builder) - these guide execution
+
+"Let's build X" → brainstorming first, then implementation skills.
+"Fix this bug" → debugging first, then domain-specific skills.
+
+## Skill Types
+
+**Rigid** (TDD, debugging): Follow exactly. Don't adapt away discipline.
+
+**Flexible** (patterns): Adapt principles to context.
+
+The skill itself tells you which.
+
+## User Instructions
+
+Instructions say WHAT, not HOW. "Add X" or "Fix Y" doesn't mean skip workflows.
+
+exec
+/bin/zsh -lc 'cat /Users/manuelbieh/.codex/skills/.system/imagegen/SKILL.md' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+---
+name: "imagegen"
+description: "Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-background cutouts. Use when Codex should create a brand-new image, transform an existing image, or derive visual variants from references, and the output should be a bitmap asset rather than repo-native code or vector. Do not use when the task is better handled by editing existing SVG/vector/code-native assets, extending an established icon or logo system, or building the visual directly in HTML/CSS/canvas."
+---
+
+# Image Generation Skill
+
+Generates or edits images for the current project (for example website assets, game assets, UI mockups, product mockups, wireframes, logo design, photorealistic images, or infographics).
+
+## Top-level modes and rules
+
+This skill has exactly two top-level modes:
+
+- **Default built-in tool mode (preferred):** built-in `image_gen` tool for image generation, editing, and transparent-image requests. Does not require `OPENAI_API_KEY`.
+- **Fallback CLI mode:** `scripts/image_gen.py` CLI. Use when the user explicitly asks for or confirms the CLI/API/model path. Requires `OPENAI_API_KEY`.
+
+Within CLI fallback, the CLI exposes three subcommands:
+
+- `generate`
+- `edit`
+- `generate-batch`
+
+Rules:
+- Use the built-in `image_gen` tool by default for normal image generation and editing requests.
+- Do not switch to CLI fallback for ordinary quality, size, or file-path control.
+- For transparent images, ask built-in `image_gen` for a transparent background and preserve the generated alpha.
+- Never silently switch from built-in `image_gen` or CLI `gpt-image-2` to CLI `gpt-image-1.5`; ask the user first unless they explicitly requested `gpt-image-1.5`.
+- The word `batch` by itself does not mean CLI fallback. If the user asks for many assets or says to batch-generate assets without explicitly asking for CLI/API/model controls, stay on the built-in path and issue one built-in call per requested asset or variant.
+- If the built-in tool fails or is unavailable, tell the user the CLI fallback exists and that it requires `OPENAI_API_KEY`. Proceed only if the user explicitly asks for that fallback.
+- If the user explicitly asks for CLI mode, use the bundled `scripts/image_gen.py` workflow. Do not create one-off SDK runners.
+- Never modify `scripts/image_gen.py`. If something is missing, ask the user before doing anything else.
+
+Built-in save-path policy:
+- In built-in tool mode, Codex saves generated images under `$CODEX_HOME/*` by default.
+- Do not describe or rely on OS temp as the default built-in destination.
+- Do not describe or rely on a destination-path argument (if any) on the built-in `image_gen` tool. If a specific location is needed, generate first and then move or copy the selected output from `$CODEX_HOME/generated_images/...`.
+- Save-path precedence in built-in mode:
+  1. If the user names a destination, move or copy the selected output there.
+  2. If the image is meant for the current project, move or copy the final selected image into the workspace before finishing.
+  3. If the image is only for preview or brainstorming, render it inline; the underlying file can remain at the default `$CODEX_HOME/*` path.
+- Never leave a project-referenced asset only at the default `$CODEX_HOME/*` path.
+- Do not overwrite an existing asset unless the user explicitly asked for replacement; otherwise create a sibling versioned filename such as `hero-v2.png` or `item-icon-edited.png`.
+
+Shared prompt guidance for both modes lives in `references/prompting.md` and `references/sample-prompts.md`.
+
+Fallback-only docs/resources for CLI mode:
+- `references/cli.md`
+- `references/image-api.md`
+- `references/codex-network.md`
+- `scripts/image_gen.py`
+
+## When to use
+- Generate a new image (concept art, product shot, cover, website hero)
+- Generate a new image using one or more reference images for style, composition, or mood
+- Edit an existing image (inpainting, lighting or weather transformations, background replacement, object removal, compositing, transparent background)
+- Produce many assets or variants for one task
+
+## When not to use
+- Extending or matching an existing SVG/vector icon set, logo system, or illustration library inside the repo
+- Creating simple shapes, diagrams, wireframes, or icons that are better produced directly in SVG, HTML/CSS, or canvas
+- Making a small project-local asset edit when the source file already exists in an editable native format
+- Any task where the user clearly wants deterministic code-native output instead of a generated bitmap
+
+## Decision tree
+
+Think about two separate questions:
+
+1. **Intent:** is this a new image or an edit of an existing image?
+2. **Execution strategy:** is this one asset or many assets/variants?
+
+Intent:
+- If the user wants to modify an existing image while preserving parts of it, treat the request as **edit**.
+- If the user provides images only as references for style, composition, mood, or subject guidance, treat the request as **generate**.
+- If the user provides no images, treat the request as **generate**.
+
+Built-in edit semantics:
+- Built-in edit mode is for images already visible in the conversation context, such as attached images or images generated earlier in the thread.
+- If the user wants to edit a local image file with the built-in tool, first load it with built-in `view_image` tool so the image is visible in the conversation context, then proceed with the built-in edit flow.
+- Do not promise arbitrary filesystem-path editing through the built-in tool.
+- If a local file still needs direct file-path control, masks, or other explicit CLI-only parameters, use the explicit CLI fallback only when the user asks for it.
+- For edits, preserve invariants aggressively and save non-destructively by default.
+
+Execution strategy:
+- In the built-in default path, produce many assets or variants by issuing one `image_gen` call per requested asset or variant.
+- In the CLI fallback path, use the CLI `generate-batch` subcommand only when the user explicitly chose CLI mode and needs many prompts/assets.
+- For many distinct assets, do not use `n` as a substitute for separate prompts. `n` is for variants of one prompt; distinct assets need distinct built-in calls or distinct CLI `generate-batch` jobs.
+
+Assume the user wants a new image unless they clearly ask to change an existing one.
+
+## Workflow
+1. Decide the top-level mode: built-in by default, including transparent-output requests; fallback CLI only if explicitly requested or confirmed.
+2. Decide the intent: `generate` or `edit`.
+3. Decide whether the output is preview-only or meant to be consumed by the current project.
+4. Decide the execution strategy: single asset vs repeated built-in calls vs CLI `generate-batch`.
+5. Collect inputs up front: prompt(s), exact text (verbatim), constraints/avoid list, and any input images.
+6. For every input image, label its role explicitly:
+   - reference image
+   - edit target
+   - supporting insert/style/compositing input
+7. If the edit target is only on the local filesystem and you are staying on the built-in path, inspect it with `view_image` first so the image is available in conversation context.
+8. If the user asked for a photo, illustration, sprite, product image, banner, or other explicitly raster-style asset, use `image_gen` rather than substituting SVG/HTML/CSS placeholders. If the request is for an icon, logo, or UI graphic that should match existing repo-native SVG/vector/code assets, prefer editing those directly instead.
+9. Augment the prompt based on specificity:
+   - If the user's prompt is already specific and detailed, normalize it into a clear spec without adding creative requirements.
+   - If the user's prompt is generic, add tasteful augmentation only when it materially improves output quality.
+10. Use the built-in `image_gen` tool by default.
+11. For transparent-output requests, ask built-in `image_gen` for a transparent background and preserve the generated alpha channel.
+12. Inspect outputs and validate: subject, style, composition, text accuracy, and invariants/avoid items.
+13. Iterate with a single targeted change, then re-check.
+14. For preview-only work, render the image inline; the underlying file may remain at the default `$CODEX_HOME/generated_images/...` path.
+15. For project-bound work, move or copy the selected artifact into the workspace and update any consuming code or references. Never leave a project-referenced asset only at the default `$CODEX_HOME/generated_images/...` path.
+16. For batches or multi-asset requests, persist every requested deliverable final in the workspace unless the user explicitly asked to keep outputs preview-only. Discarded variants do not need to be kept unless requested.
+17. If the user explicitly chooses or confirms the CLI fallback, then use the fallback-only docs for model, quality, size, `input_fidelity`, masks, output format, output paths, and network setup.
+18. Always report the final saved path(s) for any workspace-bound asset(s), plus the final prompt or prompt set and whether the built-in tool or fallback CLI mode was used.
+
+## Transparent image requests
+
+Ask built-in `image_gen` for a genuinely transparent background and preserve its alpha.
+
+## Prompt augmentation
+
+Reformat user prompts into a structured, production-oriented spec. Make the user's goal clearer and more actionable, but do not blindly add detail.
+
+Treat this as prompt-shaping guidance, not a closed schema. Use only the lines that help, and add a short extra labeled line when it materially improves clarity.
+
+### Specificity policy
+
+Use the user's prompt specificity to decide how much augmentation is appropriate:
+
+- If the prompt is already specific and detailed, preserve that specificity and only normalize/structure it.
+- If the prompt is generic, you may add tasteful augmentation when it will materially improve the result.
+
+Allowed augmentations:
+- composition or framing hints
+- polish level or intended-use hints
+- practical layout guidance
+- reasonable scene concreteness that supports the stated request
+
+Not allowed augmentations:
+- extra characters or objects that are not implied by the request
+- brand names, slogans, palettes, or narrative beats that are not implied
+- arbitrary side-specific placement unless the surrounding layout supports it
+
+## Use-case taxonomy (exact slugs)
+
+Classify each request into one of these buckets and keep the slug consistent across prompts and references.
+
+Generate:
+- photorealistic-natural — candid/editorial lifestyle scenes with real texture and natural lighting.
+- product-mockup — product/packaging shots, catalog imagery, merch concepts.
+- ui-mockup — app/web interface mockups and wireframes; specify the desired fidelity.
+- infographic-diagram — diagrams/infographics with structured layout and text.
+- scientific-educational — classroom explainers, scientific diagrams, and learning visuals with required labels and accuracy constraints.
+- ads-marketing — campaign concepts and ad creatives with audience, brand position, scene, and exact tagline/copy.
+- productivity-visual — slide, chart, workflow, and data-heavy business visuals.
+- logo-brand — logo/mark exploration, vector-friendly.
+- illustration-story — comics, children’s book art, narrative scenes.
+- stylized-concept — style-driven concept art, 3D/stylized renders.
+- historical-scene — period-accurate/world-knowledge scenes.
+
+Edit:
+- text-localization — translate/replace in-image text, preserve layout.
+- identity-preserve — try-on, person-in-scene; lock face/body/pose.
+- precise-object-edit — remove/replace a specific element (including interior swaps).
+- lighting-weather — time-of-day/season/atmosphere changes only.
+- background-extraction — transparent background / clean cutout. Ask built-in `image_gen` for actual transparency.
+- style-transfer — apply reference style while changing subject/scene.
+- compositing — multi-image insert/merge with matched lighting/perspective.
+- sketch-to-render — drawing/line art to photoreal render.
+
+## Shared prompt schema
+
+Use the following labeled spec as shared prompt scaffolding for both top-level modes:
+
+```text
+Use case: <taxonomy slug>
+Asset type: <where the asset will be used>
+Primary request: <user's main prompt>
+Input images: <Image 1: role; Image 2: role> (optional)
+Scene/backdrop: <environment>
+Subject: <main subject>
+Style/medium: <photo/illustration/3D/etc>
+Composition/framing: <wide/close/top-down; placement>
+Lighting/mood: <lighting + mood>
+Color palette: <palette notes>
+Materials/textures: <surface details>
+Text (verbatim): "<exact text>"
+Constraints: <must keep/must avoid>
+Avoid: <negative constraints>
+```
+
+Notes:
+- `Asset type` and `Input images` are prompt scaffolding, not dedicated CLI flags.
+- `Scene/backdrop` refers to the visual setting. It is not the same as the fallback CLI `background` parameter, which controls output transparency behavior.
+- Fallback-only execution notes such as `Quality:`, `Input fidelity:`, masks, output format, and output paths belong in the CLI path only. Do not treat them as built-in `image_gen` tool arguments.
+
+Augmentation rules:
+- Keep it short.
+- Add only the details needed to improve the prompt materially.
+- For edits, explicitly list invariants (`change only X; keep Y unchanged`).
+- If any critical detail is missing and blocks success, ask a question; otherwise proceed.
+
+## Examples
+
+### Generation example (hero image)
+```text
+Use case: product-mockup
+Asset type: landing page hero
+Primary request: a minimal hero image of a ceramic coffee mug
+Style/medium: clean product photography
+Composition/framing: wide composition with usable negative space for page copy if needed
+Lighting/mood: soft studio lighting
+Constraints: no logos, no text, no watermark
+```
+
+### Edit example (invariants)
+```text
+Use case: precise-object-edit
+Asset type: product photo background replacement
+Primary request: replace only the background with a warm sunset gradient
+Constraints: change only the background; keep the product and its edges unchanged; no text; no watermark
+```
+
+## Prompting best practices
+- Structure prompt as scene/backdrop -> subject -> details -> constraints.
+- Include intended use (ad, UI mock, infographic) to set the mode and polish level.
+- Use camera/composition language for photorealism.
+- Only use SVG/vector stand-ins when the user explicitly asked for vector output or a non-image placeholder.
+- Quote exact text and specify typography + placement.
+- For tricky words, spell them letter-by-letter and require verbatim rendering.
+- For multi-image inputs, reference images by index and describe how they should be used.
+- For edits, repeat invariants every iteration to reduce drift.
+- Iterate with single-change follow-ups.
+- If the prompt is generic, add only the extra detail that will materially help.
+- If the prompt is already detailed, normalize it instead of expanding it.
+- For CLI fallback only, see `references/cli.md` and `references/image-api.md` for model, `quality`, `input_fidelity`, masks, output format, and output-path guidance.
+- For transparent images, ask built-in `image_gen` for actual transparency and preserve its alpha.
+
+More principles shared by both modes: `references/prompting.md`.
+Copy/paste specs shared by both modes: `references/sample-prompts.md`.
+
+## Guidance by asset type
+Asset-type templates (website assets, game assets, wireframes, logo) are consolidated in `references/sample-prompts.md`.
+
+## gpt-image-2 guidance for CLI fallback
+
+The fallback CLI defaults to `gpt-image-2`.
+
+- Use `gpt-image-2` for new CLI/API workflows unless the user confirms a different model.
+- CLI `gpt-image-2` does not support `background=transparent`; ask before using `gpt-image-1.5` unless the user explicitly requested that model.
+- `gpt-image-2` always uses high fidelity for image inputs; do not set `input_fidelity` with this model.
+- `gpt-image-2` supports `quality` values `low`, `medium`, `high`, and `auto`.
+- Use `quality low` for fast drafts, thumbnails, and quick iterations. Use `medium`, `high`, or `auto` for final assets, dense text, diagrams, identity-sensitive edits, or high-resolution outputs.
+- Square images are typically fastest to generate. Use `1024x1024` for fast square drafts.
+- If the user asks for 4K-style output, use `3840x2160` for landscape or `2160x3840` for portrait.
+- `gpt-image-2` size may be `auto` or `WIDTHxHEIGHT` if all constraints hold: max edge `<= 3840px`, both edges multiples of `16px`, long-to-short ratio `<= 3:1`, total pixels between `655,360` and `8,294,400`.
+
+Popular `gpt-image-2` sizes:
+- `1024x1024` square
+- `1536x1024` landscape
+- `1024x1536` portrait
+- `2048x2048` 2K square
+- `2048x1152` 2K landscape
+- `3840x2160` 4K landscape
+- `2160x3840` 4K portrait
+- `auto`
+
+## Fallback CLI mode only
+
+### Temp and output conventions
+These conventions apply only to the CLI fallback. They do not describe built-in `image_gen` output behavior.
+- Use `tmp/imagegen/` for intermediate files (for example JSONL batches); delete them when done.
+- Write final artifacts under `output/imagegen/`.
+- Use `--out` or `--out-dir` to control output paths; keep filenames stable and descriptive.
+
+### Dependencies
+Prefer `uv` for dependency management in this repo.
+
+Required Python package:
+```bash
+uv pip install openai
+```
+
+Optional for image inspection and downscaling:
+```bash
+uv pip install pillow
+```
+
+Portability note:
+- If you are using the installed skill outside this repo, install dependencies into that environment with its package manager.
+- In uv-managed environments, `uv pip install ...` remains the preferred path.
+
+### Environment
+- `OPENAI_API_KEY` must be set for live API calls.
+- Do not ask the user for `OPENAI_API_KEY` when using the built-in `image_gen` tool.
+- Never ask the user to paste the full key in chat. Ask them to set it locally and confirm when ready.
+
+If the key is missing, give the user these steps:
+1. Create an API key in the OpenAI platform UI: https://platform.openai.com/api-keys
+2. Set `OPENAI_API_KEY` as an environment variable in their system.
+3. Offer to guide them through setting the environment variable for their OS/shell if needed.
+
+If installation is not possible in this environment, tell the user which dependency is missing and how to install it into their active environment.
+
+### Script-mode notes
+- CLI commands + examples: `references/cli.md`
+- API parameter quick reference: `references/image-api.md`
+- Network approvals / sandbox settings for CLI mode: `references/codex-network.md`
+
+## Reference map
+- `references/prompting.md`: shared prompting principles for both modes.
+- `references/sample-prompts.md`: shared copy/paste prompt recipes for both modes.
+- `references/cli.md`: fallback-only CLI usage via `scripts/image_gen.py`.
+- `references/image-api.md`: fallback-only API/CLI parameter reference.
+- `references/codex-network.md`: fallback-only network/sandbox troubleshooting for CLI mode.
+- `scripts/image_gen.py`: fallback-only CLI implementation. Use only when the user explicitly chooses or confirms CLI mode.
+
+exec
+/bin/zsh -lc "pwd && rg --files -g AGENTS.md -g '"'!*node_modules*'"' -g '"'!*styles*'"' . /Users/manuelbieh/htdocs/dev/gpt-images 2>/dev/null | head -60" in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'mkdir -p styles && ls -la styles && command -v sips' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 34ms:
+total 1399072
+drwxr-xr-x@ 402 manuelbieh  staff    12864 Sep 28 22:37 .
+drwxr-xr-x@  14 manuelbieh  staff      448 Sep 28 22:29 ..
+-rw-r--r--@   1 manuelbieh  staff  1896913 Sep 28 19:37 01-studio-ghibli.png
+-rw-r--r--@   1 manuelbieh  staff  1263121 Sep 28 19:37 02-simpsons.png
+-rw-r--r--@   1 manuelbieh  staff  2150157 Sep 28 19:37 03-cubism.png
+-rw-r--r--@   1 manuelbieh  staff  2063044 Sep 28 19:37 04-ukiyo-e.png
+-rw-r--r--@   1 manuelbieh  staff  1727917 Sep 28 19:39 05-3d-animation.png
+-rw-r--r--@   1 manuelbieh  staff  1536198 Sep 28 19:39 06-lego.png
+-rw-r--r--@   1 manuelbieh  staff  1703994 Sep 28 19:39 07-claymation.png
+-rw-r--r--@   1 manuelbieh  staff    38177 Sep 28 19:39 08-pixel-art.png
+-rw-r--r--@   1 manuelbieh  staff  2264427 Sep 28 19:35 09-manga.png
+-rw-r--r--@   1 manuelbieh  staff  1760469 Sep 28 19:35 10-pop-art.png
+-rw-r--r--@   1 manuelbieh  staff  1883334 Sep 28 20:24 100-snow-globe.png
+-rw-r--r--@   1 manuelbieh  staff  1634116 Sep 28 20:35 101-game-boy.png
+-rw-r--r--@   1 manuelbieh  staff  2431096 Sep 28 20:35 102-ascii-art.png
+-rw-r--r--@   1 manuelbieh  staff  1550588 Sep 28 20:35 103-balloon-animal.png
+-rw-r--r--@   1 manuelbieh  staff  1538013 Sep 28 20:35 104-fondant-cake.png
+-rw-r--r--@   1 manuelbieh  staff  2086998 Sep 28 20:36 105-bob-ross.png
+-rw-r--r--@   1 manuelbieh  staff  1696492 Sep 28 20:36 106-city-pop.png
+-rw-r--r--@   1 manuelbieh  staff  2192780 Sep 28 20:40 107-bosch.png
+-rw-r--r--@   1 manuelbieh  staff  1153887 Sep 28 20:40 108-quentin-blake.png
+-rw-r--r--@   1 manuelbieh  staff  2353709 Sep 28 20:34 109-steadman.png
+-rw-r--r--@   1 manuelbieh  staff  2159189 Sep 28 19:36 11-art-nouveau.png
+-rw-r--r--@   1 manuelbieh  staff  1511337 Sep 28 20:34 110-3d-emoji.png
+-rw-r--r--@   1 manuelbieh  staff  1567252 Sep 28 20:35 111-bauhaus.png
+-rw-r--r--@   1 manuelbieh  staff  2133309 Sep 28 20:35 112-rosemaling.png
+-rw-r--r--@   1 manuelbieh  staff  2225586 Sep 28 20:36 113-batik.png
+-rw-r--r--@   1 manuelbieh  staff  1713050 Sep 28 20:36 114-marionette.png
+-rw-r--r--@   1 manuelbieh  staff  2002735 Sep 28 20:36 115-sand-sculpture.png
+-rw-r--r--@   1 manuelbieh  staff  2173856 Sep 28 20:36 116-ice-sculpture.png
+-rw-r--r--@   1 manuelbieh  staff  2238394 Sep 28 20:36 117-courtroom-sketch.png
+-rw-r--r--@   1 manuelbieh  staff   950074 Sep 28 20:36 118-ikea-manual.png
+-rw-r--r--@   1 manuelbieh  staff  1643795 Sep 28 20:36 119-safety-card.png
+-rw-r--r--@   1 manuelbieh  staff  2422382 Sep 28 19:38 12-van-gogh.png
+-rw-r--r--@   1 manuelbieh  staff  1832949 Sep 28 20:36 120-sims-isometric.png
+-rw-r--r--@   1 manuelbieh  staff  2089314 Sep 28 20:34 121-bollywood-poster.png
+-rw-r--r--@   1 manuelbieh  staff  1953351 Sep 28 20:34 122-polish-poster.png
+-rw-r--r--@   1 manuelbieh  staff  2610294 Sep 28 20:36 123-bayeux-tapestry.png
+-rw-r--r--@   1 manuelbieh  staff  1902243 Sep 28 20:35 124-shinkai.png
+-rw-r--r--@   1 manuelbieh  staff  2411349 Sep 28 20:36 125-horror-manga.png
+-rw-r--r--@   1 manuelbieh  staff  2288976 Sep 28 20:36 126-newsprint.png
+-rw-r--r--@   1 manuelbieh  staff  2256864 Sep 28 20:36 127-urban-sketching.png
+-rw-r--r--@   1 manuelbieh  staff  1672591 Sep 28 20:36 128-sargent.png
+-rw-r--r--@   1 manuelbieh  staff  1353576 Sep 28 20:54 129-south-park-coffee-shop.png
+-rw-r--r--@   1 manuelbieh  staff  2126584 Sep 28 19:38 13-stained-glass.png
+-rw-r--r--@   1 manuelbieh  staff  1113607 Sep 28 20:54 130-family-guy.png
+-rw-r--r--@   1 manuelbieh  staff  1176687 Sep 28 20:54 131-bobs-burgers.png
+-rw-r--r--@   1 manuelbieh  staff  1546940 Sep 28 20:54 132-rick-and-morty.png
+-rw-r--r--@   1 manuelbieh  staff  1599645 Sep 28 20:55 133-king-of-the-hill.png
+-rw-r--r--@   1 manuelbieh  staff  1440784 Sep 28 20:55 134-archer.png
+-rw-r--r--@   1 manuelbieh  staff  1156044 Sep 28 20:55 135-daria.png
+-rw-r--r--@   1 manuelbieh  staff  1066863 Sep 28 20:56 136-powerpuff.png
+-rw-r--r--@   1 manuelbieh  staff  1384460 Sep 28 20:56 137-gravity-falls.png
+-rw-r--r--@   1 manuelbieh  staff  1879004 Sep 28 20:56 138-dragon-ball.png
+-rw-r--r--@   1 manuelbieh  staff  2383000 Sep 28 20:56 139-jojo.png
+-rw-r--r--@   1 manuelbieh  staff  1995822 Sep 28 19:38 14-greek-pottery.png
+-rw-r--r--@   1 manuelbieh  staff  1824729 Sep 28 20:56 140-over-the-garden-wall.png
+-rw-r--r--@   1 manuelbieh  staff  1647387 Sep 28 20:55 141-looney-tunes.png
+-rw-r--r--@   1 manuelbieh  staff  2023958 Sep 28 20:55 142-ren-stimpy.png
+-rw-r--r--@   1 manuelbieh  staff  1363689 Sep 28 20:55 143-bojack.png
+-rw-r--r--@   1 manuelbieh  staff  2133846 Sep 28 20:55 144-spongebob.png
+-rw-r--r--@   1 manuelbieh  staff  1535520 Sep 28 20:53 145-robot-chicken.png
+-rw-r--r--@   1 manuelbieh  staff  2313451 Sep 28 20:55 146-gilliam-cutout.png
+-rw-r--r--@   1 manuelbieh  staff  1726449 Sep 28 20:55 147-yellow-submarine.png
+-rw-r--r--@   1 manuelbieh  staff  1944603 Sep 28 20:55 148-fantastic-planet.png
+-rw-r--r--@   1 manuelbieh  staff  2017535 Sep 28 20:55 149-borderlands.png
+-rw-r--r--@   1 manuelbieh  staff  2186010 Sep 28 19:38 15-egyptian.png
+-rw-r--r--@   1 manuelbieh  staff  1942935 Sep 28 20:55 150-disco-elysium.png
+-rw-r--r--@   1 manuelbieh  staff  1628739 Sep 28 20:56 151-hades.png
+-rw-r--r--@   1 manuelbieh  staff  1151124 Sep 28 20:56 152-sugimori.png
+-rw-r--r--@   1 manuelbieh  staff  1322332 Sep 28 21:32 153-beavis-butthead.png
+-rw-r--r--@   1 manuelbieh  staff  1805485 Sep 28 21:34 154-pokemon-anime.png
+-rw-r--r--@   1 manuelbieh  staff  1815636 Sep 28 21:35 155-magical-girl.png
+-rw-r--r--@   1 manuelbieh  staff  1603553 Sep 28 21:36 156-trigger-anime.png
+-rw-r--r--@   1 manuelbieh  staff  1531068 Sep 28 21:35 157-klaus.png
+-rw-r--r--@   1 manuelbieh  staff  1802074 Sep 28 21:35 158-paper-mario.png
+-rw-r--r--@   1 manuelbieh  staff  1589563 Sep 28 21:35 159-hd-2d.png
+-rw-r--r--@   1 manuelbieh  staff  2098607 Sep 28 19:38 16-cross-stitch.png
+-rw-r--r--@   1 manuelbieh  staff  1632329 Sep 28 21:35 160-myst.png
+-rw-r--r--@   1 manuelbieh  staff  1236161 Sep 28 21:35 161-flash-animation.png
+-rw-r--r--@   1 manuelbieh  staff  1148423 Sep 28 21:35 162-ms-paint.png
+-rw-r--r--@   1 manuelbieh  staff   973832 Sep 28 21:35 163-clip-art.png
+-rw-r--r--@   1 manuelbieh  staff  2310877 Sep 28 21:35 164-moomin.png
+-rw-r--r--@   1 manuelbieh  staff  2157757 Sep 28 21:32 165-asterix.png
+-rw-r--r--@   1 manuelbieh  staff  1982634 Sep 28 21:33 166-calvin-hobbes.png
+-rw-r--r--@   1 manuelbieh  staff  2367214 Sep 28 21:34 167-garbage-pail.png
+-rw-r--r--@   1 manuelbieh  staff  2190491 Sep 28 21:36 168-fantasy-card.png
+-rw-r--r--@   1 manuelbieh  staff  2283192 Sep 28 21:32 169-postage-stamp.png
+-rw-r--r--@   1 manuelbieh  staff  1729670 Sep 28 19:37 17-amigurumi.png
+-rw-r--r--@   1 manuelbieh  staff  1059330 Sep 28 21:34 170-banknote.png
+-rw-r--r--@   1 manuelbieh  staff  1879566 Sep 28 21:35 171-matryoshka.png
+-rw-r--r--@   1 manuelbieh  staff  2365501 Sep 28 21:36 172-tiki-mug.png
+-rw-r--r--@   1 manuelbieh  staff  1466176 Sep 28 21:33 173-lite-brite.png
+-rw-r--r--@   1 manuelbieh  staff  2071705 Sep 28 21:33 174-3d-chalk.png
+-rw-r--r--@   1 manuelbieh  staff  2059180 Sep 28 21:33 175-toast-art.png
+-rw-r--r--@   1 manuelbieh  staff  1944678 Sep 28 21:34 176-coffee-stain.png
+-rw-r--r--@   1 manuelbieh  staff  1617810 Sep 28 21:55 177-caravaggio.png
+-rw-r--r--@   1 manuelbieh  staff  1690030 Sep 28 21:55 178-vermeer.png
+-rw-r--r--@   1 manuelbieh  staff  1803426 Sep 28 21:55 179-turner.png
+-rw-r--r--@   1 manuelbieh  staff  1123699 Sep 28 19:37 18-low-poly.png
+-rw-r--r--@   1 manuelbieh  staff  1593508 Sep 28 21:55 180-rothko.png
+-rw-r--r--@   1 manuelbieh  staff  2352380 Sep 28 21:54 181-basquiat.png
+-rw-r--r--@   1 manuelbieh  staff  1948388 Sep 28 21:55 182-kandinsky.png
+-rw-r--r--@   1 manuelbieh  staff  1997123 Sep 28 21:54 183-toulouse-lautrec.png
+-rw-r--r--@   1 manuelbieh  staff  1760501 Sep 28 21:53 184-schiele.png
+-rw-r--r--@   1 manuelbieh  staff  1574383 Sep 28 21:56 185-okeeffe.png
+-rw-r--r--@   1 manuelbieh  staff  1706349 Sep 28 21:56 186-lempicka.png
+-rw-r--r--@   1 manuelbieh  staff  1483503 Sep 28 21:56 187-futurama.png
+-rw-r--r--@   1 manuelbieh  staff  1726252 Sep 28 21:56 188-hey-arnold.png
+-rw-r--r--@   1 manuelbieh  staff  1007848 Sep 28 21:55 189-samurai-jack.png
+-rw-r--r--@   1 manuelbieh  staff  2184544 Sep 28 19:37 19-vaporwave.png
+-rw-r--r--@   1 manuelbieh  staff  1565224 Sep 28 21:55 190-avatar.png
+-rw-r--r--@   1 manuelbieh  staff  1394017 Sep 28 21:55 191-invader-zim.png
+-rw-r--r--@   1 manuelbieh  staff  1354138 Sep 28 21:55 192-steven-universe.png
+-rw-r--r--@   1 manuelbieh  staff  1007996 Sep 28 21:55 193-peppa-pig.png
+-rw-r--r--@   1 manuelbieh  staff  1452429 Sep 28 21:55 194-bluey.png
+-rw-r--r--@   1 manuelbieh  staff  1933700 Sep 28 21:55 195-satoshi-kon.png
+-rw-r--r--@   1 manuelbieh  staff  1589194 Sep 28 21:55 196-evangelion.png
+-rw-r--r--@   1 manuelbieh  staff  2055255 Sep 28 21:56 197-one-piece.png
+-rw-r--r--@   1 manuelbieh  staff  1834734 Sep 28 21:56 198-naruto.png
+-rw-r--r--@   1 manuelbieh  staff  1677565 Sep 28 21:56 199-lupin.png
+-rw-r--r--@   1 manuelbieh  staff  1696260 Sep 28 19:37 20-rubber-hose.png
+-rw-r--r--@   1 manuelbieh  staff  1537286 Sep 28 21:56 200-fleischer-superman.png
+-rw-r--r--@   1 manuelbieh  staff  1755762 Sep 28 21:56 201-street-fighter.png
+-rw-r--r--@   1 manuelbieh  staff  1811357 Sep 28 21:56 202-diablo.png
+-rw-r--r--@   1 manuelbieh  staff  2092131 Sep 28 21:58 203-nes-zelda.png
+-rw-r--r--@   1 manuelbieh  staff  1472389 Sep 28 21:56 204-katamari.png
+-rw-r--r--@   1 manuelbieh  staff  1915986 Sep 28 21:55 205-cuphead.png
+-rw-r--r--@   1 manuelbieh  staff  1455788 Sep 28 21:55 206-hollow-knight.png
+-rw-r--r--@   1 manuelbieh  staff  1577371 Sep 28 21:55 207-team-fortress.png
+-rw-r--r--@   1 manuelbieh  staff  2153668 Sep 28 21:55 208-okami.png
+-rw-r--r--@   1 manuelbieh  staff   628750 Sep 28 21:55 209-undertale.png
+-rw-r--r--@   1 manuelbieh  staff  2264529 Sep 28 19:37 21-blueprint.png
+-rw-r--r--@   1 manuelbieh  staff  1150859 Sep 28 21:55 210-monument-valley.png
+-rw-r--r--@   1 manuelbieh  staff  2106766 Sep 28 21:55 211-infrared.png
+-rw-r--r--@   1 manuelbieh  staff  1545595 Sep 28 21:55 212-holga.png
+-rw-r--r--@   1 manuelbieh  staff  1611858 Sep 28 21:55 213-disposable-camera.png
+-rw-r--r--@   1 manuelbieh  staff  1496329 Sep 28 21:55 214-cctv.png
+-rw-r--r--@   1 manuelbieh  staff  1620759 Sep 28 21:55 215-polaroid.png
+-rw-r--r--@   1 manuelbieh  staff  2126464 Sep 28 21:55 216-cyanotype.png
+-rw-r--r--@   1 manuelbieh  staff  1900623 Sep 28 21:55 217-lego-mosaic.png
+-rw-r--r--@   1 manuelbieh  staff  1863355 Sep 28 21:55 218-pyrography.png
+-rw-r--r--@   1 manuelbieh  staff  2360737 Sep 28 21:55 219-bottle-caps.png
+-rw-r--r--@   1 manuelbieh  staff  2244608 Sep 28 19:37 22-klimt.png
+-rw-r--r--@   1 manuelbieh  staff  1631573 Sep 28 21:55 220-chocolate.png
+-rw-r--r--@   1 manuelbieh  staff  2120018 Sep 28 21:55 221-topiary.png
+-rw-r--r--@   1 manuelbieh  staff  2452425 Sep 28 21:55 222-string-art.png
+-rw-r--r--@   1 manuelbieh  staff  2044724 Sep 28 21:55 223-cereal-box.png
+-rw-r--r--@   1 manuelbieh  staff  2252538 Sep 28 21:55 224-jazz-record.png
+-rw-r--r--@   1 manuelbieh  staff  1652632 Sep 28 22:04 225-matisse-cutouts.png
+-rw-r--r--@   1 manuelbieh  staff  1760514 Sep 28 22:04 226-modigliani.png
+-rw-r--r--@   1 manuelbieh  staff  2102471 Sep 28 22:04 227-chagall.png
+-rw-r--r--@   1 manuelbieh  staff  1684611 Sep 28 22:05 228-hockney.png
+-rw-r--r--@   1 manuelbieh  staff  1926912 Sep 28 22:06 229-van-eyck.png
+-rw-r--r--@   1 manuelbieh  staff  1306543 Sep 28 19:37 23-south-park.png
+-rw-r--r--@   1 manuelbieh  staff  2282552 Sep 28 22:07 230-hundertwasser.png
+-rw-r--r--@   1 manuelbieh  staff  2187168 Sep 28 22:07 231-kusama.png
+-rw-r--r--@   1 manuelbieh  staff  1525125 Sep 28 22:07 232-botero.png
+-rw-r--r--@   1 manuelbieh  staff  1905325 Sep 28 22:05 233-wyeth.png
+-rw-r--r--@   1 manuelbieh  staff  1433040 Sep 28 22:05 234-rugrats.png
+-rw-r--r--@   1 manuelbieh  staff  1274111 Sep 28 22:05 235-batman-tas.png
+-rw-r--r--@   1 manuelbieh  staff  1561833 Sep 28 22:05 236-tmnt-1987.png
+-rw-r--r--@   1 manuelbieh  staff  1492518 Sep 28 22:05 237-pingu.png
+-rw-r--r--@   1 manuelbieh  staff  1624737 Sep 28 22:05 238-scooby-doo.png
+-rw-r--r--@   1 manuelbieh  staff  1555239 Sep 28 22:05 239-he-man.png
+-rw-r--r--@   1 manuelbieh  staff  1033060 Sep 28 19:37 24-line-art.png
+-rw-r--r--@   1 manuelbieh  staff  1452360 Sep 28 22:05 240-cowboy-bebop.png
+-rw-r--r--@   1 manuelbieh  staff  1779263 Sep 28 22:05 241-attack-on-titan.png
+-rw-r--r--@   1 manuelbieh  staff  1378571 Sep 28 22:05 242-doraemon.png
+-rw-r--r--@   1 manuelbieh  staff  1718513 Sep 28 22:05 243-kyoani.png
+-rw-r--r--@   1 manuelbieh  staff  2069200 Sep 28 22:05 244-mob-psycho.png
+-rw-r--r--@   1 manuelbieh  staff  1450453 Sep 28 22:05 245-tron.png
+-rw-r--r--@   1 manuelbieh  staff  1622214 Sep 28 22:05 246-metropolis-1927.png
+-rw-r--r--@   1 manuelbieh  staff  1807008 Sep 28 22:05 247-technicolor-musical.png
+-rw-r--r--@   1 manuelbieh  staff  1775734 Sep 28 22:05 248-saul-bass.png
+-rw-r--r--@   1 manuelbieh  staff  1636693 Sep 28 22:03 249-shaw-brothers.png
+-rw-r--r--@   1 manuelbieh  staff  1657331 Sep 28 19:56 25-gothic-stop-motion.png
+-rw-r--r--@   1 manuelbieh  staff  1358703 Sep 28 22:04 250-n64.png
+-rw-r--r--@   1 manuelbieh  staff  1550974 Sep 28 22:05 251-sonic.png
+-rw-r--r--@   1 manuelbieh  staff  1420878 Sep 28 22:05 252-doom.png
+-rw-r--r--@   1 manuelbieh  staff  1307127 Sep 28 22:05 253-journey.png
+-rw-r--r--@   1 manuelbieh  staff  1578750 Sep 28 22:05 254-among-us.png
+-rw-r--r--@   1 manuelbieh  staff  1441137 Sep 28 22:05 255-fortnite.png
+-rw-r--r--@   1 manuelbieh  staff  1442528 Sep 28 22:05 256-grim-fandango.png
+-rw-r--r--@   1 manuelbieh  staff  1343741 Sep 28 22:06 257-oregon-trail.png
+-rw-r--r--@   1 manuelbieh  staff  1794317 Sep 28 22:06 258-persona-5.png
+-rw-r--r--@   1 manuelbieh  staff  1541861 Sep 28 22:06 259-hollywood-glamour.png
+-rw-r--r--@   1 manuelbieh  staff  1546921 Sep 28 19:56 26-wes-anderson.png
+-rw-r--r--@   1 manuelbieh  staff  1590370 Sep 28 22:06 260-tilt-shift.png
+-rw-r--r--@   1 manuelbieh  staff  1916225 Sep 28 22:05 261-light-painting.png
+-rw-r--r--@   1 manuelbieh  staff  1575771 Sep 28 22:05 262-thermal.png
+-rw-r--r--@   1 manuelbieh  staff  1689100 Sep 28 22:05 263-laser-yearbook.png
+-rw-r--r--@   1 manuelbieh  staff  1498144 Sep 28 22:05 264-playmobil.png
+-rw-r--r--@   1 manuelbieh  staff  1127323 Sep 28 22:05 265-vinyl-figure.png
+-rw-r--r--@   1 manuelbieh  staff  1959238 Sep 28 22:05 266-kintsugi.png
+-rw-r--r--@   1 manuelbieh  staff  2142953 Sep 28 22:05 267-patchwork-quilt.png
+-rw-r--r--@   1 manuelbieh  staff  1563774 Sep 28 22:05 268-tin-toy.png
+-rw-r--r--@   1 manuelbieh  staff  1916951 Sep 28 22:05 269-travel-poster.png
+-rw-r--r--@   1 manuelbieh  staff  1750209 Sep 28 19:56 27-rembrandt.png
+-rw-r--r--@   1 manuelbieh  staff  1914104 Sep 28 22:05 270-coloring-book.png
+-rw-r--r--@   1 manuelbieh  staff  2127535 Sep 28 22:05 271-naturalist-plate.png
+-rw-r--r--@   1 manuelbieh  staff  1976419 Sep 28 22:05 272-pysanka.png
+-rw-r--r--@   1 manuelbieh  staff  1437411 Sep 28 22:14 273-mignola.png
+-rw-r--r--@   1 manuelbieh  staff  1539675 Sep 28 22:17 274-chris-ware.png
+-rw-r--r--@   1 manuelbieh  staff  1942416 Sep 28 22:19 275-charles-burns.png
+-rw-r--r--@   1 manuelbieh  staff  2626800 Sep 28 22:19 276-crumb.png
+-rw-r--r--@   1 manuelbieh  staff  2337692 Sep 28 22:16 277-mad-magazine.png
+-rw-r--r--@   1 manuelbieh  staff  1556774 Sep 28 22:16 278-archie.png
+-rw-r--r--@   1 manuelbieh  staff  2443051 Sep 28 22:17 279-ec-horror.png
+-rw-r--r--@   1 manuelbieh  staff  2099917 Sep 28 19:56 28-constructivist.png
+-rw-r--r--@   1 manuelbieh  staff  1751409 Sep 28 22:17 280-alex-ross.png
+-rw-r--r--@   1 manuelbieh  staff  2266083 Sep 28 22:16 281-sienkiewicz.png
+-rw-r--r--@   1 manuelbieh  staff  2349877 Sep 28 22:16 282-90s-superhero.png
+-rw-r--r--@   1 manuelbieh  staff  1922460 Sep 28 22:16 283-webtoon.png
+-rw-r--r--@   1 manuelbieh  staff  1542750 Sep 28 22:16 284-scott-pilgrim.png
+-rw-r--r--@   1 manuelbieh  staff  1524820 Sep 28 22:16 285-hilda.png
+-rw-r--r--@   1 manuelbieh  staff  2083294 Sep 28 22:16 286-hugo-pratt.png
+-rw-r--r--@   1 manuelbieh  staff  1922215 Sep 28 22:16 287-tezuka.png
+-rw-r--r--@   1 manuelbieh  staff   611955 Sep 28 22:17 288-stick-figure.png
+-rw-r--r--@   1 manuelbieh  staff  1682262 Sep 28 22:14 289-single-panel-gag.png
+-rw-r--r--@   1 manuelbieh  staff  2440302 Sep 28 19:56 29-byzantine-mosaic.png
+-rw-r--r--@   1 manuelbieh  staff  2138059 Sep 28 22:15 290-persepolis.png
+-rw-r--r--@   1 manuelbieh  staff  2556642 Sep 28 22:17 291-richard-scarry.png
+-rw-r--r--@   1 manuelbieh  staff  2217029 Sep 28 22:17 292-sendak.png
+-rw-r--r--@   1 manuelbieh  staff   589040 Sep 28 22:17 293-silverstein.png
+-rw-r--r--@   1 manuelbieh  staff  2152984 Sep 28 22:17 294-gorey.png
+-rw-r--r--@   1 manuelbieh  staff  2607949 Sep 28 22:17 295-searle.png
+-rw-r--r--@   1 manuelbieh  staff  1977104 Sep 28 22:17 296-leyendecker.png
+-rw-r--r--@   1 manuelbieh  staff  1865703 Sep 28 22:14 297-eric-carle.png
+-rw-r--r--@   1 manuelbieh  staff  1458807 Sep 28 22:15 298-oliver-jeffers.png
+-rw-r--r--@   1 manuelbieh  staff  2317409 Sep 28 22:15 299-victo-ngai.png
+-rw-r--r--@   1 manuelbieh  staff  2192536 Sep 28 19:56 30-illuminated-manuscript.png
+-rw-r--r--@   1 manuelbieh  staff  1648924 Sep 28 22:16 300-jon-klassen.png
+-rw-r--r--@   1 manuelbieh  staff  1830421 Sep 28 22:28 301-goya.png
+-rw-r--r--@   1 manuelbieh  staff  1980473 Sep 28 22:28 302-el-greco.png
+-rw-r--r--@   1 manuelbieh  staff  1771398 Sep 28 22:28 303-gauguin.png
+-rw-r--r--@   1 manuelbieh  staff  2021658 Sep 28 22:28 304-degas.png
+-rw-r--r--@   1 manuelbieh  staff  1830425 Sep 28 22:29 305-rousseau.png
+-rw-r--r--@   1 manuelbieh  staff  1738717 Sep 28 22:29 306-grant-wood.png
+-rw-r--r--@   1 manuelbieh  staff  2612621 Sep 28 22:30 307-pollock.png
+-rw-r--r--@   1 manuelbieh  staff  2257260 Sep 28 22:29 308-murakami.png
+-rw-r--r--@   1 manuelbieh  staff  2101174 Sep 28 22:28 309-pre-raphaelite.png
+-rw-r--r--@   1 manuelbieh  staff  2299118 Sep 28 19:56 31-chalkboard.png
+-rw-r--r--@   1 manuelbieh  staff  2214988 Sep 28 22:28 310-beardsley.png
+-rw-r--r--@   1 manuelbieh  staff  2179122 Sep 28 22:28 311-fauvism.png
+-rw-r--r--@   1 manuelbieh  staff  1414872 Sep 28 22:28 312-dexters-lab.png
+-rw-r--r--@   1 manuelbieh  staff  1527875 Sep 28 22:26 313-courage.png
+-rw-r--r--@   1 manuelbieh  staff  1607596 Sep 28 22:27 314-phineas-ferb.png
+-rw-r--r--@   1 manuelbieh  staff  1607597 Sep 28 22:28 315-gumball.png
+-rw-r--r--@   1 manuelbieh  staff  1572777 Sep 28 22:29 316-animaniacs.png
+-rw-r--r--@   1 manuelbieh  staff  1301108 Sep 28 22:28 317-johnny-bravo.png
+-rw-r--r--@   1 manuelbieh  staff  1821155 Sep 28 22:28 318-magic-school-bus.png
+-rw-r--r--@   1 manuelbieh  staff  1540005 Sep 28 22:28 319-care-bears.png
+-rw-r--r--@   1 manuelbieh  staff  2213117 Sep 28 19:56 32-stencil-graffiti.png
+-rw-r--r--@   1 manuelbieh  staff  2111208 Sep 28 22:28 320-smurfs.png
+-rw-r--r--@   1 manuelbieh  staff  1319354 Sep 28 22:29 321-inspector-gadget.png
+-rw-r--r--@   1 manuelbieh  staff  2079489 Sep 28 22:29 322-demon-slayer.png
+-rw-r--r--@   1 manuelbieh  staff  1585400 Sep 28 22:29 323-spy-family.png
+-rw-r--r--@   1 manuelbieh  staff  2096665 Sep 28 22:29 324-chainsaw-man.png
+-rw-r--r--@   1 manuelbieh  staff  1227483 Sep 28 22:28 325-lain.png
+-rw-r--r--@   1 manuelbieh  staff  1404473 Sep 28 22:27 326-maruko.png
+-rw-r--r--@   1 manuelbieh  staff  1614133 Sep 28 22:27 327-gundam.png
+-rw-r--r--@   1 manuelbieh  staff  2045253 Sep 28 22:29 328-madoka.png
+-rw-r--r--@   1 manuelbieh  staff  1780630 Sep 28 22:29 329-bubblegum-crisis.png
+-rw-r--r--@   1 manuelbieh  staff  1813207 Sep 28 19:57 33-surrealism.png
+-rw-r--r--@   1 manuelbieh  staff  1764213 Sep 28 22:29 330-blade-runner.png
+-rw-r--r--@   1 manuelbieh  staff  1848209 Sep 28 22:29 331-mad-max.png
+-rw-r--r--@   1 manuelbieh  staff  1742009 Sep 28 22:29 332-amelie.png
+-rw-r--r--@   1 manuelbieh  staff  1503834 Sep 28 22:29 333-wong-kar-wai.png
+-rw-r--r--@   1 manuelbieh  staff  1584652 Sep 28 22:29 334-caligari.png
+-rw-r--r--@   1 manuelbieh  staff   606634 Sep 28 22:29 335-spaghetti-western.png
+-rw-r--r--@   1 manuelbieh  staff  1765440 Sep 28 22:29 336-harryhausen.png
+-rw-r--r--@   1 manuelbieh  staff  2200442 Sep 28 22:26 337-struzan.png
+-rw-r--r--@   1 manuelbieh  staff   586422 Sep 28 22:26 338-atari-2600.png
+-rw-r--r--@   1 manuelbieh  staff  1607526 Sep 28 22:28 339-c64.png
+-rw-r--r--@   1 manuelbieh  staff  2131154 Sep 28 19:57 34-mexican-folk.png
+-rw-r--r--@   1 manuelbieh  staff  1463770 Sep 28 22:29 340-zx-spectrum.png
+-rw-r--r--@   1 manuelbieh  staff  1507205 Sep 28 22:26 341-ff7.png
+-rw-r--r--@   1 manuelbieh  staff  1693701 Sep 28 22:27 342-botw.png
+-rw-r--r--@   1 manuelbieh  staff  1855257 Sep 28 22:28 343-ori.png
+-rw-r--r--@   1 manuelbieh  staff  1303557 Sep 28 22:29 344-limbo.png
+-rw-r--r--@   1 manuelbieh  staff  1600641 Sep 28 22:29 345-stardew.png
+-rw-r--r--@   1 manuelbieh  staff  1728173 Sep 28 22:29 346-overwatch.png
+-rw-r--r--@   1 manuelbieh  staff  2345641 Sep 28 22:29 347-kirby-yarn.png
+-rw-r--r--@   1 manuelbieh  staff  1182741 Sep 28 22:29 348-kings-quest.png
+-rw-r--r--@   1 manuelbieh  staff  1228779 Sep 28 22:32 349-night-in-the-woods.png
+-rw-r--r--@   1 manuelbieh  staff  2339089 Sep 28 19:57 35-warhol.png
+-rw-r--r--@   1 manuelbieh  staff  1984014 Sep 28 22:32 350-blacksad.png
+-rw-r--r--@   1 manuelbieh  staff  2257593 Sep 28 22:32 351-franquin.png
+-rw-r--r--@   1 manuelbieh  staff  1212483 Sep 28 22:32 352-garfield.png
+-rw-r--r--@   1 manuelbieh  staff  1834377 Sep 28 22:34 353-bone.png
+-rw-r--r--@   1 manuelbieh  staff  1810007 Sep 28 22:34 354-saga.png
+-rw-r--r--@   1 manuelbieh  staff  1671632 Sep 28 22:34 355-watchmen.png
+-rw-r--r--@   1 manuelbieh  staff  1446319 Sep 28 22:34 356-mafalda.png
+-rw-r--r--@   1 manuelbieh  staff  2147726 Sep 28 22:33 357-little-nemo.png
+-rw-r--r--@   1 manuelbieh  staff  1952324 Sep 28 22:33 358-beatrix-potter.png
+-rw-r--r--@   1 manuelbieh  staff  2159411 Sep 28 22:33 359-rackham.png
+-rw-r--r--@   1 manuelbieh  staff  1749113 Sep 28 19:57 36-disney-2d.png
+-rw-r--r--@   1 manuelbieh  staff  1964300 Sep 28 22:33 360-kay-nielsen.png
+-rw-r--r--@   1 manuelbieh  staff  1715153 Sep 28 22:35 361-ungerer.png
+-rw-r--r--@   1 manuelbieh  staff  1897891 Sep 28 22:35 362-charley-harper.png
+-rw-r--r--@   1 manuelbieh  staff  2340327 Sep 28 22:35 363-tenniel.png
+-rw-r--r--@   1 manuelbieh  staff  1824175 Sep 28 22:35 364-golden-books.png
+-rw-r--r--@   1 manuelbieh  staff  2109647 Sep 28 22:33 365-froud.png
+-rw-r--r--@   1 manuelbieh  staff  1651766 Sep 28 22:33 366-elvgren.png
+-rw-r--r--@   1 manuelbieh  staff  1530092 Sep 28 22:33 367-isometric-infographic.png
+-rw-r--r--@   1 manuelbieh  staff  1729655 Sep 28 22:33 368-vogue-editorial.png
+-rw-r--r--@   1 manuelbieh  staff  1749298 Sep 28 22:32 369-cartier-bresson.png
+-rw-r--r--@   1 manuelbieh  staff  1226169 Sep 28 19:56 37-cartoon-network.png
+-rw-r--r--@   1 manuelbieh  staff  1440930 Sep 28 22:32 370-pinhole.png
+-rw-r--r--@   1 manuelbieh  staff  1870039 Sep 28 22:32 371-fisheye.png
+-rw-r--r--@   1 manuelbieh  staff  1416366 Sep 28 22:32 372-night-vision.png
+-rw-r--r--@   1 manuelbieh  staff  1583576 Sep 28 22:32 373-x-ray.png
+-rw-r--r--@   1 manuelbieh  staff  1629761 Sep 28 22:33 374-photobooth.png
+-rw-r--r--@   1 manuelbieh  staff  1992399 Sep 28 22:33 375-drone-overhead.png
+-rw-r--r--@   1 manuelbieh  staff  1961225 Sep 28 22:33 376-wood-relief.png
+-rw-r--r--@   1 manuelbieh  staff  1951125 Sep 28 22:32 377-papier-mache.png
+-rw-r--r--@   1 manuelbieh  staff  1672676 Sep 28 22:32 378-glass-figurine.png
+-rw-r--r--@   1 manuelbieh  staff  2055147 Sep 28 22:32 379-pancake-art.png
+-rw-r--r--@   1 manuelbieh  staff  1952285 Sep 28 19:56 38-cyberpunk-anime.png
+-rw-r--r--@   1 manuelbieh  staff  1806298 Sep 28 22:32 380-cardboard.png
+-rw-r--r--@   1 manuelbieh  staff  1282150 Sep 28 22:34 381-wire-sculpture.png
+-rw-r--r--@   1 manuelbieh  staff  2079472 Sep 28 22:34 382-bento.png
+-rw-r--r--@   1 manuelbieh  staff  2152816 Sep 28 22:34 383-jigsaw.png
+-rw-r--r--@   1 manuelbieh  staff  2002217 Sep 28 22:34 384-swiss-poster.png
+-rw-r--r--@   1 manuelbieh  staff  2477764 Sep 28 22:33 385-matchbox-label.png
+-rw-r--r--@   1 manuelbieh  staff  2122373 Sep 28 22:33 386-xerox-zine.png
+-rw-r--r--@   1 manuelbieh  staff  2167082 Sep 28 22:33 387-gig-poster.png
+-rw-r--r--@   1 manuelbieh  staff  2348491 Sep 28 22:33 388-seed-packet.png
+-rw-r--r--@   1 manuelbieh  staff  2220176 Sep 28 22:33 389-minhwa.png
+-rw-r--r--@   1 manuelbieh  staff  2271070 Sep 28 19:57 39-victorian-engraving.png
+-rw-r--r--@   1 manuelbieh  staff  1838463 Sep 28 22:35 390-wycinanki.png
+-rw-r--r--@   1 manuelbieh  staff  1994026 Sep 28 22:33 391-talavera.png
+-rw-r--r--@   1 manuelbieh  staff  1738045 Sep 28 22:33 392-kalighat.png
+-rw-r--r--@   1 manuelbieh  staff  2437443 Sep 28 22:34 393-otomi.png
+-rw-r--r--@   1 manuelbieh  staff  1627322 Sep 28 22:34 394-sylvanian.png
+-rw-r--r--@   1 manuelbieh  staff  1353609 Sep 28 22:34 395-fashion-doll.png
+-rw-r--r--@   1 manuelbieh  staff  1457501 Sep 28 22:34 396-polly-pocket.png
+-rw-r--r--@   1 manuelbieh  staff  1380303 Sep 28 22:34 397-peg-doll.png
+-rw-r--r--@   1 manuelbieh  staff  1794332 Sep 28 22:36 398-plush.png
+-rw-r--r--@   1 manuelbieh  staff  1514398 Sep 28 22:36 399-isometric-room.png
+-rw-r--r--@   1 manuelbieh  staff  2135093 Sep 28 19:57 40-art-deco.png
+-rw-r--r--@   1 manuelbieh  staff  1447632 Sep 28 22:36 400-puffy-3d.png
+-rw-r--r--@   1 manuelbieh  staff  2435013 Sep 28 19:58 41-storybook-watercolor.png
+-rw-r--r--@   1 manuelbieh  staff  1599634 Sep 28 19:58 42-ligne-claire.png
+-rw-r--r--@   1 manuelbieh  staff  1472073 Sep 28 19:58 43-peanuts.png
+-rw-r--r--@   1 manuelbieh  staff  1058774 Sep 28 19:58 44-keith-haring.png
+-rw-r--r--@   1 manuelbieh  staff  2024112 Sep 28 19:56 45-shadow-puppet.png
+-rw-r--r--@   1 manuelbieh  staff  1536760 Sep 28 19:56 46-voxel.png
+-rw-r--r--@   1 manuelbieh  staff  1977598 Sep 28 19:56 47-renaissance-fresco.png
+-rw-r--r--@   1 manuelbieh  staff  1863829 Sep 28 19:56 48-ink-wash.png
+-rw-r--r--@   1 manuelbieh  staff  1814379 Sep 28 20:04 49-toonstruck.png
+-rw-r--r--@   1 manuelbieh  staff  2356435 Sep 28 20:06 50-pointillism.png
+-rw-r--r--@   1 manuelbieh  staff  1456154 Sep 28 20:10 51-edward-hopper.png
+-rw-r--r--@   1 manuelbieh  staff  2342552 Sep 28 20:10 52-persian-miniature.png
+-rw-r--r--@   1 manuelbieh  staff  1661500 Sep 28 20:05 53-muppet.png
+-rw-r--r--@   1 manuelbieh  staff  1749423 Sep 28 20:05 54-animal-crossing.png
+-rw-r--r--@   1 manuelbieh  staff  1422324 Sep 28 20:05 55-ps1-graphics.png
+-rw-r--r--@   1 manuelbieh  staff  1732494 Sep 28 20:05 56-norman-rockwell.png
+-rw-r--r--@   1 manuelbieh  staff  1690262 Sep 28 20:09 57-moebius.png
+-rw-r--r--@   1 manuelbieh  staff  1471727 Sep 28 20:09 58-hanna-barbera.png
+-rw-r--r--@   1 manuelbieh  staff  1488380 Sep 28 20:09 59-kawaii-sticker.png
+-rw-r--r--@   1 manuelbieh  staff  2259725 Sep 28 20:09 60-tarot-card.png
+-rw-r--r--@   1 manuelbieh  staff  2229258 Sep 28 20:04 61-linocut.png
+-rw-r--r--@   1 manuelbieh  staff  2238797 Sep 28 20:04 62-risograph.png
+-rw-r--r--@   1 manuelbieh  staff  1926889 Sep 28 20:04 63-mid-century.png
+-rw-r--r--@   1 manuelbieh  staff  1853569 Sep 28 20:04 64-latte-art.png
+-rw-r--r--@   1 manuelbieh  staff  1920055 Sep 28 20:04 65-arcimboldo.png
+-rw-r--r--@   1 manuelbieh  staff  1395448 Sep 28 20:05 66-marble-statue.png
+-rw-r--r--@   1 manuelbieh  staff  1230652 Sep 28 20:05 67-fashion-illustration.png
+-rw-r--r--@   1 manuelbieh  staff  2007694 Sep 28 20:04 68-tattoo-flash.png
+-rw-r--r--@   1 manuelbieh  staff  1882703 Sep 28 20:06 69-neon-sign.png
+-rw-r--r--@   1 manuelbieh  staff  2503708 Sep 28 20:06 70-kirby-comic.png
+-rw-r--r--@   1 manuelbieh  staff  1660762 Sep 28 20:06 71-pop-up-book.png
+-rw-r--r--@   1 manuelbieh  staff  1926562 Sep 28 20:06 72-muralism.png
+-rw-r--r--@   1 manuelbieh  staff  1555601 Sep 28 20:25 73-vga-adventure.png
+-rw-r--r--@   1 manuelbieh  staff  1473652 Sep 28 20:25 74-cel-shaded.png
+-rw-r--r--@   1 manuelbieh  staff  1698456 Sep 28 20:25 75-rotoscope.png
+-rw-r--r--@   1 manuelbieh  staff  2180778 Sep 28 20:25 76-spider-verse.png
+-rw-r--r--@   1 manuelbieh  staff  1641763 Sep 28 20:24 77-arcane.png
+-rw-r--r--@   1 manuelbieh  staff  1306794 Sep 28 20:24 78-sin-city.png
+-rw-r--r--@   1 manuelbieh  staff  2148039 Sep 28 20:24 79-crayon-drawing.png
+-rw-r--r--@   1 manuelbieh  staff  1706690 Sep 28 20:24 80-etch-a-sketch.png
+-rw-r--r--@   1 manuelbieh  staff  1651174 Sep 28 20:24 81-kodachrome.png
+-rw-r--r--@   1 manuelbieh  staff  1661298 Sep 28 20:24 82-tintype.png
+-rw-r--r--@   1 manuelbieh  staff  1739125 Sep 28 20:24 83-double-exposure.png
+-rw-r--r--@   1 manuelbieh  staff  2376357 Sep 28 20:24 84-perler-beads.png
+-rw-r--r--@   1 manuelbieh  staff  2052066 Sep 28 20:24 85-pompeii-fresco.png
+-rw-r--r--@   1 manuelbieh  staff  2088924 Sep 28 20:24 86-aztec-codex.png
+-rw-r--r--@   1 manuelbieh  staff  2697848 Sep 28 20:24 87-madhubani.png
+-rw-r--r--@   1 manuelbieh  staff  2056820 Sep 28 20:24 88-delft-tile.png
+-rw-r--r--@   1 manuelbieh  staff  1496733 Sep 28 20:24 89-origami.png
+-rw-r--r--@   1 manuelbieh  staff  2199955 Sep 28 20:24 90-quilling.png
+-rw-r--r--@   1 manuelbieh  staff  2360231 Sep 28 20:24 91-graffiti-mural.png
+-rw-r--r--@   1 manuelbieh  staff  2140794 Sep 28 20:24 92-monet.png
+-rw-r--r--@   1 manuelbieh  staff  1961691 Sep 28 20:21 93-munch.png
+-rw-r--r--@   1 manuelbieh  staff  1669793 Sep 28 20:22 94-magritte.png
+-rw-r--r--@   1 manuelbieh  staff  1741239 Sep 28 20:23 95-mondrian.png
+-rw-r--r--@   1 manuelbieh  staff  1847371 Sep 28 20:24 96-frazetta.png
+-rw-r--r--@   1 manuelbieh  staff  1664140 Sep 28 20:24 97-gta-loading-screen.png
+-rw-r--r--@   1 manuelbieh  staff  2183659 Sep 28 20:24 98-seuss.png
+-rw-r--r--@   1 manuelbieh  staff  2141240 Sep 28 20:24 99-cave-painting.png
+/usr/bin/sips
+
+hook: PreToolUse
+hook: PreToolUse Completed
+codex
+The four images are generating with different compositions: a tilted DeepDream close-up, a spectrogram profile, a frontal emoji mosaic, and a full-body café scene made from spreadsheet cells.
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "python3 - <<'PY'
+from pathlib import Path
+for name in ['437-deep-dream.png','438-spectrogram.png','439-emoji-mosaic.png','440-spreadsheet-art.png']:
+    path = Path('styles') / name
+    print(f'{path}: {\"exists\" if path.exists() else \"ready for new image\"}')
+PY" in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+styles/437-deep-dream.png: ready for new image
+styles/438-spectrogram.png: ready for new image
+styles/439-emoji-mosaic.png: ready for new image
+styles/440-spreadsheet-art.png: ready for new image
+
+hook: PreToolUse
+hook: PreToolUse Completed
+apply patch
+patch: completed
+/tmp/set-2-437-440-prompts.txt
+diff --git a//tmp/set-2-437-440-prompts.txt b//tmp/set-2-437-440-prompts.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..ee3789700e9f169dfbb82d1da4d7fc8c8a7ed7eb
+--- /dev/null
++++ b//tmp/set-2-437-440-prompts.txt
+@@ -0,0 +1,22 @@
++437-deep-dream.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Style is the primary subject: an authentic 2015 DeepDream neural-network hallucination, recursively amplified image features, fractal dog snouts, dog faces and dozens of eyes emerging everywhere from hair curls, sweater knit stitches, ceramic cup and curling vapor, nested self-similar paisley swirls and psychedelic organic architectures. Fully commit to peculiar early convolutional-neural-network dream aesthetics: dense crunchy hyper-patterned textures, iridescent acid teal, electric blue, coral, gold and violet, repeated canine eyes at multiple scales, surreal stretched anatomy and impossible surfaces. At the center of this impossible dream is a woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater, enjoying coffee with a croissant nearby. Composition: a very close, tilted three-quarter view, her face sweeping diagonally into tangled curls, hands cradling the cup near her chin, a crescent croissant in the near lower edge dissolving into the hallucinatory cafe. Character remains recognizable within the neural hallucination. The recursive dream patterns must transform every surface, not merely decorate a normal photographic portrait. Style determines anatomy, framing, perspective, light and palette. No text, captions, lettering, signatures or watermarks.
++
++---
++
++438-spectrogram.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Create an authentic-looking audio spectrogram visualization in scientific software whose frequency heatmap itself forms the subject, entirely made of fine time-frequency intensity bins, broken horizontal harmonic bands, vertical transients and granular spectral noise. Pure flat screen capture of a scientific plotting canvas, no monitor, no photographic image. Magma colormap only: almost-black and deep purple background, magenta-to-orange mid energy, yellow and ivory maximum intensity. A large central rectangular plot with thin neutral axes, unlabeled tick marks and subtle graticule; small unlabelled vertical color scale at the side. The spectrogram forms a clear left-facing side-profile bust of a woman early 30s, curly shoulder-length hair whose auburn identity is translated into glowing orange-magenta harmonic curls, freckles as small hot frequency clusters, round tortoiseshell glasses as spectral loops, mustard-yellow knit sweater as gold-orange low-frequency bands. She is happily sipping from a coffee cup held near her lips; a croissant-shaped cluster rests near the lower right of the plotting field. Let spectral horizontal streaks and vertical bin structure break apart all contours so the portrait is encoded in signal energy, rather than a drawn portrait sitting on top of a chart. Broad areas of empty near-black signal field around the profile, precise scientific-software look. Absolutely no readable text, numbers, letters, axis labels, captions, signatures or watermarks.
++
++---
++
++439-emoji-mosaic.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. A meticulous photomosaic portrait BUILT ENTIRELY from thousands of tiny individual colorful emoji icons, roughly 80 to 100 icons across the square. At first glance the aggregate icon colors form a bright closely cropped front-facing smiling woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater; she enjoys a coffee, holding the cup prominently just below her smiling mouth, with a croissant nearby in the bottom corner. At closer inspection every part of her face, hair, glasses, cup, pastry, sweater and background is made only of miniature distinct emoji pictograms on a tight regular mosaic grid. Emoji vocabulary: little smiling faces, hearts, tiny animals, flowers, fruit, coffee cups, crescent croissants, suns, leaves, stars and other familiar rounded colorful emoji illustrations, with no typographic glyphs or numbers. Use warm brown-orange icons in her curls and tortoiseshell rims, peach and cream icons for skin, mustard and gold icons for sweater, darker icons for freckles. Keep the underlying mosaic tiled and crisp across the whole surface, all tiny icons visible as icons on close inspection. Do not overlay icons on a continuous photograph and do not hide an ordinary smooth portrait beneath the tiles. The entire tonal likeness must emerge from the icon choices and spacing. Flat, clean digital mosaic medium, tightly cropped frontal framing, playful multicolored cream-based background. No text, captions, signatures or watermarks.
++
++---
++
++440-spreadsheet-art.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Authentic spreadsheet cell art, seen as a flat straight-on screenshot of an open spreadsheet document. The artwork is created solely by changing background fill colors of many tiny perfectly square spreadsheet cells, about 80 cells across and down; crisp thin visible gray gridlines divide every cell. It is deliberately blocky low-resolution pixel art, with no smooth photographic contours or painted shading across cells. A wide scene: a small full-body seated woman at a cafe table, legs and chair visible, ample pale uncolored worksheet around her. She is in her early 30s with curly auburn shoulder-length hair represented by a chunky rust pixel silhouette, freckles represented by individual darker peach cells, round tortoiseshell glasses rendered as small dark pixel rings, a mustard-yellow knit sweater represented by gold and ochre cell patterns. She leans back contentedly while raising a coffee cup in one hand; a recognizable blocky golden croissant sits on a saucer on the little table beside her. Spreadsheet medium dictates all proportions: charming simplified squat pixel anatomy, stepped edges, limited flat fill-color palette, no gradients, no raster photo pasted into cells. Muted off-white, gray, mustard, burnt orange and a little dusty teal. Show a thin gray row-header strip at left and column-header strip at top, with empty header cells and a blank corner selector, tiny blank UI controls and scrollbars. The headers must have no readable text or numbers, just empty cells. Absolutely no text, captions, letters, numbers, signatures or watermarks.
++
+
+diff --git a//tmp/set-2-437-440-prompts.txt b//tmp/set-2-437-440-prompts.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..ee3789700e9f169dfbb82d1da4d7fc8c8a7ed7eb
+--- /dev/null
++++ b//tmp/set-2-437-440-prompts.txt
+@@ -0,0 +1,22 @@
++437-deep-dream.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Style is the primary subject: an authentic 2015 DeepDream neural-network hallucination, recursively amplified image features, fractal dog snouts, dog faces and dozens of eyes emerging everywhere from hair curls, sweater knit stitches, ceramic cup and curling vapor, nested self-similar paisley swirls and psychedelic organic architectures. Fully commit to peculiar early convolutional-neural-network dream aesthetics: dense crunchy hyper-patterned textures, iridescent acid teal, electric blue, coral, gold and violet, repeated canine eyes at multiple scales, surreal stretched anatomy and impossible surfaces. At the center of this impossible dream is a woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater, enjoying coffee with a croissant nearby. Composition: a very close, tilted three-quarter view, her face sweeping diagonally into tangled curls, hands cradling the cup near her chin, a crescent croissant in the near lower edge dissolving into the hallucinatory cafe. Character remains recognizable within the neural hallucination. The recursive dream patterns must transform every surface, not merely decorate a normal photographic portrait. Style determines anatomy, framing, perspective, light and palette. No text, captions, lettering, signatures or watermarks.
++
++---
++
++438-spectrogram.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Create an authentic-looking audio spectrogram visualization in scientific software whose frequency heatmap itself forms the subject, entirely made of fine time-frequency intensity bins, broken horizontal harmonic bands, vertical transients and granular spectral noise. Pure flat screen capture of a scientific plotting canvas, no monitor, no photographic image. Magma colormap only: almost-black and deep purple background, magenta-to-orange mid energy, yellow and ivory maximum intensity. A large central rectangular plot with thin neutral axes, unlabeled tick marks and subtle graticule; small unlabelled vertical color scale at the side. The spectrogram forms a clear left-facing side-profile bust of a woman early 30s, curly shoulder-length hair whose auburn identity is translated into glowing orange-magenta harmonic curls, freckles as small hot frequency clusters, round tortoiseshell glasses as spectral loops, mustard-yellow knit sweater as gold-orange low-frequency bands. She is happily sipping from a coffee cup held near her lips; a croissant-shaped cluster rests near the lower right of the plotting field. Let spectral horizontal streaks and vertical bin structure break apart all contours so the portrait is encoded in signal energy, rather than a drawn portrait sitting on top of a chart. Broad areas of empty near-black signal field around the profile, precise scientific-software look. Absolutely no readable text, numbers, letters, axis labels, captions, signatures or watermarks.
++
++---
++
++439-emoji-mosaic.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. A meticulous photomosaic portrait BUILT ENTIRELY from thousands of tiny individual colorful emoji icons, roughly 80 to 100 icons across the square. At first glance the aggregate icon colors form a bright closely cropped front-facing smiling woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater; she enjoys a coffee, holding the cup prominently just below her smiling mouth, with a croissant nearby in the bottom corner. At closer inspection every part of her face, hair, glasses, cup, pastry, sweater and background is made only of miniature distinct emoji pictograms on a tight regular mosaic grid. Emoji vocabulary: little smiling faces, hearts, tiny animals, flowers, fruit, coffee cups, crescent croissants, suns, leaves, stars and other familiar rounded colorful emoji illustrations, with no typographic glyphs or numbers. Use warm brown-orange icons in her curls and tortoiseshell rims, peach and cream icons for skin, mustard and gold icons for sweater, darker icons for freckles. Keep the underlying mosaic tiled and crisp across the whole surface, all tiny icons visible as icons on close inspection. Do not overlay icons on a continuous photograph and do not hide an ordinary smooth portrait beneath the tiles. The entire tonal likeness must emerge from the icon choices and spacing. Flat, clean digital mosaic medium, tightly cropped frontal framing, playful multicolored cream-based background. No text, captions, signatures or watermarks.
++
++---
++
++440-spreadsheet-art.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Authentic spreadsheet cell art, seen as a flat straight-on screenshot of an open spreadsheet document. The artwork is created solely by changing background fill colors of many tiny perfectly square spreadsheet cells, about 80 cells across and down; crisp thin visible gray gridlines divide every cell. It is deliberately blocky low-resolution pixel art, with no smooth photographic contours or painted shading across cells. A wide scene: a small full-body seated woman at a cafe table, legs and chair visible, ample pale uncolored worksheet around her. She is in her early 30s with curly auburn shoulder-length hair represented by a chunky rust pixel silhouette, freckles represented by individual darker peach cells, round tortoiseshell glasses rendered as small dark pixel rings, a mustard-yellow knit sweater represented by gold and ochre cell patterns. She leans back contentedly while raising a coffee cup in one hand; a recognizable blocky golden croissant sits on a saucer on the little table beside her. Spreadsheet medium dictates all proportions: charming simplified squat pixel anatomy, stepped edges, limited flat fill-color palette, no gradients, no raster photo pasted into cells. Muted off-white, gray, mustard, burnt orange and a little dusty teal. Show a thin gray row-header strip at left and column-header strip at top, with empty header cells and a blank corner selector, tiny blank UI controls and scrollbars. The headers must have no readable text or numbers, just empty cells. Absolutely no text, captions, letters, numbers, signatures or watermarks.
++
+
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse
+hook: PreToolUse Completed
+diff --git a//tmp/set-2-437-440-prompts.txt b//tmp/set-2-437-440-prompts.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..ee3789700e9f169dfbb82d1da4d7fc8c8a7ed7eb
+--- /dev/null
++++ b//tmp/set-2-437-440-prompts.txt
+@@ -0,0 +1,22 @@
++437-deep-dream.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Style is the primary subject: an authentic 2015 DeepDream neural-network hallucination, recursively amplified image features, fractal dog snouts, dog faces and dozens of eyes emerging everywhere from hair curls, sweater knit stitches, ceramic cup and curling vapor, nested self-similar paisley swirls and psychedelic organic architectures. Fully commit to peculiar early convolutional-neural-network dream aesthetics: dense crunchy hyper-patterned textures, iridescent acid teal, electric blue, coral, gold and violet, repeated canine eyes at multiple scales, surreal stretched anatomy and impossible surfaces. At the center of this impossible dream is a woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater, enjoying coffee with a croissant nearby. Composition: a very close, tilted three-quarter view, her face sweeping diagonally into tangled curls, hands cradling the cup near her chin, a crescent croissant in the near lower edge dissolving into the hallucinatory cafe. Character remains recognizable within the neural hallucination. The recursive dream patterns must transform every surface, not merely decorate a normal photographic portrait. Style determines anatomy, framing, perspective, light and palette. No text, captions, lettering, signatures or watermarks.
++
++---
++
++438-spectrogram.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Create an authentic-looking audio spectrogram visualization in scientific software whose frequency heatmap itself forms the subject, entirely made of fine time-frequency intensity bins, broken horizontal harmonic bands, vertical transients and granular spectral noise. Pure flat screen capture of a scientific plotting canvas, no monitor, no photographic image. Magma colormap only: almost-black and deep purple background, magenta-to-orange mid energy, yellow and ivory maximum intensity. A large central rectangular plot with thin neutral axes, unlabeled tick marks and subtle graticule; small unlabelled vertical color scale at the side. The spectrogram forms a clear left-facing side-profile bust of a woman early 30s, curly shoulder-length hair whose auburn identity is translated into glowing orange-magenta harmonic curls, freckles as small hot frequency clusters, round tortoiseshell glasses as spectral loops, mustard-yellow knit sweater as gold-orange low-frequency bands. She is happily sipping from a coffee cup held near her lips; a croissant-shaped cluster rests near the lower right of the plotting field. Let spectral horizontal streaks and vertical bin structure break apart all contours so the portrait is encoded in signal energy, rather than a drawn portrait sitting on top of a chart. Broad areas of empty near-black signal field around the profile, precise scientific-software look. Absolutely no readable text, numbers, letters, axis labels, captions, signatures or watermarks.
++
++---
++
++439-emoji-mosaic.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. A meticulous photomosaic portrait BUILT ENTIRELY from thousands of tiny individual colorful emoji icons, roughly 80 to 100 icons across the square. At first glance the aggregate icon colors form a bright closely cropped front-facing smiling woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater; she enjoys a coffee, holding the cup prominently just below her smiling mouth, with a croissant nearby in the bottom corner. At closer inspection every part of her face, hair, glasses, cup, pastry, sweater and background is made only of miniature distinct emoji pictograms on a tight regular mosaic grid. Emoji vocabulary: little smiling faces, hearts, tiny animals, flowers, fruit, coffee cups, crescent croissants, suns, leaves, stars and other familiar rounded colorful emoji illustrations, with no typographic glyphs or numbers. Use warm brown-orange icons in her curls and tortoiseshell rims, peach and cream icons for skin, mustard and gold icons for sweater, darker icons for freckles. Keep the underlying mosaic tiled and crisp across the whole surface, all tiny icons visible as icons on close inspection. Do not overlay icons on a continuous photograph and do not hide an ordinary smooth portrait beneath the tiles. The entire tonal likeness must emerge from the icon choices and spacing. Flat, clean digital mosaic medium, tightly cropped frontal framing, playful multicolored cream-based background. No text, captions, signatures or watermarks.
++
++---
++
++440-spreadsheet-art.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Authentic spreadsheet cell art, seen as a flat straight-on screenshot of an open spreadsheet document. The artwork is created solely by changing background fill colors of many tiny perfectly square spreadsheet cells, about 80 cells across and down; crisp thin visible gray gridlines divide every cell. It is deliberately blocky low-resolution pixel art, with no smooth photographic contours or painted shading across cells. A wide scene: a small full-body seated woman at a cafe table, legs and chair visible, ample pale uncolored worksheet around her. She is in her early 30s with curly auburn shoulder-length hair represented by a chunky rust pixel silhouette, freckles represented by individual darker peach cells, round tortoiseshell glasses rendered as small dark pixel rings, a mustard-yellow knit sweater represented by gold and ochre cell patterns. She leans back contentedly while raising a coffee cup in one hand; a recognizable blocky golden croissant sits on a saucer on the little table beside her. Spreadsheet medium dictates all proportions: charming simplified squat pixel anatomy, stepped edges, limited flat fill-color palette, no gradients, no raster photo pasted into cells. Muted off-white, gray, mustard, burnt orange and a little dusty teal. Show a thin gray row-header strip at left and column-header strip at top, with empty header cells and a blank corner selector, tiny blank UI controls and scrollbars. The headers must have no readable text or numbers, just empty cells. Absolutely no text, captions, letters, numbers, signatures or watermarks.
++
+
+codex
+The emoji mosaic and spectrogram are ready, and both use their requested medium throughout the image. I’m saving them at the exact size while the other two finish.
+
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'sips -s format png -z 1024 1024 /Users/manuelbieh/.codex/generated_images/01a0ea09-5e87-76c1-b8a5-043b527d27f9/exec-3b92cfba-006d-4ca3-8c32-1311551663aa.png --out styles/438-spectrogram.png' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+exec
+/bin/zsh -lc 'sips -s format png -z 1024 1024 /Users/manuelbieh/.codex/generated_images/01a0ea09-5e87-76c1-b8a5-043b527d27f9/exec-8117210d-b566-4b2a-8779-f516e098e32a.png --out styles/439-emoji-mosaic.png' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 183ms:
+/Users/manuelbieh/.codex/generated_images/01a0ea09-5e87-76c1-b8a5-043b527d27f9/exec-3b92cfba-006d-4ca3-8c32-1311551663aa.png
+  /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/438-spectrogram.png
+
+ succeeded in 196ms:
+/Users/manuelbieh/.codex/generated_images/01a0ea09-5e87-76c1-b8a5-043b527d27f9/exec-8117210d-b566-4b2a-8779-f516e098e32a.png
+  /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/439-emoji-mosaic.png
+
+diff --git a//tmp/set-2-437-440-prompts.txt b//tmp/set-2-437-440-prompts.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..ee3789700e9f169dfbb82d1da4d7fc8c8a7ed7eb
+--- /dev/null
++++ b//tmp/set-2-437-440-prompts.txt
+@@ -0,0 +1,22 @@
++437-deep-dream.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Style is the primary subject: an authentic 2015 DeepDream neural-network hallucination, recursively amplified image features, fractal dog snouts, dog faces and dozens of eyes emerging everywhere from hair curls, sweater knit stitches, ceramic cup and curling vapor, nested self-similar paisley swirls and psychedelic organic architectures. Fully commit to peculiar early convolutional-neural-network dream aesthetics: dense crunchy hyper-patterned textures, iridescent acid teal, electric blue, coral, gold and violet, repeated canine eyes at multiple scales, surreal stretched anatomy and impossible surfaces. At the center of this impossible dream is a woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater, enjoying coffee with a croissant nearby. Composition: a very close, tilted three-quarter view, her face sweeping diagonally into tangled curls, hands cradling the cup near her chin, a crescent croissant in the near lower edge dissolving into the hallucinatory cafe. Character remains recognizable within the neural hallucination. The recursive dream patterns must transform every surface, not merely decorate a normal photographic portrait. Style determines anatomy, framing, perspective, light and palette. No text, captions, lettering, signatures or watermarks.
++
++---
++
++438-spectrogram.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Create an authentic-looking audio spectrogram visualization in scientific software whose frequency heatmap itself forms the subject, entirely made of fine time-frequency intensity bins, broken horizontal harmonic bands, vertical transients and granular spectral noise. Pure flat screen capture of a scientific plotting canvas, no monitor, no photographic image. Magma colormap only: almost-black and deep purple background, magenta-to-orange mid energy, yellow and ivory maximum intensity. A large central rectangular plot with thin neutral axes, unlabeled tick marks and subtle graticule; small unlabelled vertical color scale at the side. The spectrogram forms a clear left-facing side-profile bust of a woman early 30s, curly shoulder-length hair whose auburn identity is translated into glowing orange-magenta harmonic curls, freckles as small hot frequency clusters, round tortoiseshell glasses as spectral loops, mustard-yellow knit sweater as gold-orange low-frequency bands. She is happily sipping from a coffee cup held near her lips; a croissant-shaped cluster rests near the lower right of the plotting field. Let spectral horizontal streaks and vertical bin structure break apart all contours so the portrait is encoded in signal energy, rather than a drawn portrait sitting on top of a chart. Broad areas of empty near-black signal field around the profile, precise scientific-software look. Absolutely no readable text, numbers, letters, axis labels, captions, signatures or watermarks.
++
++---
++
++439-emoji-mosaic.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. A meticulous photomosaic portrait BUILT ENTIRELY from thousands of tiny individual colorful emoji icons, roughly 80 to 100 icons across the square. At first glance the aggregate icon colors form a bright closely cropped front-facing smiling woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater; she enjoys a coffee, holding the cup prominently just below her smiling mouth, with a croissant nearby in the bottom corner. At closer inspection every part of her face, hair, glasses, cup, pastry, sweater and background is made only of miniature distinct emoji pictograms on a tight regular mosaic grid. Emoji vocabulary: little smiling faces, hearts, tiny animals, flowers, fruit, coffee cups, crescent croissants, suns, leaves, stars and other familiar rounded colorful emoji illustrations, with no typographic glyphs or numbers. Use warm brown-orange icons in her curls and tortoiseshell rims, peach and cream icons for skin, mustard and gold icons for sweater, darker icons for freckles. Keep the underlying mosaic tiled and crisp across the whole surface, all tiny icons visible as icons on close inspection. Do not overlay icons on a continuous photograph and do not hide an ordinary smooth portrait beneath the tiles. The entire tonal likeness must emerge from the icon choices and spacing. Flat, clean digital mosaic medium, tightly cropped frontal framing, playful multicolored cream-based background. No text, captions, signatures or watermarks.
++
++---
++
++440-spreadsheet-art.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Authentic spreadsheet cell art, seen as a flat straight-on screenshot of an open spreadsheet document. The artwork is created solely by changing background fill colors of many tiny perfectly square spreadsheet cells, about 80 cells across and down; crisp thin visible gray gridlines divide every cell. It is deliberately blocky low-resolution pixel art, with no smooth photographic contours or painted shading across cells. A wide scene: a small full-body seated woman at a cafe table, legs and chair visible, ample pale uncolored worksheet around her. She is in her early 30s with curly auburn shoulder-length hair represented by a chunky rust pixel silhouette, freckles represented by individual darker peach cells, round tortoiseshell glasses rendered as small dark pixel rings, a mustard-yellow knit sweater represented by gold and ochre cell patterns. She leans back contentedly while raising a coffee cup in one hand; a recognizable blocky golden croissant sits on a saucer on the little table beside her. Spreadsheet medium dictates all proportions: charming simplified squat pixel anatomy, stepped edges, limited flat fill-color palette, no gradients, no raster photo pasted into cells. Muted off-white, gray, mustard, burnt orange and a little dusty teal. Show a thin gray row-header strip at left and column-header strip at top, with empty header cells and a blank corner selector, tiny blank UI controls and scrollbars. The headers must have no readable text or numbers, just empty cells. Absolutely no text, captions, letters, numbers, signatures or watermarks.
++
+
+diff --git a//tmp/set-2-437-440-prompts.txt b//tmp/set-2-437-440-prompts.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..ee3789700e9f169dfbb82d1da4d7fc8c8a7ed7eb
+--- /dev/null
++++ b//tmp/set-2-437-440-prompts.txt
+@@ -0,0 +1,22 @@
++437-deep-dream.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Style is the primary subject: an authentic 2015 DeepDream neural-network hallucination, recursively amplified image features, fractal dog snouts, dog faces and dozens of eyes emerging everywhere from hair curls, sweater knit stitches, ceramic cup and curling vapor, nested self-similar paisley swirls and psychedelic organic architectures. Fully commit to peculiar early convolutional-neural-network dream aesthetics: dense crunchy hyper-patterned textures, iridescent acid teal, electric blue, coral, gold and violet, repeated canine eyes at multiple scales, surreal stretched anatomy and impossible surfaces. At the center of this impossible dream is a woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater, enjoying coffee with a croissant nearby. Composition: a very close, tilted three-quarter view, her face sweeping diagonally into tangled curls, hands cradling the cup near her chin, a crescent croissant in the near lower edge dissolving into the hallucinatory cafe. Character remains recognizable within the neural hallucination. The recursive dream patterns must transform every surface, not merely decorate a normal photographic portrait. Style determines anatomy, framing, perspective, light and palette. No text, captions, lettering, signatures or watermarks.
++
++---
++
++438-spectrogram.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Create an authentic-looking audio spectrogram visualization in scientific software whose frequency heatmap itself forms the subject, entirely made of fine time-frequency intensity bins, broken horizontal harmonic bands, vertical transients and granular spectral noise. Pure flat screen capture of a scientific plotting canvas, no monitor, no photographic image. Magma colormap only: almost-black and deep purple background, magenta-to-orange mid energy, yellow and ivory maximum intensity. A large central rectangular plot with thin neutral axes, unlabeled tick marks and subtle graticule; small unlabelled vertical color scale at the side. The spectrogram forms a clear left-facing side-profile bust of a woman early 30s, curly shoulder-length hair whose auburn identity is translated into glowing orange-magenta harmonic curls, freckles as small hot frequency clusters, round tortoiseshell glasses as spectral loops, mustard-yellow knit sweater as gold-orange low-frequency bands. She is happily sipping from a coffee cup held near her lips; a croissant-shaped cluster rests near the lower right of the plotting field. Let spectral horizontal streaks and vertical bin structure break apart all contours so the portrait is encoded in signal energy, rather than a drawn portrait sitting on top of a chart. Broad areas of empty near-black signal field around the profile, precise scientific-software look. Absolutely no readable text, numbers, letters, axis labels, captions, signatures or watermarks.
++
++---
++
++439-emoji-mosaic.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. A meticulous photomosaic portrait BUILT ENTIRELY from thousands of tiny individual colorful emoji icons, roughly 80 to 100 icons across the square. At first glance the aggregate icon colors form a bright closely cropped front-facing smiling woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater; she enjoys a coffee, holding the cup prominently just below her smiling mouth, with a croissant nearby in the bottom corner. At closer inspection every part of her face, hair, glasses, cup, pastry, sweater and background is made only of miniature distinct emoji pictograms on a tight regular mosaic grid. Emoji vocabulary: little smiling faces, hearts, tiny animals, flowers, fruit, coffee cups, crescent croissants, suns, leaves, stars and other familiar rounded colorful emoji illustrations, with no typographic glyphs or numbers. Use warm brown-orange icons in her curls and tortoiseshell rims, peach and cream icons for skin, mustard and gold icons for sweater, darker icons for freckles. Keep the underlying mosaic tiled and crisp across the whole surface, all tiny icons visible as icons on close inspection. Do not overlay icons on a continuous photograph and do not hide an ordinary smooth portrait beneath the tiles. The entire tonal likeness must emerge from the icon choices and spacing. Flat, clean digital mosaic medium, tightly cropped frontal framing, playful multicolored cream-based background. No text, captions, signatures or watermarks.
++
++---
++
++440-spreadsheet-art.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Authentic spreadsheet cell art, seen as a flat straight-on screenshot of an open spreadsheet document. The artwork is created solely by changing background fill colors of many tiny perfectly square spreadsheet cells, about 80 cells across and down; crisp thin visible gray gridlines divide every cell. It is deliberately blocky low-resolution pixel art, with no smooth photographic contours or painted shading across cells. A wide scene: a small full-body seated woman at a cafe table, legs and chair visible, ample pale uncolored worksheet around her. She is in her early 30s with curly auburn shoulder-length hair represented by a chunky rust pixel silhouette, freckles represented by individual darker peach cells, round tortoiseshell glasses rendered as small dark pixel rings, a mustard-yellow knit sweater represented by gold and ochre cell patterns. She leans back contentedly while raising a coffee cup in one hand; a recognizable blocky golden croissant sits on a saucer on the little table beside her. Spreadsheet medium dictates all proportions: charming simplified squat pixel anatomy, stepped edges, limited flat fill-color palette, no gradients, no raster photo pasted into cells. Muted off-white, gray, mustard, burnt orange and a little dusty teal. Show a thin gray row-header strip at left and column-header strip at top, with empty header cells and a blank corner selector, tiny blank UI controls and scrollbars. The headers must have no readable text or numbers, just empty cells. Absolutely no text, captions, letters, numbers, signatures or watermarks.
++
+
+hook: PreToolUse
+hook: PreToolUse Completed
+diff --git a//tmp/set-2-437-440-prompts.txt b//tmp/set-2-437-440-prompts.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..ee3789700e9f169dfbb82d1da4d7fc8c8a7ed7eb
+--- /dev/null
++++ b//tmp/set-2-437-440-prompts.txt
+@@ -0,0 +1,22 @@
++437-deep-dream.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Style is the primary subject: an authentic 2015 DeepDream neural-network hallucination, recursively amplified image features, fractal dog snouts, dog faces and dozens of eyes emerging everywhere from hair curls, sweater knit stitches, ceramic cup and curling vapor, nested self-similar paisley swirls and psychedelic organic architectures. Fully commit to peculiar early convolutional-neural-network dream aesthetics: dense crunchy hyper-patterned textures, iridescent acid teal, electric blue, coral, gold and violet, repeated canine eyes at multiple scales, surreal stretched anatomy and impossible surfaces. At the center of this impossible dream is a woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater, enjoying coffee with a croissant nearby. Composition: a very close, tilted three-quarter view, her face sweeping diagonally into tangled curls, hands cradling the cup near her chin, a crescent croissant in the near lower edge dissolving into the hallucinatory cafe. Character remains recognizable within the neural hallucination. The recursive dream patterns must transform every surface, not merely decorate a normal photographic portrait. Style determines anatomy, framing, perspective, light and palette. No text, captions, lettering, signatures or watermarks.
++
++---
++
++438-spectrogram.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Create an authentic-looking audio spectrogram visualization in scientific software whose frequency heatmap itself forms the subject, entirely made of fine time-frequency intensity bins, broken horizontal harmonic bands, vertical transients and granular spectral noise. Pure flat screen capture of a scientific plotting canvas, no monitor, no photographic image. Magma colormap only: almost-black and deep purple background, magenta-to-orange mid energy, yellow and ivory maximum intensity. A large central rectangular plot with thin neutral axes, unlabeled tick marks and subtle graticule; small unlabelled vertical color scale at the side. The spectrogram forms a clear left-facing side-profile bust of a woman early 30s, curly shoulder-length hair whose auburn identity is translated into glowing orange-magenta harmonic curls, freckles as small hot frequency clusters, round tortoiseshell glasses as spectral loops, mustard-yellow knit sweater as gold-orange low-frequency bands. She is happily sipping from a coffee cup held near her lips; a croissant-shaped cluster rests near the lower right of the plotting field. Let spectral horizontal streaks and vertical bin structure break apart all contours so the portrait is encoded in signal energy, rather than a drawn portrait sitting on top of a chart. Broad areas of empty near-black signal field around the profile, precise scientific-software look. Absolutely no readable text, numbers, letters, axis labels, captions, signatures or watermarks.
++
++---
++
++439-emoji-mosaic.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. A meticulous photomosaic portrait BUILT ENTIRELY from thousands of tiny individual colorful emoji icons, roughly 80 to 100 icons across the square. At first glance the aggregate icon colors form a bright closely cropped front-facing smiling woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater; she enjoys a coffee, holding the cup prominently just below her smiling mouth, with a croissant nearby in the bottom corner. At closer inspection every part of her face, hair, glasses, cup, pastry, sweater and background is made only of miniature distinct emoji pictograms on a tight regular mosaic grid. Emoji vocabulary: little smiling faces, hearts, tiny animals, flowers, fruit, coffee cups, crescent croissants, suns, leaves, stars and other familiar rounded colorful emoji illustrations, with no typographic glyphs or numbers. Use warm brown-orange icons in her curls and tortoiseshell rims, peach and cream icons for skin, mustard and gold icons for sweater, darker icons for freckles. Keep the underlying mosaic tiled and crisp across the whole surface, all tiny icons visible as icons on close inspection. Do not overlay icons on a continuous photograph and do not hide an ordinary smooth portrait beneath the tiles. The entire tonal likeness must emerge from the icon choices and spacing. Flat, clean digital mosaic medium, tightly cropped frontal framing, playful multicolored cream-based background. No text, captions, signatures or watermarks.
++
++---
++
++440-spreadsheet-art.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Authentic spreadsheet cell art, seen as a flat straight-on screenshot of an open spreadsheet document. The artwork is created solely by changing background fill colors of many tiny perfectly square spreadsheet cells, about 80 cells across and down; crisp thin visible gray gridlines divide every cell. It is deliberately blocky low-resolution pixel art, with no smooth photographic contours or painted shading across cells. A wide scene: a small full-body seated woman at a cafe table, legs and chair visible, ample pale uncolored worksheet around her. She is in her early 30s with curly auburn shoulder-length hair represented by a chunky rust pixel silhouette, freckles represented by individual darker peach cells, round tortoiseshell glasses rendered as small dark pixel rings, a mustard-yellow knit sweater represented by gold and ochre cell patterns. She leans back contentedly while raising a coffee cup in one hand; a recognizable blocky golden croissant sits on a saucer on the little table beside her. Spreadsheet medium dictates all proportions: charming simplified squat pixel anatomy, stepped edges, limited flat fill-color palette, no gradients, no raster photo pasted into cells. Muted off-white, gray, mustard, burnt orange and a little dusty teal. Show a thin gray row-header strip at left and column-header strip at top, with empty header cells and a blank corner selector, tiny blank UI controls and scrollbars. The headers must have no readable text or numbers, just empty cells. Absolutely no text, captions, letters, numbers, signatures or watermarks.
++
+
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'sips -s format png -z 1024 1024 /Users/manuelbieh/.codex/generated_images/01a0ea09-5e87-76c1-b8a5-043b527d27f9/exec-7d94ef78-a92d-46ff-bbf1-eb21e714f5a1.png --out styles/440-spreadsheet-art.png' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+exec
+/bin/zsh -lc 'sips -s format png -z 1024 1024 /Users/manuelbieh/.codex/generated_images/01a0ea09-5e87-76c1-b8a5-043b527d27f9/exec-b6b4bbb5-8770-40e3-9c1d-642befa256f7.png --out styles/437-deep-dream.png' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 132ms:
+/Users/manuelbieh/.codex/generated_images/01a0ea09-5e87-76c1-b8a5-043b527d27f9/exec-7d94ef78-a92d-46ff-bbf1-eb21e714f5a1.png
+  /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/440-spreadsheet-art.png
+
+ succeeded in 170ms:
+/Users/manuelbieh/.codex/generated_images/01a0ea09-5e87-76c1-b8a5-043b527d27f9/exec-b6b4bbb5-8770-40e3-9c1d-642befa256f7.png
+  /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/437-deep-dream.png
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'sips -g format -g pixelWidth -g pixelHeight styles/437-deep-dream.png styles/438-spectrogram.png styles/439-emoji-mosaic.png styles/440-spreadsheet-art.png' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 17ms:
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/437-deep-dream.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/438-spectrogram.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/439-emoji-mosaic.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/440-spreadsheet-art.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+
+diff --git a//tmp/set-2-437-440-prompts.txt b//tmp/set-2-437-440-prompts.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..ee3789700e9f169dfbb82d1da4d7fc8c8a7ed7eb
+--- /dev/null
++++ b//tmp/set-2-437-440-prompts.txt
+@@ -0,0 +1,22 @@
++437-deep-dream.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Style is the primary subject: an authentic 2015 DeepDream neural-network hallucination, recursively amplified image features, fractal dog snouts, dog faces and dozens of eyes emerging everywhere from hair curls, sweater knit stitches, ceramic cup and curling vapor, nested self-similar paisley swirls and psychedelic organic architectures. Fully commit to peculiar early convolutional-neural-network dream aesthetics: dense crunchy hyper-patterned textures, iridescent acid teal, electric blue, coral, gold and violet, repeated canine eyes at multiple scales, surreal stretched anatomy and impossible surfaces. At the center of this impossible dream is a woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater, enjoying coffee with a croissant nearby. Composition: a very close, tilted three-quarter view, her face sweeping diagonally into tangled curls, hands cradling the cup near her chin, a crescent croissant in the near lower edge dissolving into the hallucinatory cafe. Character remains recognizable within the neural hallucination. The recursive dream patterns must transform every surface, not merely decorate a normal photographic portrait. Style determines anatomy, framing, perspective, light and palette. No text, captions, lettering, signatures or watermarks.
++
++---
++
++438-spectrogram.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Create an authentic-looking audio spectrogram visualization in scientific software whose frequency heatmap itself forms the subject, entirely made of fine time-frequency intensity bins, broken horizontal harmonic bands, vertical transients and granular spectral noise. Pure flat screen capture of a scientific plotting canvas, no monitor, no photographic image. Magma colormap only: almost-black and deep purple background, magenta-to-orange mid energy, yellow and ivory maximum intensity. A large central rectangular plot with thin neutral axes, unlabeled tick marks and subtle graticule; small unlabelled vertical color scale at the side. The spectrogram forms a clear left-facing side-profile bust of a woman early 30s, curly shoulder-length hair whose auburn identity is translated into glowing orange-magenta harmonic curls, freckles as small hot frequency clusters, round tortoiseshell glasses as spectral loops, mustard-yellow knit sweater as gold-orange low-frequency bands. She is happily sipping from a coffee cup held near her lips; a croissant-shaped cluster rests near the lower right of the plotting field. Let spectral horizontal streaks and vertical bin structure break apart all contours so the portrait is encoded in signal energy, rather than a drawn portrait sitting on top of a chart. Broad areas of empty near-black signal field around the profile, precise scientific-software look. Absolutely no readable text, numbers, letters, axis labels, captions, signatures or watermarks.
++
++---
++
++439-emoji-mosaic.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. A meticulous photomosaic portrait BUILT ENTIRELY from thousands of tiny individual colorful emoji icons, roughly 80 to 100 icons across the square. At first glance the aggregate icon colors form a bright closely cropped front-facing smiling woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater; she enjoys a coffee, holding the cup prominently just below her smiling mouth, with a croissant nearby in the bottom corner. At closer inspection every part of her face, hair, glasses, cup, pastry, sweater and background is made only of miniature distinct emoji pictograms on a tight regular mosaic grid. Emoji vocabulary: little smiling faces, hearts, tiny animals, flowers, fruit, coffee cups, crescent croissants, suns, leaves, stars and other familiar rounded colorful emoji illustrations, with no typographic glyphs or numbers. Use warm brown-orange icons in her curls and tortoiseshell rims, peach and cream icons for skin, mustard and gold icons for sweater, darker icons for freckles. Keep the underlying mosaic tiled and crisp across the whole surface, all tiny icons visible as icons on close inspection. Do not overlay icons on a continuous photograph and do not hide an ordinary smooth portrait beneath the tiles. The entire tonal likeness must emerge from the icon choices and spacing. Flat, clean digital mosaic medium, tightly cropped frontal framing, playful multicolored cream-based background. No text, captions, signatures or watermarks.
++
++---
++
++440-spreadsheet-art.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Authentic spreadsheet cell art, seen as a flat straight-on screenshot of an open spreadsheet document. The artwork is created solely by changing background fill colors of many tiny perfectly square spreadsheet cells, about 80 cells across and down; crisp thin visible gray gridlines divide every cell. It is deliberately blocky low-resolution pixel art, with no smooth photographic contours or painted shading across cells. A wide scene: a small full-body seated woman at a cafe table, legs and chair visible, ample pale uncolored worksheet around her. She is in her early 30s with curly auburn shoulder-length hair represented by a chunky rust pixel silhouette, freckles represented by individual darker peach cells, round tortoiseshell glasses rendered as small dark pixel rings, a mustard-yellow knit sweater represented by gold and ochre cell patterns. She leans back contentedly while raising a coffee cup in one hand; a recognizable blocky golden croissant sits on a saucer on the little table beside her. Spreadsheet medium dictates all proportions: charming simplified squat pixel anatomy, stepped edges, limited flat fill-color palette, no gradients, no raster photo pasted into cells. Muted off-white, gray, mustard, burnt orange and a little dusty teal. Show a thin gray row-header strip at left and column-header strip at top, with empty header cells and a blank corner selector, tiny blank UI controls and scrollbars. The headers must have no readable text or numbers, just empty cells. Absolutely no text, captions, letters, numbers, signatures or watermarks.
++
+
+codex
+Created all four with the image generation tool, without references. Verified each is a 1024×1024 PNG:
+
+- [437-deep-dream.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/437-deep-dream.png)
+- [438-spectrogram.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/438-spectrogram.png)
+- [439-emoji-mosaic.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/439-emoji-mosaic.png)
+- [440-spreadsheet-art.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/440-spreadsheet-art.png)
+
+[Generation prompts](/tmp/set-2-437-440-prompts.txt)
+diff --git a//tmp/set-2-437-440-prompts.txt b//tmp/set-2-437-440-prompts.txt
+new file mode 100644
+index 0000000000000000000000000000000000000000..ee3789700e9f169dfbb82d1da4d7fc8c8a7ed7eb
+--- /dev/null
++++ b//tmp/set-2-437-440-prompts.txt
+@@ -0,0 +1,22 @@
++437-deep-dream.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Style is the primary subject: an authentic 2015 DeepDream neural-network hallucination, recursively amplified image features, fractal dog snouts, dog faces and dozens of eyes emerging everywhere from hair curls, sweater knit stitches, ceramic cup and curling vapor, nested self-similar paisley swirls and psychedelic organic architectures. Fully commit to peculiar early convolutional-neural-network dream aesthetics: dense crunchy hyper-patterned textures, iridescent acid teal, electric blue, coral, gold and violet, repeated canine eyes at multiple scales, surreal stretched anatomy and impossible surfaces. At the center of this impossible dream is a woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater, enjoying coffee with a croissant nearby. Composition: a very close, tilted three-quarter view, her face sweeping diagonally into tangled curls, hands cradling the cup near her chin, a crescent croissant in the near lower edge dissolving into the hallucinatory cafe. Character remains recognizable within the neural hallucination. The recursive dream patterns must transform every surface, not merely decorate a normal photographic portrait. Style determines anatomy, framing, perspective, light and palette. No text, captions, lettering, signatures or watermarks.
++
++---
++
++438-spectrogram.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Create an authentic-looking audio spectrogram visualization in scientific software whose frequency heatmap itself forms the subject, entirely made of fine time-frequency intensity bins, broken horizontal harmonic bands, vertical transients and granular spectral noise. Pure flat screen capture of a scientific plotting canvas, no monitor, no photographic image. Magma colormap only: almost-black and deep purple background, magenta-to-orange mid energy, yellow and ivory maximum intensity. A large central rectangular plot with thin neutral axes, unlabeled tick marks and subtle graticule; small unlabelled vertical color scale at the side. The spectrogram forms a clear left-facing side-profile bust of a woman early 30s, curly shoulder-length hair whose auburn identity is translated into glowing orange-magenta harmonic curls, freckles as small hot frequency clusters, round tortoiseshell glasses as spectral loops, mustard-yellow knit sweater as gold-orange low-frequency bands. She is happily sipping from a coffee cup held near her lips; a croissant-shaped cluster rests near the lower right of the plotting field. Let spectral horizontal streaks and vertical bin structure break apart all contours so the portrait is encoded in signal energy, rather than a drawn portrait sitting on top of a chart. Broad areas of empty near-black signal field around the profile, precise scientific-software look. Absolutely no readable text, numbers, letters, axis labels, captions, signatures or watermarks.
++
++---
++
++439-emoji-mosaic.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. A meticulous photomosaic portrait BUILT ENTIRELY from thousands of tiny individual colorful emoji icons, roughly 80 to 100 icons across the square. At first glance the aggregate icon colors form a bright closely cropped front-facing smiling woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater; she enjoys a coffee, holding the cup prominently just below her smiling mouth, with a croissant nearby in the bottom corner. At closer inspection every part of her face, hair, glasses, cup, pastry, sweater and background is made only of miniature distinct emoji pictograms on a tight regular mosaic grid. Emoji vocabulary: little smiling faces, hearts, tiny animals, flowers, fruit, coffee cups, crescent croissants, suns, leaves, stars and other familiar rounded colorful emoji illustrations, with no typographic glyphs or numbers. Use warm brown-orange icons in her curls and tortoiseshell rims, peach and cream icons for skin, mustard and gold icons for sweater, darker icons for freckles. Keep the underlying mosaic tiled and crisp across the whole surface, all tiny icons visible as icons on close inspection. Do not overlay icons on a continuous photograph and do not hide an ordinary smooth portrait beneath the tiles. The entire tonal likeness must emerge from the icon choices and spacing. Flat, clean digital mosaic medium, tightly cropped frontal framing, playful multicolored cream-based background. No text, captions, signatures or watermarks.
++
++---
++
++440-spreadsheet-art.png
++
++Generate one fresh image from text only, with no reference images. Square 1024x1024. Use case: stylized-concept. Authentic spreadsheet cell art, seen as a flat straight-on screenshot of an open spreadsheet document. The artwork is created solely by changing background fill colors of many tiny perfectly square spreadsheet cells, about 80 cells across and down; crisp thin visible gray gridlines divide every cell. It is deliberately blocky low-resolution pixel art, with no smooth photographic contours or painted shading across cells. A wide scene: a small full-body seated woman at a cafe table, legs and chair visible, ample pale uncolored worksheet around her. She is in her early 30s with curly auburn shoulder-length hair represented by a chunky rust pixel silhouette, freckles represented by individual darker peach cells, round tortoiseshell glasses rendered as small dark pixel rings, a mustard-yellow knit sweater represented by gold and ochre cell patterns. She leans back contentedly while raising a coffee cup in one hand; a recognizable blocky golden croissant sits on a saucer on the little table beside her. Spreadsheet medium dictates all proportions: charming simplified squat pixel anatomy, stepped edges, limited flat fill-color palette, no gradients, no raster photo pasted into cells. Muted off-white, gray, mustard, burnt orange and a little dusty teal. Show a thin gray row-header strip at left and column-header strip at top, with empty header cells and a blank corner selector, tiny blank UI controls and scrollbars. The headers must have no readable text or numbers, just empty cells. Absolutely no text, captions, letters, numbers, signatures or watermarks.
++
+
+hook: Stop
+hook: Stop Completed
+tokens used
+35,166
+Created all four with the image generation tool, without references. Verified each is a 1024×1024 PNG:
+
+- [437-deep-dream.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/437-deep-dream.png)
+- [438-spectrogram.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/438-spectrogram.png)
+- [439-emoji-mosaic.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/439-emoji-mosaic.png)
+- [440-spreadsheet-art.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/440-spreadsheet-art.png)
+
+[Generation prompts](/tmp/set-2-437-440-prompts.txt)

@@ -1,0 +1,39 @@
+Generated with the built-in image generation tool. No reference images were used.
+
+333-wong-kar-wai.png
+
+Generate ONE fresh image from text only, with NO reference images. Square output, 1024x1024 pixels.
+Use case: stylized-concept. Authentic Wong Kar-wai film still, In the Mood for Love-like cinema. The visual language is the priority: rich saturated scarlet reds and jade greens, rain-glazed Hong Kong alley after dark, strong step-printed motion blur with repeated stuttering silhouettes and dragged light, smoky melancholy, tactile grain and halation of cinematic film. Let this cinema dictate all framing and lighting, not a modern portrait with a filter.
+Character: a woman in her early 30s, curly auburn shoulder-length hair, freckles, round tortoiseshell glasses. She wears a mustard-yellow knit sweater cardigan over a fitted red patterned cheongsam, with the high cheongsam collar and skirt clearly visible. She is enjoying a small cup of coffee, croissant on a tiny cafe ledge near her.
+Composition: an oblique distant three-quarter full-length profile glimpsed through a narrow dark alley doorway; the woman tucked into a pool of warm light, surrounded by architecture and wet green reflections, much of the image occupied by atmospheric alley and blurred foreground. A suspended melancholy pause as she lifts the cup; ghosted motion around her hair and moving sleeve, with face still readable. Off-center, voyeuristic, layered depth. Full square image, no collage.
+No text of any kind, no readable signage, captions, signatures, logos, watermarks.
+
+---
+
+334-caligari.png
+
+Generate ONE fresh image from text only, with NO reference images. Square output, 1024x1024 pixels.
+Use case: stylized-concept. An authentic Cabinet of Dr. Caligari silent-film still: German Expressionist theatrical studio staging, hand-painted jagged distorted scenery, impossibly canted doors and tilting cafe furniture, sharp slanted shadows visibly PAINTED onto the walls and floor, extreme graphic geometry. Black-and-white photography uniformly tinted pale spectral green, deepest ink-black blacks. Old silent cinema grain, iris-like edge falloff. This must be a strange constructed theatrical set, not a real cafe with a filter.
+Character: a woman in her early 30s, curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, mustard-yellow knit sweater. Translate hair and clothing color into grayscale under the uniform green tint. Strong theatrical white face makeup with dark stylized eyes, freckles visible. She enjoys a cup of coffee; croissant on an angular tiny table nearby.
+Composition: entire figure staged frontally at a theatrical distance in a grotesquely leaning armchair, one elbow poised at an unnatural expressive angle, cup raised in one hand. The skewed set and enormous painted spear-shaped shadows dominate around her. Her posture and silhouette stylized by the Expressionist staging. Warped perspective, strong diagonal scenery, full square image. No resemblance to a contemporary lifestyle portrait.
+No text, intertitles, captions, signatures, logos or watermarks.
+
+---
+
+335-spaghetti-western.png
+
+Generate ONE fresh image from text only, with NO reference images. Deliver a 1024x1024 square image CONTAINING a very wide 2.35:1 letterboxed 1960s spaghetti-western film frame centered vertically, with plain solid black bars above and below. The actual scene must be composed in authentic widescreen.
+Use case: stylized-concept. Authentic weather-beaten 1960s spaghetti western cinematography: an enormous extreme close-up of a woman's fiercely squinting eyes and freckled sun-beaten nose behind round tortoiseshell glasses. Her gaze cuts across the wide frame. She is early 30s, curly auburn shoulder-length hair with stray curls catching the sun, mustard-yellow knit sweater visible at the neckline beneath a coarse dusty woven poncho. She enjoys coffee from a battered tin mug lifted just below her mouth, the mug overlapping the extreme lower foreground; an out-of-focus croissant is partly visible on the wooden counter at the bottom edge. Harsh overhead desert sunlight, deep black eye shadows, sweat, dust, ochre sand and sun-bleached sepia colors, coarse vintage film grain, anamorphic lens character, tactile worn film emulsion.
+Only slivers of a dusty western desert town visible at the far edges beyond her face, bleached stucco and distant dusty street, no signage. The eyes and spectacles fill nearly the entire wide picture area. Extremely tight iconic confrontational crop, not a medium portrait and not a casual cafe scene. Style governs composition, anatomy impression, lighting and palette.
+No text, captions, signatures, logos, watermark or decorative frames.
+
+---
+
+336-harryhausen.png
+
+Generate ONE fresh image from text only, with NO reference images. Square output, 1024x1024 pixels.
+Use case: stylized-concept. A charmingly uncanny authentic Ray Harryhausen stop-motion fantasy movie still, ancient Greek ruins in vivid vintage Technicolor. It should look like a 1960s practical fantasy production with hand-built miniature temple ruins, painted sky backdrop, visible tactile handmade materials, old optical-composite edges and rich film grain. The fantasy physical-effects style governs the image, not a modern photoreal scene or slick CGI.
+Character: a woman early 30s, curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, mustard-yellow knit sweater, a practical simple skirt and shoes. She enjoys her coffee while facing a skeletal warrior who also holds a coffee cup. A croissant rests clearly on a broken marble column between them. The warrior is a visibly handmade stop-motion skeleton puppet, ivory bones with tiny articulation joints, round deep eye sockets, a battered ancient Greek shield on its other arm. Stiff asymmetric limbs and a slightly jerky incremental stop-motion stance caught between gestures.
+Composition: low viewpoint and wide full-body scene across a miniature stone courtyard, woman and skeleton facing one another on opposite sides of a broken column. They raise their coffee cups toward each other in an absurdly solemn encounter. Monumental ruined Greek columns recede into an artificial painted Mediterranean turquoise-blue sky; warm ochre rock, dusty coral masonry, brilliant mustard knit, bone white. Stage-like sunlight and theatrical shadows. Live-action heroine optically combined with an articulated skeleton model, slight matte-line discrepancies and distinct puppet texture. All limbs and both cups clearly readable, full square picture.
+No text, captions, signatures, logos, watermarks.
+

@@ -1,0 +1,36 @@
+Generated with the built-in image generation tool, from text only, without reference images.
+
+21-blueprint.png
+
+Generate one fresh image purely from this text, using NO reference images. Output exactly 1024x1024 square. The artistic style must dictate anatomy, proportions, composition, palette, and medium. No photographic base or photo-filter appearance. No text, captions, lettering, signatures, or watermarks.
+Use case: stylized-concept.
+Engineering blueprint: authentic precise white technical drafting on saturated cyan-blue grid paper. Depict a woman in her early 30s with shoulder-length curly auburn hair, freckles, round tortoiseshell glasses, and a mustard-yellow knit sweater, enjoying coffee, with a croissant nearby. Translate ALL the subject's colors into white-on-blue engineering linework, with curls, freckles, patterned round glasses and knitted ribbing recognizable through technical contours. Orthographic full-body FRONT and SIDE views arranged next to one another as one patent-style technical plate: standing relaxed holding a coffee cup at chest height, with a small side table carrying a croissant. Matching scale in both projections, no perspective foreshortening. Crisp white outlines, hidden dashed lines, projection guides, measured extension lines with arrows, precise geometric construction marks. Fine lighter cyan squared grid. Dimensions have NO numerals or text, no labels, no title block. Flat two-dimensional diagram; no shading, no realistic painted skin, no decorative portrait. Generous technical margins.
+
+---
+
+22-klimt.png
+
+Generate one fresh image purely from this text, using NO reference images. Output exactly 1024x1024 square. The artistic style must dictate anatomy, proportions, composition, palette, and medium. No photographic base or photo-filter appearance. No text, captions, lettering, signatures, or watermarks.
+Use case: stylized-concept.
+An authentic Gustav Klimt golden-phase oil and gold-leaf painting. A woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, and a mustard-yellow knit sweater enjoys coffee. Intimate asymmetrical close half-length portrait, her head gently inclined in three-quarter view, eyes softly lowered toward a delicate coffee cup held in her gracefully rendered hands. The face and hands are realistic painted flesh; the body is flattened into an expansive golden robe draped over her mustard knit sweater, with knit collar and cuffs visible. The robe is filled with intricate spirals, stylized eyes, rectangles, black and jewel-color geometric inlays. A croissant rests nearby on a small patterned saucer integrated into the lower edge of the composition. Rich textured gold-leaf mosaic background merges spatially with the robe, compressed ornamental space, shimmering handmade gilded surface and varied metallic tesserae. Sensuous asymmetrical Art Nouveau curves, museum painting texture; a compelling unity of naturalistic face and hands with flat gold ornament. No photographic rendering.
+
+---
+
+23-south-park.png
+
+Generate one fresh image purely from this text, using NO reference images. Output exactly 1024x1024 square. The artistic style must dictate anatomy, proportions, composition, palette, and medium. No photographic base or photo-filter appearance. No text, captions, lettering, signatures, or watermarks.
+Use case: stylized-concept.
+South Park construction-paper cutout animation style. Wide scene of a snowy mountain-town cafe terrace, the woman shown small and fully visible seated at a simple round outdoor table. She is in her early 30s but drawn with an oversized flat round head, round white eyes with tiny black dot pupils, simplified round tortoiseshell glasses, several freckle dots, curly auburn shoulder-length hair made of simple scalloped paper shapes, a tiny squat body in a mustard-yellow knit sweater suggested by only a few simple rib lines, stubby arms, mitten-like hands and short legs. She happily raises a coffee cup to her face; a very simple crescent croissant sits on a plate on the table. Flat crudely cut geometric shapes and solid flat colors, deliberately limited animation anatomy, crisp cut-paper edges, minimal detail, no gradients or modeled lighting. Snowy dark-green triangular evergreen trees, low blocky colorful mountain-town cafe buildings with blank unlettered facades, angular distant mountains and pale winter sky. Direct flat theatrical staging, lots of environment, deadpan cheerful expression. Exact visual grammar of a South Park construction-paper animation frame; no realistic proportions, no glossy 3D, no painterly shading.
+
+---
+
+24-line-art.png
+
+Generate a NEW image from text alone. NO reference images. Exactly 1024x1024 square.
+
+An extremely spare and abstract SINGLE CONTINUOUS BLACK LINE drawing on plain off-white paper. One thin unbroken black line, drawn without lifting the pen, traces a woman seated in profile enjoying a coffee, together with a tiny cafe table and a croissant. A single flat mustard-yellow blob behind her sweater is the ONLY colored mark. Everything else must be BLACK INK, including every hair curl, every freckle, the glasses and every detail. No brown or red ink anywhere.
+
+The woman is in her early 30s with shoulder-length curly auburn hair, freckles, round tortoiseshell glasses and a mustard knit sweater. Interpret these attributes through abstract BLACK contour loops: a FEW flowing loops for curls, two connected round glasses loops, a couple tiny connected loops for freckles, a simple sweater silhouette. The line is economical, spare and lyrical: no detailed hair strands, no knits drawn stitch by stitch. She gently tilts her head back to sip a small coffee cup. Slim elongated stylized seated figure, lightly crossed legs, no realistic anatomical rendering. The single black line must travel continuously through ALL the shapes, gracefully retracing when needed rather than introducing separate strokes. Cup, croissant and table connect to the figure by the same continuous line.
+
+Composition: small complete figure and table grouped near the lower center, covering less than half the canvas, and vast unmarked space above and around them. Extremely minimal elegant single-line gallery artwork, one mustard blob accent, pure off-white background. No color other than black ink and the mustard blob. No disconnected strokes. No text, captions, signatures or watermarks. No photo look, no shaded rendering.
+

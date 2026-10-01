@@ -1,0 +1,690 @@
+OpenAI Codex v0.157.0
+--------
+workdir: /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+model: gpt-6-astra
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: xhigh
+reasoning summaries: none
+session id: 01a0e97f-91e2-7f00-bc3a-0128f8dbe717
+--------
+user
+Use your image generation tool to create one image per style listed below, 1024x1024 square. Do NOT use any reference image — generate each one fresh from text.
+
+Character (the only constant): a woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater, enjoying a coffee (croissant nearby).
+
+The style is the priority, not the photo. For each image, let the style fully dictate proportions, anatomy, framing, camera angle, pose, setting details, color palette, lighting and medium — exactly as an authentic piece in that style would look. Do not make it look like a photo with a filter, and do not keep a common composition across images: vary the framing (close-up, full body, wide scene, profile, etc.) to whatever suits each style best. The images should look radically different from each other. No text, captions, signatures or watermarks.
+
+If a request is refused because it names a specific artist or franchise, retry with a purely descriptive wording of the visual style.
+
+Save each result to the exact path given (convert to PNG and resize to 1024x1024 with sips if needed). Do not skip any. At the end, list the files you saved.
+
+- ./styles/161-flash-animation.png : early 2000s Newgrounds Flash animation: vector shapes with uniform thin strokes, gradient fills, big-eyed simple character, choppy tweened look, web banner-era colors
+- ./styles/162-ms-paint.png : crude MS Paint drawing made with a mouse: jagged aliased lines, paint bucket fills with gaps, spray can tool texture, default 16-color palette, white canvas
+- ./styles/163-clip-art.png : 1990s office clip art: simple flat vector figure with thick outlines and gradient fills, cheerful generic pose, drop shadow, white background
+- ./styles/164-moomin.png : Tove Jansson Moomin illustration: delicate ink hatching, soft rounded hippo-like creatures, Scandinavian valley, calm muted blue-green, she has tea with them
+
+hook: SessionStart
+hook: SessionStart Completed
+codex
+I’ll generate all four images fresh from text, then save them as 1024×1024 PNGs at the requested paths. I’m using the imagegen skill for this.
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'cat /Users/manuelbieh/.codex/skills/.system/imagegen/SKILL.md
+cat /Users/manuelbieh/.agents/skills/using-superpowers/SKILL.md' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+---
+name: "imagegen"
+description: "Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-background cutouts. Use when Codex should create a brand-new image, transform an existing image, or derive visual variants from references, and the output should be a bitmap asset rather than repo-native code or vector. Do not use when the task is better handled by editing existing SVG/vector/code-native assets, extending an established icon or logo system, or building the visual directly in HTML/CSS/canvas."
+---
+
+# Image Generation Skill
+
+Generates or edits images for the current project (for example website assets, game assets, UI mockups, product mockups, wireframes, logo design, photorealistic images, or infographics).
+
+## Top-level modes and rules
+
+This skill has exactly two top-level modes:
+
+- **Default built-in tool mode (preferred):** built-in `image_gen` tool for image generation, editing, and transparent-image requests. Does not require `OPENAI_API_KEY`.
+- **Fallback CLI mode:** `scripts/image_gen.py` CLI. Use when the user explicitly asks for or confirms the CLI/API/model path. Requires `OPENAI_API_KEY`.
+
+Within CLI fallback, the CLI exposes three subcommands:
+
+- `generate`
+- `edit`
+- `generate-batch`
+
+Rules:
+- Use the built-in `image_gen` tool by default for normal image generation and editing requests.
+- Do not switch to CLI fallback for ordinary quality, size, or file-path control.
+- For transparent images, ask built-in `image_gen` for a transparent background and preserve the generated alpha.
+- Never silently switch from built-in `image_gen` or CLI `gpt-image-2` to CLI `gpt-image-1.5`; ask the user first unless they explicitly requested `gpt-image-1.5`.
+- The word `batch` by itself does not mean CLI fallback. If the user asks for many assets or says to batch-generate assets without explicitly asking for CLI/API/model controls, stay on the built-in path and issue one built-in call per requested asset or variant.
+- If the built-in tool fails or is unavailable, tell the user the CLI fallback exists and that it requires `OPENAI_API_KEY`. Proceed only if the user explicitly asks for that fallback.
+- If the user explicitly asks for CLI mode, use the bundled `scripts/image_gen.py` workflow. Do not create one-off SDK runners.
+- Never modify `scripts/image_gen.py`. If something is missing, ask the user before doing anything else.
+
+Built-in save-path policy:
+- In built-in tool mode, Codex saves generated images under `$CODEX_HOME/*` by default.
+- Do not describe or rely on OS temp as the default built-in destination.
+- Do not describe or rely on a destination-path argument (if any) on the built-in `image_gen` tool. If a specific location is needed, generate first and then move or copy the selected output from `$CODEX_HOME/generated_images/...`.
+- Save-path precedence in built-in mode:
+  1. If the user names a destination, move or copy the selected output there.
+  2. If the image is meant for the current project, move or copy the final selected image into the workspace before finishing.
+  3. If the image is only for preview or brainstorming, render it inline; the underlying file can remain at the default `$CODEX_HOME/*` path.
+- Never leave a project-referenced asset only at the default `$CODEX_HOME/*` path.
+- Do not overwrite an existing asset unless the user explicitly asked for replacement; otherwise create a sibling versioned filename such as `hero-v2.png` or `item-icon-edited.png`.
+
+Shared prompt guidance for both modes lives in `references/prompting.md` and `references/sample-prompts.md`.
+
+Fallback-only docs/resources for CLI mode:
+- `references/cli.md`
+- `references/image-api.md`
+- `references/codex-network.md`
+- `scripts/image_gen.py`
+
+## When to use
+- Generate a new image (concept art, product shot, cover, website hero)
+- Generate a new image using one or more reference images for style, composition, or mood
+- Edit an existing image (inpainting, lighting or weather transformations, background replacement, object removal, compositing, transparent background)
+- Produce many assets or variants for one task
+
+## When not to use
+- Extending or matching an existing SVG/vector icon set, logo system, or illustration library inside the repo
+- Creating simple shapes, diagrams, wireframes, or icons that are better produced directly in SVG, HTML/CSS, or canvas
+- Making a small project-local asset edit when the source file already exists in an editable native format
+- Any task where the user clearly wants deterministic code-native output instead of a generated bitmap
+
+## Decision tree
+
+Think about two separate questions:
+
+1. **Intent:** is this a new image or an edit of an existing image?
+2. **Execution strategy:** is this one asset or many assets/variants?
+
+Intent:
+- If the user wants to modify an existing image while preserving parts of it, treat the request as **edit**.
+- If the user provides images only as references for style, composition, mood, or subject guidance, treat the request as **generate**.
+- If the user provides no images, treat the request as **generate**.
+
+Built-in edit semantics:
+- Built-in edit mode is for images already visible in the conversation context, such as attached images or images generated earlier in the thread.
+- If the user wants to edit a local image file with the built-in tool, first load it with built-in `view_image` tool so the image is visible in the conversation context, then proceed with the built-in edit flow.
+- Do not promise arbitrary filesystem-path editing through the built-in tool.
+- If a local file still needs direct file-path control, masks, or other explicit CLI-only parameters, use the explicit CLI fallback only when the user asks for it.
+- For edits, preserve invariants aggressively and save non-destructively by default.
+
+Execution strategy:
+- In the built-in default path, produce many assets or variants by issuing one `image_gen` call per requested asset or variant.
+- In the CLI fallback path, use the CLI `generate-batch` subcommand only when the user explicitly chose CLI mode and needs many prompts/assets.
+- For many distinct assets, do not use `n` as a substitute for separate prompts. `n` is for variants of one prompt; distinct assets need distinct built-in calls or distinct CLI `generate-batch` jobs.
+
+Assume the user wants a new image unless they clearly ask to change an existing one.
+
+## Workflow
+1. Decide the top-level mode: built-in by default, including transparent-output requests; fallback CLI only if explicitly requested or confirmed.
+2. Decide the intent: `generate` or `edit`.
+3. Decide whether the output is preview-only or meant to be consumed by the current project.
+4. Decide the execution strategy: single asset vs repeated built-in calls vs CLI `generate-batch`.
+5. Collect inputs up front: prompt(s), exact text (verbatim), constraints/avoid list, and any input images.
+6. For every input image, label its role explicitly:
+   - reference image
+   - edit target
+   - supporting insert/style/compositing input
+7. If the edit target is only on the local filesystem and you are staying on the built-in path, inspect it with `view_image` first so the image is available in conversation context.
+8. If the user asked for a photo, illustration, sprite, product image, banner, or other explicitly raster-style asset, use `image_gen` rather than substituting SVG/HTML/CSS placeholders. If the request is for an icon, logo, or UI graphic that should match existing repo-native SVG/vector/code assets, prefer editing those directly instead.
+9. Augment the prompt based on specificity:
+   - If the user's prompt is already specific and detailed, normalize it into a clear spec without adding creative requirements.
+   - If the user's prompt is generic, add tasteful augmentation only when it materially improves output quality.
+10. Use the built-in `image_gen` tool by default.
+11. For transparent-output requests, ask built-in `image_gen` for a transparent background and preserve the generated alpha channel.
+12. Inspect outputs and validate: subject, style, composition, text accuracy, and invariants/avoid items.
+13. Iterate with a single targeted change, then re-check.
+14. For preview-only work, render the image inline; the underlying file may remain at the default `$CODEX_HOME/generated_images/...` path.
+15. For project-bound work, move or copy the selected artifact into the workspace and update any consuming code or references. Never leave a project-referenced asset only at the default `$CODEX_HOME/generated_images/...` path.
+16. For batches or multi-asset requests, persist every requested deliverable final in the workspace unless the user explicitly asked to keep outputs preview-only. Discarded variants do not need to be kept unless requested.
+17. If the user explicitly chooses or confirms the CLI fallback, then use the fallback-only docs for model, quality, size, `input_fidelity`, masks, output format, output paths, and network setup.
+18. Always report the final saved path(s) for any workspace-bound asset(s), plus the final prompt or prompt set and whether the built-in tool or fallback CLI mode was used.
+
+## Transparent image requests
+
+Ask built-in `image_gen` for a genuinely transparent background and preserve its alpha.
+
+## Prompt augmentation
+
+Reformat user prompts into a structured, production-oriented spec. Make the user's goal clearer and more actionable, but do not blindly add detail.
+
+Treat this as prompt-shaping guidance, not a closed schema. Use only the lines that help, and add a short extra labeled line when it materially improves clarity.
+
+### Specificity policy
+
+Use the user's prompt specificity to decide how much augmentation is appropriate:
+
+- If the prompt is already specific and detailed, preserve that specificity and only normalize/structure it.
+- If the prompt is generic, you may add tasteful augmentation when it will materially improve the result.
+
+Allowed augmentations:
+- composition or framing hints
+- polish level or intended-use hints
+- practical layout guidance
+- reasonable scene concreteness that supports the stated request
+
+Not allowed augmentations:
+- extra characters or objects that are not implied by the request
+- brand names, slogans, palettes, or narrative beats that are not implied
+- arbitrary side-specific placement unless the surrounding layout supports it
+
+## Use-case taxonomy (exact slugs)
+
+Classify each request into one of these buckets and keep the slug consistent across prompts and references.
+
+Generate:
+- photorealistic-natural — candid/editorial lifestyle scenes with real texture and natural lighting.
+- product-mockup — product/packaging shots, catalog imagery, merch concepts.
+- ui-mockup — app/web interface mockups and wireframes; specify the desired fidelity.
+- infographic-diagram — diagrams/infographics with structured layout and text.
+- scientific-educational — classroom explainers, scientific diagrams, and learning visuals with required labels and accuracy constraints.
+- ads-marketing — campaign concepts and ad creatives with audience, brand position, scene, and exact tagline/copy.
+- productivity-visual — slide, chart, workflow, and data-heavy business visuals.
+- logo-brand — logo/mark exploration, vector-friendly.
+- illustration-story — comics, children’s book art, narrative scenes.
+- stylized-concept — style-driven concept art, 3D/stylized renders.
+- historical-scene — period-accurate/world-knowledge scenes.
+
+Edit:
+- text-localization — translate/replace in-image text, preserve layout.
+- identity-preserve — try-on, person-in-scene; lock face/body/pose.
+- precise-object-edit — remove/replace a specific element (including interior swaps).
+- lighting-weather — time-of-day/season/atmosphere changes only.
+- background-extraction — transparent background / clean cutout. Ask built-in `image_gen` for actual transparency.
+- style-transfer — apply reference style while changing subject/scene.
+- compositing — multi-image insert/merge with matched lighting/perspective.
+- sketch-to-render — drawing/line art to photoreal render.
+
+## Shared prompt schema
+
+Use the following labeled spec as shared prompt scaffolding for both top-level modes:
+
+```text
+Use case: <taxonomy slug>
+Asset type: <where the asset will be used>
+Primary request: <user's main prompt>
+Input images: <Image 1: role; Image 2: role> (optional)
+Scene/backdrop: <environment>
+Subject: <main subject>
+Style/medium: <photo/illustration/3D/etc>
+Composition/framing: <wide/close/top-down; placement>
+Lighting/mood: <lighting + mood>
+Color palette: <palette notes>
+Materials/textures: <surface details>
+Text (verbatim): "<exact text>"
+Constraints: <must keep/must avoid>
+Avoid: <negative constraints>
+```
+
+Notes:
+- `Asset type` and `Input images` are prompt scaffolding, not dedicated CLI flags.
+- `Scene/backdrop` refers to the visual setting. It is not the same as the fallback CLI `background` parameter, which controls output transparency behavior.
+- Fallback-only execution notes such as `Quality:`, `Input fidelity:`, masks, output format, and output paths belong in the CLI path only. Do not treat them as built-in `image_gen` tool arguments.
+
+Augmentation rules:
+- Keep it short.
+- Add only the details needed to improve the prompt materially.
+- For edits, explicitly list invariants (`change only X; keep Y unchanged`).
+- If any critical detail is missing and blocks success, ask a question; otherwise proceed.
+
+## Examples
+
+### Generation example (hero image)
+```text
+Use case: product-mockup
+Asset type: landing page hero
+Primary request: a minimal hero image of a ceramic coffee mug
+Style/medium: clean product photography
+Composition/framing: wide composition with usable negative space for page copy if needed
+Lighting/mood: soft studio lighting
+Constraints: no logos, no text, no watermark
+```
+
+### Edit example (invariants)
+```text
+Use case: precise-object-edit
+Asset type: product photo background replacement
+Primary request: replace only the background with a warm sunset gradient
+Constraints: change only the background; keep the product and its edges unchanged; no text; no watermark
+```
+
+## Prompting best practices
+- Structure prompt as scene/backdrop -> subject -> details -> constraints.
+- Include intended use (ad, UI mock, infographic) to set the mode and polish level.
+- Use camera/composition language for photorealism.
+- Only use SVG/vector stand-ins when the user explicitly asked for vector output or a non-image placeholder.
+- Quote exact text and specify typography + placement.
+- For tricky words, spell them letter-by-letter and require verbatim rendering.
+- For multi-image inputs, reference images by index and describe how they should be used.
+- For edits, repeat invariants every iteration to reduce drift.
+- Iterate with single-change follow-ups.
+- If the prompt is generic, add only the extra detail that will materially help.
+- If the prompt is already detailed, normalize it instead of expanding it.
+- For CLI fallback only, see `references/cli.md` and `references/image-api.md` for model, `quality`, `input_fidelity`, masks, output format, and output-path guidance.
+- For transparent images, ask built-in `image_gen` for actual transparency and preserve its alpha.
+
+More principles shared by both modes: `references/prompting.md`.
+Copy/paste specs shared by both modes: `references/sample-prompts.md`.
+
+## Guidance by asset type
+Asset-type templates (website assets, game assets, wireframes, logo) are consolidated in `references/sample-prompts.md`.
+
+## gpt-image-2 guidance for CLI fallback
+
+The fallback CLI defaults to `gpt-image-2`.
+
+- Use `gpt-image-2` for new CLI/API workflows unless the user confirms a different model.
+- CLI `gpt-image-2` does not support `background=transparent`; ask before using `gpt-image-1.5` unless the user explicitly requested that model.
+- `gpt-image-2` always uses high fidelity for image inputs; do not set `input_fidelity` with this model.
+- `gpt-image-2` supports `quality` values `low`, `medium`, `high`, and `auto`.
+- Use `quality low` for fast drafts, thumbnails, and quick iterations. Use `medium`, `high`, or `auto` for final assets, dense text, diagrams, identity-sensitive edits, or high-resolution outputs.
+- Square images are typically fastest to generate. Use `1024x1024` for fast square drafts.
+- If the user asks for 4K-style output, use `3840x2160` for landscape or `2160x3840` for portrait.
+- `gpt-image-2` size may be `auto` or `WIDTHxHEIGHT` if all constraints hold: max edge `<= 3840px`, both edges multiples of `16px`, long-to-short ratio `<= 3:1`, total pixels between `655,360` and `8,294,400`.
+
+Popular `gpt-image-2` sizes:
+- `1024x1024` square
+- `1536x1024` landscape
+- `1024x1536` portrait
+- `2048x2048` 2K square
+- `2048x1152` 2K landscape
+- `3840x2160` 4K landscape
+- `2160x3840` 4K portrait
+- `auto`
+
+## Fallback CLI mode only
+
+### Temp and output conventions
+These conventions apply only to the CLI fallback. They do not describe built-in `image_gen` output behavior.
+- Use `tmp/imagegen/` for intermediate files (for example JSONL batches); delete them when done.
+- Write final artifacts under `output/imagegen/`.
+- Use `--out` or `--out-dir` to control output paths; keep filenames stable and descriptive.
+
+### Dependencies
+Prefer `uv` for dependency management in this repo.
+
+Required Python package:
+```bash
+uv pip install openai
+```
+
+Optional for image inspection and downscaling:
+```bash
+uv pip install pillow
+```
+
+Portability note:
+- If you are using the installed skill outside this repo, install dependencies into that environment with its package manager.
+- In uv-managed environments, `uv pip install ...` remains the preferred path.
+
+### Environment
+- `OPENAI_API_KEY` must be set for live API calls.
+- Do not ask the user for `OPENAI_API_KEY` when using the built-in `image_gen` tool.
+- Never ask the user to paste the full key in chat. Ask them to set it locally and confirm when ready.
+
+If the key is missing, give the user these steps:
+1. Create an API key in the OpenAI platform UI: https://platform.openai.com/api-keys
+2. Set `OPENAI_API_KEY` as an environment variable in their system.
+3. Offer to guide them through setting the environment variable for their OS/shell if needed.
+
+If installation is not possible in this environment, tell the user which dependency is missing and how to install it into their active environment.
+
+### Script-mode notes
+- CLI commands + examples: `references/cli.md`
+- API parameter quick reference: `references/image-api.md`
+- Network approvals / sandbox settings for CLI mode: `references/codex-network.md`
+
+## Reference map
+- `references/prompting.md`: shared prompting principles for both modes.
+- `references/sample-prompts.md`: shared copy/paste prompt recipes for both modes.
+- `references/cli.md`: fallback-only CLI usage via `scripts/image_gen.py`.
+- `references/image-api.md`: fallback-only API/CLI parameter reference.
+- `references/codex-network.md`: fallback-only network/sandbox troubleshooting for CLI mode.
+- `scripts/image_gen.py`: fallback-only CLI implementation. Use only when the user explicitly chooses or confirms CLI mode.
+---
+name: using-superpowers
+description: Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions
+---
+
+<SUBAGENT-STOP>
+If you were dispatched as a subagent to execute a specific task, skip this skill.
+</SUBAGENT-STOP>
+
+<EXTREMELY-IMPORTANT>
+If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
+
+IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
+
+This is not negotiable. This is not optional. You cannot rationalize your way out of this.
+</EXTREMELY-IMPORTANT>
+
+## Instruction Priority
+
+Superpowers skills override default system prompt behavior, but **user instructions always take precedence**:
+
+1. **User's explicit instructions** (CLAUDE.md, GEMINI.md, AGENTS.md, direct requests) — highest priority
+2. **Superpowers skills** — override default system behavior where they conflict
+3. **Default system prompt** — lowest priority
+
+If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill says "always use TDD," follow the user's instructions. The user is in control.
+
+## How to Access Skills
+
+**In Claude Code:** Use the `Skill` tool. When you invoke a skill, its content is loaded and presented to you—follow it directly. Never use the Read tool on skill files.
+
+**In Copilot CLI:** Use the `skill` tool. Skills are auto-discovered from installed plugins. The `skill` tool works the same as Claude Code's `Skill` tool.
+
+**In Gemini CLI:** Skills activate via the `activate_skill` tool. Gemini loads skill metadata at session start and activates the full content on demand.
+
+**In other environments:** Check your platform's documentation for how skills are loaded.
+
+## Platform Adaptation
+
+Skills use Claude Code tool names. Non-CC platforms: see `references/copilot-tools.md` (Copilot CLI), `references/codex-tools.md` (Codex) for tool equivalents. Gemini CLI users get the tool mapping loaded automatically via GEMINI.md.
+
+# Using Skills
+
+## The Rule
+
+**Invoke relevant or requested skills BEFORE any response or action.** Even a 1% chance a skill might apply means that you should invoke the skill to check. If an invoked skill turns out to be wrong for the situation, you don't need to use it.
+
+```dot
+digraph skill_flow {
+    "User message received" [shape=doublecircle];
+    "About to EnterPlanMode?" [shape=doublecircle];
+    "Already brainstormed?" [shape=diamond];
+    "Invoke brainstorming skill" [shape=box];
+    "Might any skill apply?" [shape=diamond];
+    "Invoke Skill tool" [shape=box];
+    "Announce: 'Using [skill] to [purpose]'" [shape=box];
+    "Has checklist?" [shape=diamond];
+    "Create TodoWrite todo per item" [shape=box];
+    "Follow skill exactly" [shape=box];
+    "Respond (including clarifications)" [shape=doublecircle];
+
+    "About to EnterPlanMode?" -> "Already brainstormed?";
+    "Already brainstormed?" -> "Invoke brainstorming skill" [label="no"];
+    "Already brainstormed?" -> "Might any skill apply?" [label="yes"];
+    "Invoke brainstorming skill" -> "Might any skill apply?";
+
+    "User message received" -> "Might any skill apply?";
+    "Might any skill apply?" -> "Invoke Skill tool" [label="yes, even 1%"];
+    "Might any skill apply?" -> "Respond (including clarifications)" [label="definitely not"];
+    "Invoke Skill tool" -> "Announce: 'Using [skill] to [purpose]'";
+    "Announce: 'Using [skill] to [purpose]'" -> "Has checklist?";
+    "Has checklist?" -> "Create TodoWrite todo per item" [label="yes"];
+    "Has checklist?" -> "Follow skill exactly" [label="no"];
+    "Create TodoWrite todo per item" -> "Follow skill exactly";
+}
+```
+
+## Red Flags
+
+These thoughts mean STOP—you're rationalizing:
+
+| Thought | Reality |
+|---------|---------|
+| "This is just a simple question" | Questions are tasks. Check for skills. |
+| "I need more context first" | Skill check comes BEFORE clarifying questions. |
+| "Let me explore the codebase first" | Skills tell you HOW to explore. Check first. |
+| "I can check git/files quickly" | Files lack conversation context. Check for skills. |
+| "Let me gather information first" | Skills tell you HOW to gather information. |
+| "This doesn't need a formal skill" | If a skill exists, use it. |
+| "I remember this skill" | Skills evolve. Read current version. |
+| "This doesn't count as a task" | Action = task. Check for skills. |
+| "The skill is overkill" | Simple things become complex. Use it. |
+| "I'll just do this one thing first" | Check BEFORE doing anything. |
+| "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
+| "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
+
+## Skill Priority
+
+When multiple skills could apply, use this order:
+
+1. **Process skills first** (brainstorming, debugging) - these determine HOW to approach the task
+2. **Implementation skills second** (frontend-design, mcp-builder) - these guide execution
+
+"Let's build X" → brainstorming first, then implementation skills.
+"Fix this bug" → debugging first, then domain-specific skills.
+
+## Skill Types
+
+**Rigid** (TDD, debugging): Follow exactly. Don't adapt away discipline.
+
+**Flexible** (patterns): Adapt principles to context.
+
+The skill itself tells you which.
+
+## User Instructions
+
+Instructions say WHAT, not HOW. "Add X" or "Fix Y" doesn't mean skip workflows.
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "pwd
+rg --files -g AGENTS.md -g 'styles/16[1-4]*' -g '"'!node_modules'"' -g '"'!vendor'"' ." in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ exited 1 in 0ms:
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2
+
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse
+hook: PreToolUse Completed
+codex
+The Flash, MS Paint, and clip-art images are generated with distinct compositions. The Moomin valley scene is still rendering; I’ll check the backgrounds and dimensions before saving all four.
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "sips -g pixelWidth -g pixelHeight -g format -g hasAlpha '/Users/manuelbieh/.codex/generated_images/01a0e97f-91e2-7f00-bc3a-0128f8dbe717/exec-7b42d31d-cc35-41ed-b1c4-1843bca70d0c.png' '/Users/manuelbieh/.codex/generated_images/01a0e97f-91e2-7f00-bc3a-0128f8dbe717/exec-b2108616-f914-4d11-b160-b5b9123b58e2.png' '/Users/manuelbieh/.codex/generated_images/01a0e97f-91e2-7f00-bc3a-0128f8dbe717/exec-80592fb9-2a42-487f-a027-73c9428d6845.png' '/Users/manuelbieh/.codex/generated_images/01a0e97f-91e2-7f00-bc3a-0128f8dbe717/exec-703f120d-4af1-4019-b67a-2477c052bbd6.png'" in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+/Users/manuelbieh/.codex/generated_images/01a0e97f-91e2-7f00-bc3a-0128f8dbe717/exec-7b42d31d-cc35-41ed-b1c4-1843bca70d0c.png
+  pixelWidth: 1254
+  pixelHeight: 1254
+  format: png
+  hasAlpha: no
+/Users/manuelbieh/.codex/generated_images/01a0e97f-91e2-7f00-bc3a-0128f8dbe717/exec-b2108616-f914-4d11-b160-b5b9123b58e2.png
+  pixelWidth: 1254
+  pixelHeight: 1254
+  format: png
+  hasAlpha: no
+/Users/manuelbieh/.codex/generated_images/01a0e97f-91e2-7f00-bc3a-0128f8dbe717/exec-80592fb9-2a42-487f-a027-73c9428d6845.png
+  pixelWidth: 1254
+  pixelHeight: 1254
+  format: png
+  hasAlpha: yes
+/Users/manuelbieh/.codex/generated_images/01a0e97f-91e2-7f00-bc3a-0128f8dbe717/exec-703f120d-4af1-4019-b67a-2477c052bbd6.png
+  pixelWidth: 1254
+  pixelHeight: 1254
+  format: png
+  hasAlpha: no
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'command -v magick
+command -v swift
+sips --help' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+/opt/homebrew/bin/magick
+/usr/bin/swift
+sips - scriptable image processing system.
+This tool is used to query or modify raster image files and ColorSync ICC profiles.
+Its functionality can also be used through the "Image Events" AppleScript suite.
+
+  Usages:
+    sips [image-functions] imagefile ... 
+    sips [profile-functions] profile ... 
+
+  Profile query functions: 
+    -g, --getProperty key 
+    -X, --extractTag tag tagFile 
+        --verify 
+    -1, --oneLine 
+
+  Image query functions: 
+    -g, --getProperty key 
+    -x, --extractProfile profile 
+    -1, --oneLine 
+
+  Profile modification functions: 
+    -s, --setProperty key value 
+    -d, --deleteProperty key 
+        --deleteTag tag 
+        --copyTag srcTag dstTag 
+        --loadTag tag tagFile 
+        --repair 
+    -o, --out file-or-directory 
+
+  Image modification functions: 
+    -s, --setProperty key value 
+    -d, --deleteProperty key 
+    -e, --embedProfile profile 
+    -E, --embedProfileIfNone profile 
+    -m, --matchTo profile 
+    -M, --matchToWithIntent profile intent 
+        --deleteColorManagementProperties 
+    -r, --rotate degreesCW 
+    -f, --flip horizontal|vertical 
+    -c, --cropToHeightWidth pixelsH pixelsW 
+        --cropOffset offsetY offsetH 
+    -p, --padToHeightWidth pixelsH pixelsW 
+        --padColor hexcolor 
+    -z, --resampleHeightWidth pixelsH pixelsW 
+        --resampleWidth pixelsW 
+        --resampleHeight pixelsH 
+    -Z, --resampleHeightWidthMax pixelsWH 
+    -i, --addIcon 
+        --optimizeColorForSharing 
+    -o, --out file-or-directory 
+    -j, --js file 
+
+  Other functions: 
+        --debug           Enable debugging output
+    -h, --help            Show help
+    -H, --helpProperties  Show help for properties
+        --man             Generate man pages
+    -v, --version         Show the version
+        --formats         Show the read/write formats
+
+hook: PreToolUse
+hook: PreToolUse Completed
+codex
+All four images are ready. I regenerated the clip art from text to give it the requested solid white background. I’m now resizing and saving the final PNGs.
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'mkdir -p styles' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "sips -s format png -z 1024 1024 '/Users/manuelbieh/.codex/generated_images/01a0e97f-91e2-7f00-bc3a-0128f8dbe717/exec-7b42d31d-cc35-41ed-b1c4-1843bca70d0c.png' --out 'styles/161-flash-animation.png'" in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 90ms:
+/Users/manuelbieh/.codex/generated_images/01a0e97f-91e2-7f00-bc3a-0128f8dbe717/exec-7b42d31d-cc35-41ed-b1c4-1843bca70d0c.png
+  /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/161-flash-animation.png
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "sips -s format png -z 1024 1024 '/Users/manuelbieh/.codex/generated_images/01a0e97f-91e2-7f00-bc3a-0128f8dbe717/exec-b2108616-f914-4d11-b160-b5b9123b58e2.png' --out 'styles/162-ms-paint.png'" in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 74ms:
+/Users/manuelbieh/.codex/generated_images/01a0e97f-91e2-7f00-bc3a-0128f8dbe717/exec-b2108616-f914-4d11-b160-b5b9123b58e2.png
+  /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/162-ms-paint.png
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "sips -s format png -z 1024 1024 '/Users/manuelbieh/.codex/generated_images/01a0e97f-91e2-7f00-bc3a-0128f8dbe717/exec-e31981e0-8639-4af0-8ba0-365f9111d9c3.png' --out 'styles/163-clip-art.png'" in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 76ms:
+/Users/manuelbieh/.codex/generated_images/01a0e97f-91e2-7f00-bc3a-0128f8dbe717/exec-e31981e0-8639-4af0-8ba0-365f9111d9c3.png
+  /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/163-clip-art.png
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "sips -s format png -z 1024 1024 '/Users/manuelbieh/.codex/generated_images/01a0e97f-91e2-7f00-bc3a-0128f8dbe717/exec-703f120d-4af1-4019-b67a-2477c052bbd6.png' --out 'styles/164-moomin.png'" in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 108ms:
+/Users/manuelbieh/.codex/generated_images/01a0e97f-91e2-7f00-bc3a-0128f8dbe717/exec-703f120d-4af1-4019-b67a-2477c052bbd6.png
+  /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/164-moomin.png
+
+hook: PreToolUse
+2026-09-28T19:35:30.440216Z ERROR codex_core::tools::router: error=patch rejected: writing outside of the project; rejected by user approval settings
+hook: PreToolUse Completed
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "printf '%s' 'Built-in image generation. Fresh text-only generations; no reference images.
+
+161-flash-animation.png
+Create one fresh image entirely from text, no reference images. Output a 1024x1024 square. Use case: stylized-concept. A genuine early-2000s Newgrounds Flash animation still: economical vector shapes, uniform thin black strokes, obvious simple linear and radial gradient fills, big-eyed simple character, hinged symbol-like limbs, awkward paused tween pose, web-banner-era teal, purple and orange colors. The woman is in her early 30s, curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, mustard-yellow knit sweater, enjoying a coffee with a croissant nearby. Frame a bold close-up from an exaggerated low oblique angle: oversized face and eyes, a simple mitten-like hand lifting a coffee mug, part of the little cafe table and croissant cropped at the bottom. Sparse angular cafe background. This must look like an actual frame from a scrappy 2002 browser animation, with simple anatomy and old vector gradients, not a polished modern cartoon. Let this style govern all anatomy, proportion, pose, perspective, lighting and palette. No photographic realism, no photo with filter, no text, lettering, captions, signatures, logos or watermarks.
+
+162-ms-paint.png
+Generate one new image from text only, without any reference image. 1024x1024 square. Use case: stylized-concept. A genuinely crude MS Paint picture drawn awkwardly with a mouse on a pure white canvas using the default classic 16-color palette. Jagged visibly aliased black pencil lines, shaky overlapping mouse contours, paint-bucket fills with accidental unfilled white gaps, spray-can speckles, no antialiasing, no polished illustration. Depict a woman in her early 30s with curly auburn shoulder-length hair as wonky brown looping scribbles, freckles, round tortoiseshell glasses made of uneven brown circles, and a mustard-yellow knit sweater drawn in the palette'\\''s yellow/olive. She is enjoying coffee with a croissant nearby. Show her entire clumsy lopsided body seated sideways on a badly drawn chair, an arm extended to a little mug on a crooked table, a brown crescent croissant beside it. Simple odd proportions, circular head, mismatched arms, shoes, naive inconsistent perspective, lots of untouched white canvas and a few random spray-can dots. Endearingly amateur computer mouse drawing, flat fills and wobbly pixels, NOT a sophisticated deliberately stylish sketch. The style fully dictates anatomy, framing and color. No app interface, no text, captions, signatures or watermarks.
+
+163-clip-art.png
+Generate one fresh text-only image. NO reference images. Output 1024x1024 square. Authentic 1990s office clip art printed on an OPAQUE PURE WHITE SQUARE PAGE. Entire canvas is a solid white RGB background; do not produce transparency or a cutout PNG. Simple flat vector-style full-body figure with thick black outlines and crude old stock-art gradient fills, cheerful generic pose, simple gray offset drop shadow on the white page. The character is a woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, a mustard-yellow knit sweater. She enjoys a cup of coffee, with a croissant on a saucer nearby. Show her standing full length in a generic cheerful three-quarter pose, simplified comical stock-art anatomy, short body and large expressive hands, lifting coffee in one hand and carrying the croissant saucer in the other. Large areas of absolutely plain solid opaque white around the figure, visible all the way to all four edges. Basic old Microsoft Office clip-art aesthetics, closed flat vector shapes, only simple linear gradients, no complex hair rendering, no intricate detail, no shiny 3D effect. This should look like a 1995 office newsletter graphic, not a modern polished character illustration. Style governs proportions and medium, no realism and no photo filter. No lettering, text, caption, signature, watermark or interface.
+
+164-moomin.png
+Create one original image from text only with no reference images, 1024x1024 square. Use case: illustration-story. A Tove Jansson Moomin illustration: delicate expressive pen-and-ink outlines, fine patient ink hatching and stippling, soft rounded white hippo-like Moomin creatures, a serene Scandinavian valley, calm muted blue-green watercolor washes and open paper. Wide pastoral storybook scene with tiny figures embedded in a richly drawn landscape of curling grasses, mossy stones, birches, stream and distant rolling hills. At a small outdoor tea gathering, a woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater shares tea time with the soft rounded Moomins. She is a small, delicately simplified human figure seen in profile sipping her own coffee while the creatures have tea; a croissant is clearly nearby on their little picnic table with cups and a teapot. A quiet, whimsical narrative composition with abundant valley scenery, warm companionship and no photographic perspective or lighting. Authentic printed children'\\''s book ink-and-wash medium, whimsical proportions, restrained color, NOT a modern cartoon screenshot or photoreal rendering. Let the style govern anatomy, pose, perspective, framing, palette and texture. No text, captions, signatures or watermarks.
+' > /private/tmp/set-2-styles-161-164-prompts.txt" in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'sips -g format -g pixelWidth -g pixelHeight -g hasAlpha styles/161-flash-animation.png styles/162-ms-paint.png styles/163-clip-art.png styles/164-moomin.png' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 5ms:
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/161-flash-animation.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+  hasAlpha: no
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/162-ms-paint.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+  hasAlpha: no
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/163-clip-art.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+  hasAlpha: no
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/164-moomin.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+  hasAlpha: no
+
+codex
+Created with the image generation tool, without references. All saved and verified as 1024×1024 PNGs. [Prompts used](/private/tmp/set-2-styles-161-164-prompts.txt).
+
+- [161-flash-animation.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/161-flash-animation.png)
+- [162-ms-paint.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/162-ms-paint.png)
+- [163-clip-art.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/163-clip-art.png)
+- [164-moomin.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/164-moomin.png)
+hook: Stop
+hook: Stop Completed
+tokens used
+38,643
+Created with the image generation tool, without references. All saved and verified as 1024×1024 PNGs. [Prompts used](/private/tmp/set-2-styles-161-164-prompts.txt).
+
+- [161-flash-animation.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/161-flash-animation.png)
+- [162-ms-paint.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/162-ms-paint.png)
+- [163-clip-art.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/163-clip-art.png)
+- [164-moomin.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/164-moomin.png)

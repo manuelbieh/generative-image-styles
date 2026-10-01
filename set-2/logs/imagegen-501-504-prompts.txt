@@ -1,0 +1,39 @@
+Generated using the built-in image generation tool, from text only, without reference images.
+Final selected prompts below. Resized and converted to 1024x1024 PNG using sips.
+
+FILE: ./styles/501-loriot.png
+
+Create one square 1024x1024 illustration, freshly generated only from this text, no reference images. Use case: illustration-story.
+STYLE PRIORITY: Loriot (Vicco von Bülow)-style cartoon, with his signature little figures, enormous bulbous potato noses, tiny dot eyes, dignified bourgeois posture, immaculate very fine precise pen outlines and sparse pale transparent watercolor washes on abundant white paper. Let this cartoon language fully dictate anatomy and proportions; absolutely no photographic realism.
+SUBJECT: A woman in her early 30s with curly auburn shoulder-length hair, visible freckles, round tortoiseshell glasses, and a mustard-yellow knit sweater, enjoying coffee, a croissant nearby. Translate every feature into this cartoon idiom. Her nose must be very large and potato-shaped, her eyes tiny.
+COMPOSITION: A sparse full-body side-view tableau in a stiff formal German living room: she sits bolt upright in a large ornate old-fashioned armchair with curved wooden legs and pale upholstery. Her small stiff legs and dignified posture are visible. She holds a delicate cup and saucer before her, staring at the coffee cup with solemn, disproportionate gravity. A single croissant rests on a little formal side table. A few restrained furnishing outlines suggest the bourgeois room, while most of the upper page and margins remain untouched white paper. Understated absurd humor through ceremonious posture and intense concentration on a mundane coffee. Delicate muted washes of mustard, pale blue-gray, auburn, and beige; no rich digital shading.
+No lettering of any kind, no speech bubbles, no captions, no signature, no watermark. This is an authentic pen-and-watercolor cartoon, not a photograph with a filter.
+
+========================================================================
+
+FILE: ./styles/502-wilhelm-busch.png
+
+Fresh text-to-image generation, 1024x1024 square. No reference images.
+Wilhelm Busch (Max und Moritz) 19th-century German picture-story illustration, authentic 1860s comic caricature. Three small widely spaced wordless comic vignettes stacked vertically on one mostly blank cream page. VERY loose scratchy dip-pen line, wiry calligraphic gestures, minimal pale transparent hand-coloring. Tiny stocky rounded figures with large round heads, button noses, pinprick eyes, extremely simplified faces, bendy short limbs and exaggerated awkward poses. Resemble old ink drawings lightly colored by hand, with empty paper between scratchy marks. No realistic or beautiful modern storybook faces, no large expressive manga eyes, no modern graphic novel drawing, no polished digital illustration, no elaborate rendering. All characters fully visible head to foot in every vignette.
+A woman in her early 30s with shoulder-length curly auburn hair, dot freckles, round tortoiseshell glasses, mustard-yellow knit sweater, drinking coffee with a croissant nearby. Draw her entirely in Busch's exaggerated rounded comic figure language.
+First vignette: she sits stiffly at a simple bare wooden kitchen table, happily drinking coffee; a mischievous small boy crouches under the table pulling a string tied to the coffee pot. Second vignette: pot tips, coffee flies in a crazy arc, her short legs and free arm shoot out comically in surprise. Third vignette: she calmly enjoys her cup again, an intact croissant on the table, while the sheepish boy mops the spill. Kitchen of 1860s Germany indicated with just a few scratching pen lines of stove, floor and crockery, mostly empty ivory paper around each episode. The humor is in elastic poses and the mishap. Pale faded ochre, auburn and gray watercolor accents. No text whatsoever, no captions, numbers, speech bubbles, signature or watermark.
+
+========================================================================
+
+FILE: ./styles/503-janosch.png
+
+Generate a new 1024x1024 square illustration entirely from this text. NO reference images. Use case: illustration-story.
+An authentic Janosch-style children's picture book drawing. STYLE IS THE HIGHEST PRIORITY: extremely sparse, loose naive colored pencil and watercolor, primitive crooked contours and scribbles, flattened cartoon perspective, bright transparent yellow and green washes, unpainted cream paper over about half the image. Simple wonky anatomy. This should look like a spontaneous playful old European children's book drawing, with almost no rendering. Avoid scenic realism, polished storybook fantasy, elaborate backgrounds, ornate architecture, detailed foliage, shading, or cinematic beauty.
+Wide loosely arranged scene, all objects simplified as if dashed off affectionately with pencil. One tiny crooked wooden house by a ribbon-shaped blue river. The house needs only a few plank-lines, one door and one window. No town, no bridge, no realistic landscape. A small friendly bear sits on the riverbank beside a woman, both simply drawn full-body, their feet dangling toward the river. A little yellow duck with bold black tiger stripes and four red wooden wheels sits on a short pull-string next to them. A few naive reeds and a few tufts of grass, empty cream paper all around.
+The woman is in her early 30s, curly auburn shoulder-length hair in loose looping pencil strokes, visible dot freckles, round tortoiseshell glasses, mustard-yellow knit sweater, simplified small rounded figure with spindly legs. She savors a white cup of coffee, with a crescent-shaped croissant on a plate on the bank. Warm naive charm and companionable happiness. Black-brown scribbly contours, yellow, leaf green, watery blue and tiny auburn areas. Big uneven empty spaces, no full-bleed textured landscape. No text, captions, signatures or watermarks.
+
+========================================================================
+
+FILE: ./styles/504-sendung-mit-der-maus.png
+
+Create one square 1024x1024 cartoon image entirely fresh from text, with no image references. Use case: illustration-story.
+STYLE PRIORITY: German educational children's television animation, Sendung mit der Maus-like. Extremely simple flat shapes, perfectly even solid color fills, gentle clean dark contour lines, comically simplified shapes and anatomy, entirely pure white background. Authentic clean 2D animation cel look, absolutely no paper texture, gradients, watercolor, shadows, lighting effects, or photographic realism.
+CHARACTER: A woman in her early 30s with curly auburn shoulder-length hair represented by a few rounded scalloped shapes, a few dot freckles, round tortoiseshell glasses simplified to brown rings with tiny amber markings, and a mustard-yellow knit sweater simplified to a flat mustard shape with minimal cuff lines. She is happily enjoying a coffee, a croissant nearby.
+SCENE AND COMPOSITION: A cheerful tight medium-view grouping on the white field, the woman shown from waist up in friendly three-quarter profile as she lifts a simple white coffee cup toward her mouth. Her other hand holds a small flat plate with a clearly crescent-shaped croissant. Beside her, an orange mouse with large brown ears, simple long rounded snout, black dot eye and thin tail stands at almost shoulder height, watching companionably; a much smaller blue elephant with a short uplifted trunk and a dot eye stands at the mouse's feet. Character sizes are cartoonishly disproportionate. Give the animal silhouettes generous uncluttered breathing room; one compact group, no room, no chair, no scenic background. Warm gentle calm, completely flat orange, brown, blue, auburn, mustard and white.
+No text, no captions, no letters, no logos, no signature, no watermark.
+

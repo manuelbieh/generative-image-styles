@@ -1,0 +1,1486 @@
+OpenAI Codex v0.157.0
+--------
+workdir: /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+model: gpt-6-astra
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: xhigh
+reasoning summaries: none
+session id: 01a0e9b5-9195-7e91-a70a-0658c678cbd8
+--------
+user
+Use your image generation tool to create one image per style listed below, 1024x1024 square. Do NOT use any reference image — generate each one fresh from text.
+
+Character (the only constant): a woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater, enjoying a coffee (croissant nearby).
+
+The style is the priority, not the photo. For each image, let the style fully dictate proportions, anatomy, framing, camera angle, pose, setting details, color palette, lighting and medium — exactly as an authentic piece in that style would look. Do not make it look like a photo with a filter, and do not keep a common composition across images: vary the framing (close-up, full body, wide scene, profile, etc.) to whatever suits each style best. The images should look radically different from each other. No text, captions, signatures or watermarks.
+
+If a request is refused because it names a specific artist or franchise, retry with a purely descriptive wording of the visual style.
+
+Save each result to the exact path given (convert to PNG and resize to 1024x1024 with sips if needed). Do not skip any. At the end, list the files you saved.
+
+- ./styles/389-minhwa.png : Korean minhwa folk painting: tiger and magpie beside her, pine tree, bright mineral colors, flat perspective, humorous folk charm
+- ./styles/390-wycinanki.png : Polish wycinanki paper cut: symmetrical layered colored paper folk art, roosters and flowers, her figure in the center, on white
+- ./styles/391-talavera.png : Mexican Talavera ceramic tile/plate: cobalt blue, yellow and green glaze, floral borders, her portrait painted on the plate, glossy
+- ./styles/392-kalighat.png : Kalighat pat painting from Bengal: bold sweeping outlines, soft shading, plain background, simplified elegant figure, watercolor on paper
+
+hook: SessionStart
+hook: SessionStart Completed
+codex
+I’ll use the imagegen skill to create four fresh images with distinct compositions, then save each as a 1024×1024 PNG at the requested path.
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'cat /Users/manuelbieh/.agents/skills/using-superpowers/SKILL.md' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+exec
+/bin/zsh -lc 'cat /Users/manuelbieh/.codex/skills/.system/imagegen/SKILL.md' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+---
+name: using-superpowers
+description: Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions
+---
+
+<SUBAGENT-STOP>
+If you were dispatched as a subagent to execute a specific task, skip this skill.
+</SUBAGENT-STOP>
+
+<EXTREMELY-IMPORTANT>
+If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
+
+IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
+
+This is not negotiable. This is not optional. You cannot rationalize your way out of this.
+</EXTREMELY-IMPORTANT>
+
+## Instruction Priority
+
+Superpowers skills override default system prompt behavior, but **user instructions always take precedence**:
+
+1. **User's explicit instructions** (CLAUDE.md, GEMINI.md, AGENTS.md, direct requests) — highest priority
+2. **Superpowers skills** — override default system behavior where they conflict
+3. **Default system prompt** — lowest priority
+
+If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill says "always use TDD," follow the user's instructions. The user is in control.
+
+## How to Access Skills
+
+**In Claude Code:** Use the `Skill` tool. When you invoke a skill, its content is loaded and presented to you—follow it directly. Never use the Read tool on skill files.
+
+**In Copilot CLI:** Use the `skill` tool. Skills are auto-discovered from installed plugins. The `skill` tool works the same as Claude Code's `Skill` tool.
+
+**In Gemini CLI:** Skills activate via the `activate_skill` tool. Gemini loads skill metadata at session start and activates the full content on demand.
+
+**In other environments:** Check your platform's documentation for how skills are loaded.
+
+## Platform Adaptation
+
+Skills use Claude Code tool names. Non-CC platforms: see `references/copilot-tools.md` (Copilot CLI), `references/codex-tools.md` (Codex) for tool equivalents. Gemini CLI users get the tool mapping loaded automatically via GEMINI.md.
+
+# Using Skills
+
+## The Rule
+
+**Invoke relevant or requested skills BEFORE any response or action.** Even a 1% chance a skill might apply means that you should invoke the skill to check. If an invoked skill turns out to be wrong for the situation, you don't need to use it.
+
+```dot
+digraph skill_flow {
+    "User message received" [shape=doublecircle];
+    "About to EnterPlanMode?" [shape=doublecircle];
+    "Already brainstormed?" [shape=diamond];
+    "Invoke brainstorming skill" [shape=box];
+    "Might any skill apply?" [shape=diamond];
+    "Invoke Skill tool" [shape=box];
+    "Announce: 'Using [skill] to [purpose]'" [shape=box];
+    "Has checklist?" [shape=diamond];
+    "Create TodoWrite todo per item" [shape=box];
+    "Follow skill exactly" [shape=box];
+    "Respond (including clarifications)" [shape=doublecircle];
+
+    "About to EnterPlanMode?" -> "Already brainstormed?";
+    "Already brainstormed?" -> "Invoke brainstorming skill" [label="no"];
+    "Already brainstormed?" -> "Might any skill apply?" [label="yes"];
+    "Invoke brainstorming skill" -> "Might any skill apply?";
+
+    "User message received" -> "Might any skill apply?";
+    "Might any skill apply?" -> "Invoke Skill tool" [label="yes, even 1%"];
+    "Might any skill apply?" -> "Respond (including clarifications)" [label="definitely not"];
+    "Invoke Skill tool" -> "Announce: 'Using [skill] to [purpose]'";
+    "Announce: 'Using [skill] to [purpose]'" -> "Has checklist?";
+    "Has checklist?" -> "Create TodoWrite todo per item" [label="yes"];
+    "Has checklist?" -> "Follow skill exactly" [label="no"];
+    "Create TodoWrite todo per item" -> "Follow skill exactly";
+}
+```
+
+## Red Flags
+
+These thoughts mean STOP—you're rationalizing:
+
+| Thought | Reality |
+|---------|---------|
+| "This is just a simple question" | Questions are tasks. Check for skills. |
+| "I need more context first" | Skill check comes BEFORE clarifying questions. |
+| "Let me explore the codebase first" | Skills tell you HOW to explore. Check first. |
+| "I can check git/files quickly" | Files lack conversation context. Check for skills. |
+| "Let me gather information first" | Skills tell you HOW to gather information. |
+| "This doesn't need a formal skill" | If a skill exists, use it. |
+| "I remember this skill" | Skills evolve. Read current version. |
+| "This doesn't count as a task" | Action = task. Check for skills. |
+| "The skill is overkill" | Simple things become complex. Use it. |
+| "I'll just do this one thing first" | Check BEFORE doing anything. |
+| "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
+| "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
+
+## Skill Priority
+
+When multiple skills could apply, use this order:
+
+1. **Process skills first** (brainstorming, debugging) - these determine HOW to approach the task
+2. **Implementation skills second** (frontend-design, mcp-builder) - these guide execution
+
+"Let's build X" → brainstorming first, then implementation skills.
+"Fix this bug" → debugging first, then domain-specific skills.
+
+## Skill Types
+
+**Rigid** (TDD, debugging): Follow exactly. Don't adapt away discipline.
+
+**Flexible** (patterns): Adapt principles to context.
+
+The skill itself tells you which.
+
+## User Instructions
+
+Instructions say WHAT, not HOW. "Add X" or "Fix Y" doesn't mean skip workflows.
+
+ succeeded in 0ms:
+---
+name: "imagegen"
+description: "Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-background cutouts. Use when Codex should create a brand-new image, transform an existing image, or derive visual variants from references, and the output should be a bitmap asset rather than repo-native code or vector. Do not use when the task is better handled by editing existing SVG/vector/code-native assets, extending an established icon or logo system, or building the visual directly in HTML/CSS/canvas."
+---
+
+# Image Generation Skill
+
+Generates or edits images for the current project (for example website assets, game assets, UI mockups, product mockups, wireframes, logo design, photorealistic images, or infographics).
+
+## Top-level modes and rules
+
+This skill has exactly two top-level modes:
+
+- **Default built-in tool mode (preferred):** built-in `image_gen` tool for image generation, editing, and transparent-image requests. Does not require `OPENAI_API_KEY`.
+- **Fallback CLI mode:** `scripts/image_gen.py` CLI. Use when the user explicitly asks for or confirms the CLI/API/model path. Requires `OPENAI_API_KEY`.
+
+Within CLI fallback, the CLI exposes three subcommands:
+
+- `generate`
+- `edit`
+- `generate-batch`
+
+Rules:
+- Use the built-in `image_gen` tool by default for normal image generation and editing requests.
+- Do not switch to CLI fallback for ordinary quality, size, or file-path control.
+- For transparent images, ask built-in `image_gen` for a transparent background and preserve the generated alpha.
+- Never silently switch from built-in `image_gen` or CLI `gpt-image-2` to CLI `gpt-image-1.5`; ask the user first unless they explicitly requested `gpt-image-1.5`.
+- The word `batch` by itself does not mean CLI fallback. If the user asks for many assets or says to batch-generate assets without explicitly asking for CLI/API/model controls, stay on the built-in path and issue one built-in call per requested asset or variant.
+- If the built-in tool fails or is unavailable, tell the user the CLI fallback exists and that it requires `OPENAI_API_KEY`. Proceed only if the user explicitly asks for that fallback.
+- If the user explicitly asks for CLI mode, use the bundled `scripts/image_gen.py` workflow. Do not create one-off SDK runners.
+- Never modify `scripts/image_gen.py`. If something is missing, ask the user before doing anything else.
+
+Built-in save-path policy:
+- In built-in tool mode, Codex saves generated images under `$CODEX_HOME/*` by default.
+- Do not describe or rely on OS temp as the default built-in destination.
+- Do not describe or rely on a destination-path argument (if any) on the built-in `image_gen` tool. If a specific location is needed, generate first and then move or copy the selected output from `$CODEX_HOME/generated_images/...`.
+- Save-path precedence in built-in mode:
+  1. If the user names a destination, move or copy the selected output there.
+  2. If the image is meant for the current project, move or copy the final selected image into the workspace before finishing.
+  3. If the image is only for preview or brainstorming, render it inline; the underlying file can remain at the default `$CODEX_HOME/*` path.
+- Never leave a project-referenced asset only at the default `$CODEX_HOME/*` path.
+- Do not overwrite an existing asset unless the user explicitly asked for replacement; otherwise create a sibling versioned filename such as `hero-v2.png` or `item-icon-edited.png`.
+
+Shared prompt guidance for both modes lives in `references/prompting.md` and `references/sample-prompts.md`.
+
+Fallback-only docs/resources for CLI mode:
+- `references/cli.md`
+- `references/image-api.md`
+- `references/codex-network.md`
+- `scripts/image_gen.py`
+
+## When to use
+- Generate a new image (concept art, product shot, cover, website hero)
+- Generate a new image using one or more reference images for style, composition, or mood
+- Edit an existing image (inpainting, lighting or weather transformations, background replacement, object removal, compositing, transparent background)
+- Produce many assets or variants for one task
+
+## When not to use
+- Extending or matching an existing SVG/vector icon set, logo system, or illustration library inside the repo
+- Creating simple shapes, diagrams, wireframes, or icons that are better produced directly in SVG, HTML/CSS, or canvas
+- Making a small project-local asset edit when the source file already exists in an editable native format
+- Any task where the user clearly wants deterministic code-native output instead of a generated bitmap
+
+## Decision tree
+
+Think about two separate questions:
+
+1. **Intent:** is this a new image or an edit of an existing image?
+2. **Execution strategy:** is this one asset or many assets/variants?
+
+Intent:
+- If the user wants to modify an existing image while preserving parts of it, treat the request as **edit**.
+- If the user provides images only as references for style, composition, mood, or subject guidance, treat the request as **generate**.
+- If the user provides no images, treat the request as **generate**.
+
+Built-in edit semantics:
+- Built-in edit mode is for images already visible in the conversation context, such as attached images or images generated earlier in the thread.
+- If the user wants to edit a local image file with the built-in tool, first load it with built-in `view_image` tool so the image is visible in the conversation context, then proceed with the built-in edit flow.
+- Do not promise arbitrary filesystem-path editing through the built-in tool.
+- If a local file still needs direct file-path control, masks, or other explicit CLI-only parameters, use the explicit CLI fallback only when the user asks for it.
+- For edits, preserve invariants aggressively and save non-destructively by default.
+
+Execution strategy:
+- In the built-in default path, produce many assets or variants by issuing one `image_gen` call per requested asset or variant.
+- In the CLI fallback path, use the CLI `generate-batch` subcommand only when the user explicitly chose CLI mode and needs many prompts/assets.
+- For many distinct assets, do not use `n` as a substitute for separate prompts. `n` is for variants of one prompt; distinct assets need distinct built-in calls or distinct CLI `generate-batch` jobs.
+
+Assume the user wants a new image unless they clearly ask to change an existing one.
+
+## Workflow
+1. Decide the top-level mode: built-in by default, including transparent-output requests; fallback CLI only if explicitly requested or confirmed.
+2. Decide the intent: `generate` or `edit`.
+3. Decide whether the output is preview-only or meant to be consumed by the current project.
+4. Decide the execution strategy: single asset vs repeated built-in calls vs CLI `generate-batch`.
+5. Collect inputs up front: prompt(s), exact text (verbatim), constraints/avoid list, and any input images.
+6. For every input image, label its role explicitly:
+   - reference image
+   - edit target
+   - supporting insert/style/compositing input
+7. If the edit target is only on the local filesystem and you are staying on the built-in path, inspect it with `view_image` first so the image is available in conversation context.
+8. If the user asked for a photo, illustration, sprite, product image, banner, or other explicitly raster-style asset, use `image_gen` rather than substituting SVG/HTML/CSS placeholders. If the request is for an icon, logo, or UI graphic that should match existing repo-native SVG/vector/code assets, prefer editing those directly instead.
+9. Augment the prompt based on specificity:
+   - If the user's prompt is already specific and detailed, normalize it into a clear spec without adding creative requirements.
+   - If the user's prompt is generic, add tasteful augmentation only when it materially improves output quality.
+10. Use the built-in `image_gen` tool by default.
+11. For transparent-output requests, ask built-in `image_gen` for a transparent background and preserve the generated alpha channel.
+12. Inspect outputs and validate: subject, style, composition, text accuracy, and invariants/avoid items.
+13. Iterate with a single targeted change, then re-check.
+14. For preview-only work, render the image inline; the underlying file may remain at the default `$CODEX_HOME/generated_images/...` path.
+15. For project-bound work, move or copy the selected artifact into the workspace and update any consuming code or references. Never leave a project-referenced asset only at the default `$CODEX_HOME/generated_images/...` path.
+16. For batches or multi-asset requests, persist every requested deliverable final in the workspace unless the user explicitly asked to keep outputs preview-only. Discarded variants do not need to be kept unless requested.
+17. If the user explicitly chooses or confirms the CLI fallback, then use the fallback-only docs for model, quality, size, `input_fidelity`, masks, output format, output paths, and network setup.
+18. Always report the final saved path(s) for any workspace-bound asset(s), plus the final prompt or prompt set and whether the built-in tool or fallback CLI mode was used.
+
+## Transparent image requests
+
+Ask built-in `image_gen` for a genuinely transparent background and preserve its alpha.
+
+## Prompt augmentation
+
+Reformat user prompts into a structured, production-oriented spec. Make the user's goal clearer and more actionable, but do not blindly add detail.
+
+Treat this as prompt-shaping guidance, not a closed schema. Use only the lines that help, and add a short extra labeled line when it materially improves clarity.
+
+### Specificity policy
+
+Use the user's prompt specificity to decide how much augmentation is appropriate:
+
+- If the prompt is already specific and detailed, preserve that specificity and only normalize/structure it.
+- If the prompt is generic, you may add tasteful augmentation when it will materially improve the result.
+
+Allowed augmentations:
+- composition or framing hints
+- polish level or intended-use hints
+- practical layout guidance
+- reasonable scene concreteness that supports the stated request
+
+Not allowed augmentations:
+- extra characters or objects that are not implied by the request
+- brand names, slogans, palettes, or narrative beats that are not implied
+- arbitrary side-specific placement unless the surrounding layout supports it
+
+## Use-case taxonomy (exact slugs)
+
+Classify each request into one of these buckets and keep the slug consistent across prompts and references.
+
+Generate:
+- photorealistic-natural — candid/editorial lifestyle scenes with real texture and natural lighting.
+- product-mockup — product/packaging shots, catalog imagery, merch concepts.
+- ui-mockup — app/web interface mockups and wireframes; specify the desired fidelity.
+- infographic-diagram — diagrams/infographics with structured layout and text.
+- scientific-educational — classroom explainers, scientific diagrams, and learning visuals with required labels and accuracy constraints.
+- ads-marketing — campaign concepts and ad creatives with audience, brand position, scene, and exact tagline/copy.
+- productivity-visual — slide, chart, workflow, and data-heavy business visuals.
+- logo-brand — logo/mark exploration, vector-friendly.
+- illustration-story — comics, children’s book art, narrative scenes.
+- stylized-concept — style-driven concept art, 3D/stylized renders.
+- historical-scene — period-accurate/world-knowledge scenes.
+
+Edit:
+- text-localization — translate/replace in-image text, preserve layout.
+- identity-preserve — try-on, person-in-scene; lock face/body/pose.
+- precise-object-edit — remove/replace a specific element (including interior swaps).
+- lighting-weather — time-of-day/season/atmosphere changes only.
+- background-extraction — transparent background / clean cutout. Ask built-in `image_gen` for actual transparency.
+- style-transfer — apply reference style while changing subject/scene.
+- compositing — multi-image insert/merge with matched lighting/perspective.
+- sketch-to-render — drawing/line art to photoreal render.
+
+## Shared prompt schema
+
+Use the following labeled spec as shared prompt scaffolding for both top-level modes:
+
+```text
+Use case: <taxonomy slug>
+Asset type: <where the asset will be used>
+Primary request: <user's main prompt>
+Input images: <Image 1: role; Image 2: role> (optional)
+Scene/backdrop: <environment>
+Subject: <main subject>
+Style/medium: <photo/illustration/3D/etc>
+Composition/framing: <wide/close/top-down; placement>
+Lighting/mood: <lighting + mood>
+Color palette: <palette notes>
+Materials/textures: <surface details>
+Text (verbatim): "<exact text>"
+Constraints: <must keep/must avoid>
+Avoid: <negative constraints>
+```
+
+Notes:
+- `Asset type` and `Input images` are prompt scaffolding, not dedicated CLI flags.
+- `Scene/backdrop` refers to the visual setting. It is not the same as the fallback CLI `background` parameter, which controls output transparency behavior.
+- Fallback-only execution notes such as `Quality:`, `Input fidelity:`, masks, output format, and output paths belong in the CLI path only. Do not treat them as built-in `image_gen` tool arguments.
+
+Augmentation rules:
+- Keep it short.
+- Add only the details needed to improve the prompt materially.
+- For edits, explicitly list invariants (`change only X; keep Y unchanged`).
+- If any critical detail is missing and blocks success, ask a question; otherwise proceed.
+
+## Examples
+
+### Generation example (hero image)
+```text
+Use case: product-mockup
+Asset type: landing page hero
+Primary request: a minimal hero image of a ceramic coffee mug
+Style/medium: clean product photography
+Composition/framing: wide composition with usable negative space for page copy if needed
+Lighting/mood: soft studio lighting
+Constraints: no logos, no text, no watermark
+```
+
+### Edit example (invariants)
+```text
+Use case: precise-object-edit
+Asset type: product photo background replacement
+Primary request: replace only the background with a warm sunset gradient
+Constraints: change only the background; keep the product and its edges unchanged; no text; no watermark
+```
+
+## Prompting best practices
+- Structure prompt as scene/backdrop -> subject -> details -> constraints.
+- Include intended use (ad, UI mock, infographic) to set the mode and polish level.
+- Use camera/composition language for photorealism.
+- Only use SVG/vector stand-ins when the user explicitly asked for vector output or a non-image placeholder.
+- Quote exact text and specify typography + placement.
+- For tricky words, spell them letter-by-letter and require verbatim rendering.
+- For multi-image inputs, reference images by index and describe how they should be used.
+- For edits, repeat invariants every iteration to reduce drift.
+- Iterate with single-change follow-ups.
+- If the prompt is generic, add only the extra detail that will materially help.
+- If the prompt is already detailed, normalize it instead of expanding it.
+- For CLI fallback only, see `references/cli.md` and `references/image-api.md` for model, `quality`, `input_fidelity`, masks, output format, and output-path guidance.
+- For transparent images, ask built-in `image_gen` for actual transparency and preserve its alpha.
+
+More principles shared by both modes: `references/prompting.md`.
+Copy/paste specs shared by both modes: `references/sample-prompts.md`.
+
+## Guidance by asset type
+Asset-type templates (website assets, game assets, wireframes, logo) are consolidated in `references/sample-prompts.md`.
+
+## gpt-image-2 guidance for CLI fallback
+
+The fallback CLI defaults to `gpt-image-2`.
+
+- Use `gpt-image-2` for new CLI/API workflows unless the user confirms a different model.
+- CLI `gpt-image-2` does not support `background=transparent`; ask before using `gpt-image-1.5` unless the user explicitly requested that model.
+- `gpt-image-2` always uses high fidelity for image inputs; do not set `input_fidelity` with this model.
+- `gpt-image-2` supports `quality` values `low`, `medium`, `high`, and `auto`.
+- Use `quality low` for fast drafts, thumbnails, and quick iterations. Use `medium`, `high`, or `auto` for final assets, dense text, diagrams, identity-sensitive edits, or high-resolution outputs.
+- Square images are typically fastest to generate. Use `1024x1024` for fast square drafts.
+- If the user asks for 4K-style output, use `3840x2160` for landscape or `2160x3840` for portrait.
+- `gpt-image-2` size may be `auto` or `WIDTHxHEIGHT` if all constraints hold: max edge `<= 3840px`, both edges multiples of `16px`, long-to-short ratio `<= 3:1`, total pixels between `655,360` and `8,294,400`.
+
+Popular `gpt-image-2` sizes:
+- `1024x1024` square
+- `1536x1024` landscape
+- `1024x1536` portrait
+- `2048x2048` 2K square
+- `2048x1152` 2K landscape
+- `3840x2160` 4K landscape
+- `2160x3840` 4K portrait
+- `auto`
+
+## Fallback CLI mode only
+
+### Temp and output conventions
+These conventions apply only to the CLI fallback. They do not describe built-in `image_gen` output behavior.
+- Use `tmp/imagegen/` for intermediate files (for example JSONL batches); delete them when done.
+- Write final artifacts under `output/imagegen/`.
+- Use `--out` or `--out-dir` to control output paths; keep filenames stable and descriptive.
+
+### Dependencies
+Prefer `uv` for dependency management in this repo.
+
+Required Python package:
+```bash
+uv pip install openai
+```
+
+Optional for image inspection and downscaling:
+```bash
+uv pip install pillow
+```
+
+Portability note:
+- If you are using the installed skill outside this repo, install dependencies into that environment with its package manager.
+- In uv-managed environments, `uv pip install ...` remains the preferred path.
+
+### Environment
+- `OPENAI_API_KEY` must be set for live API calls.
+- Do not ask the user for `OPENAI_API_KEY` when using the built-in `image_gen` tool.
+- Never ask the user to paste the full key in chat. Ask them to set it locally and confirm when ready.
+
+If the key is missing, give the user these steps:
+1. Create an API key in the OpenAI platform UI: https://platform.openai.com/api-keys
+2. Set `OPENAI_API_KEY` as an environment variable in their system.
+3. Offer to guide them through setting the environment variable for their OS/shell if needed.
+
+If installation is not possible in this environment, tell the user which dependency is missing and how to install it into their active environment.
+
+### Script-mode notes
+- CLI commands + examples: `references/cli.md`
+- API parameter quick reference: `references/image-api.md`
+- Network approvals / sandbox settings for CLI mode: `references/codex-network.md`
+
+## Reference map
+- `references/prompting.md`: shared prompting principles for both modes.
+- `references/sample-prompts.md`: shared copy/paste prompt recipes for both modes.
+- `references/cli.md`: fallback-only CLI usage via `scripts/image_gen.py`.
+- `references/image-api.md`: fallback-only API/CLI parameter reference.
+- `references/codex-network.md`: fallback-only network/sandbox troubleshooting for CLI mode.
+- `scripts/image_gen.py`: fallback-only CLI implementation. Use only when the user explicitly chooses or confirms CLI mode.
+
+exec
+/bin/zsh -lc "pwd && rg --files -g AGENTS.md -g '389-minhwa.png' -g '390-wycinanki.png' -g '391-talavera.png' -g '392-kalighat.png' -g '*image*' . | head -60" in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2
+./logs/101-104-imagegen-prompts.json
+./logs/209-212-imagegen-prompts.json
+./logs/97-100-image-prompts.json
+./imagegen-prompts-321-324.txt
+./image-prompts-333-336.txt
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'mkdir -p styles logs' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+hook: PreToolUse
+hook: PreToolUse Completed
+apply patch
+patch: completed
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/logs/389-392-imagegen-prompts.json
+diff --git a/logs/389-392-imagegen-prompts.json b/logs/389-392-imagegen-prompts.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b356f5257701cc832af1fe8bc1b29ad7d7a7d1d
+--- /dev/null
++++ b/logs/389-392-imagegen-prompts.json
+@@ -0,0 +1,22 @@
++{
++  "tool": "built-in image_gen",
++  "reference_images": [],
++  "images": [
++    {
++      "file": "389-minhwa.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Korean minhwa folk painting on softly textured mulberry paper, with opaque bright mineral pigments and fine ink contours. Style completely governs the anatomy, perspective and composition. A broad, charmingly flat folk landscape: a gnarled pine spreads across the upper area, a magpie perches in it, and a large comically wide-eyed striped tiger with a humorous almost human expression sits beside a smaller woman enjoying coffee beneath the tree. The woman is in her early 30s, with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, and a mustard-yellow knit sweater, rendered through folk-painted decorative marks rather than realism. Show her seated full body on a mat, lifting a little coffee cup toward her smiling face; a croissant rests nearby on a small low tray. Use stacked planes, playful discrepancies of scale, stylized rocks and pine needles, confident ornamental brushwork, vermilion, malachite green, azurite blue, ochre and ink black. Naive lively animal anatomy and serene simplified human forms, authentic humorous Korean folk charm. This must look like a handmade minhwa painting, never like a photograph with a filter, modern cartoon or cinematic scene. Generate entirely from this text, no reference images. No text, calligraphy, captions, seal marks, signatures, or watermarks."
++    },
++    {
++      "file": "390-wycinanki.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. Authentic Polish wycinanki folk paper-cut artwork, a meticulously hand-cut, symmetrical layered arrangement of brilliantly colored opaque paper on pure white. The whole composition reads as a crisp flat ornamental cutout with a strong vertical mirror axis. In the center stands a stylized front-facing full-body woman in her early 30s with curly auburn shoulder-length hair formed from scalloped paper spirals, freckles from tiny paper dots, round tortoiseshell glasses from layered brown ring shapes, and a mustard-yellow knit sweater expressed with repeated decorative cut-paper chevrons. She enjoys coffee, holding a small coffee cup centrally with both hands near her face. A clearly recognizable golden layered-paper croissant sits immediately below the cup on a little central folk pedestal. Large mirrored roosters face inward on either side of her, their fan tails made from many colorful nested paper shapes; branching flowers, tulips, leaves and circular rosettes form an elaborate balanced symmetrical surround. Folk proportions, angular scissor cuts, beautiful negative-space perforations, stacked paper edges with extremely subtle physical relief, vivid crimson, pink, emerald, royal blue, mustard yellow and black paper. White stays visible around and through the cutout. Let the paper-cut tradition dictate every shape; no realistic human anatomy, no painted rendering, no photographic face, no illustration pretending to be a photo. Generate entirely from this text, no reference images. No letters, text, captions, signatures or watermarks."
++    },
++    {
++      "file": "391-talavera.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. A single exquisite Mexican Talavera ceramic plate fills almost the entire square, viewed directly face-on, with its complete round scalloped rim visible against a plain pale background. The artwork is authentically hand-painted in cobalt blue, golden yellow and rich green mineral glazes on creamy white tin-glazed ceramic. Broad intricate floral and leafy border bands follow the circular rim. Inside the central medallion is a large simplified decorative three-quarter bust portrait of a woman enjoying coffee: early 30s, curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater. Her small raised hand holds a decorated coffee cup close to her smiling lips; a croissant is painted beside her at the bottom of the medallion. All of the woman, coffee and croissant are visibly painted ceramic ornament, flattened and shaped by confident cobalt contour strokes, botanical curls and a limited glaze palette, with hand-painted hatch marks suggesting the knit. Use auburn-brown glaze accents in the hair and tortoiseshell glasses. Glossy vitreous highlights and faint glaze pooling reveal the curved handmade ceramic surface; slight irregularity in brushwork and scalloped rim. The dominant visual experience is Talavera ceramic art and its floral rhythms, never a photo portrait transferred to a plate. No realistic photographic face, no modern vector clip art. Generate entirely from this text, no reference images. No text, captions, stamps, signatures or watermarks."
++    },
++    {
++      "file": "392-kalighat.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Kalighat pat painting from Bengal: flowing watercolor and opaque pigment on plain warm off-white paper, emphatic sweeping black brush outlines and delicate softly graded shading within the forms. A single large simplified elegant woman is seated in a sculptural side-profile pose facing left, legs tucked to one side on a low seat, with a gracefully bending torso and long curving arm lifting a small coffee cup to her lips. Her form fills most of the square with generous undecorated paper around it. She is in her early 30s with curly auburn shoulder-length hair arranged as economical rhythmic brush spirals, visible freckles, round tortoiseshell glasses drawn in profile, and a mustard-yellow knit sweater suggested by restrained dark curved knit marks. Elegant exaggerated almond-shaped eye, graceful tapered fingers, confident rounded limbs and continuous sinuous contours dictated by Kalighat painting conventions. Her free hand rests near a little saucer holding a recognizable crescent croissant beside her on the low seat. Mustard ochre, burnt sienna, ink black, muted indigo and a little warm red, restrained translucent washes and soft volume on the face, sweater and arms. The energy is entirely in the figure and expressive brush line: plain unornamented background, no scenery, no floral border. Handmade traditional watercolor on paper, never photographic anatomy, a photo with a filter, or a contemporary cartoon. Generate entirely from this text, no reference images. No text, writing, captions, signatures or watermarks."
++    }
++  ]
++}
+
+diff --git a/logs/389-392-imagegen-prompts.json b/logs/389-392-imagegen-prompts.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b356f5257701cc832af1fe8bc1b29ad7d7a7d1d
+--- /dev/null
++++ b/logs/389-392-imagegen-prompts.json
+@@ -0,0 +1,22 @@
++{
++  "tool": "built-in image_gen",
++  "reference_images": [],
++  "images": [
++    {
++      "file": "389-minhwa.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Korean minhwa folk painting on softly textured mulberry paper, with opaque bright mineral pigments and fine ink contours. Style completely governs the anatomy, perspective and composition. A broad, charmingly flat folk landscape: a gnarled pine spreads across the upper area, a magpie perches in it, and a large comically wide-eyed striped tiger with a humorous almost human expression sits beside a smaller woman enjoying coffee beneath the tree. The woman is in her early 30s, with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, and a mustard-yellow knit sweater, rendered through folk-painted decorative marks rather than realism. Show her seated full body on a mat, lifting a little coffee cup toward her smiling face; a croissant rests nearby on a small low tray. Use stacked planes, playful discrepancies of scale, stylized rocks and pine needles, confident ornamental brushwork, vermilion, malachite green, azurite blue, ochre and ink black. Naive lively animal anatomy and serene simplified human forms, authentic humorous Korean folk charm. This must look like a handmade minhwa painting, never like a photograph with a filter, modern cartoon or cinematic scene. Generate entirely from this text, no reference images. No text, calligraphy, captions, seal marks, signatures, or watermarks."
++    },
++    {
++      "file": "390-wycinanki.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. Authentic Polish wycinanki folk paper-cut artwork, a meticulously hand-cut, symmetrical layered arrangement of brilliantly colored opaque paper on pure white. The whole composition reads as a crisp flat ornamental cutout with a strong vertical mirror axis. In the center stands a stylized front-facing full-body woman in her early 30s with curly auburn shoulder-length hair formed from scalloped paper spirals, freckles from tiny paper dots, round tortoiseshell glasses from layered brown ring shapes, and a mustard-yellow knit sweater expressed with repeated decorative cut-paper chevrons. She enjoys coffee, holding a small coffee cup centrally with both hands near her face. A clearly recognizable golden layered-paper croissant sits immediately below the cup on a little central folk pedestal. Large mirrored roosters face inward on either side of her, their fan tails made from many colorful nested paper shapes; branching flowers, tulips, leaves and circular rosettes form an elaborate balanced symmetrical surround. Folk proportions, angular scissor cuts, beautiful negative-space perforations, stacked paper edges with extremely subtle physical relief, vivid crimson, pink, emerald, royal blue, mustard yellow and black paper. White stays visible around and through the cutout. Let the paper-cut tradition dictate every shape; no realistic human anatomy, no painted rendering, no photographic face, no illustration pretending to be a photo. Generate entirely from this text, no reference images. No letters, text, captions, signatures or watermarks."
++    },
++    {
++      "file": "391-talavera.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. A single exquisite Mexican Talavera ceramic plate fills almost the entire square, viewed directly face-on, with its complete round scalloped rim visible against a plain pale background. The artwork is authentically hand-painted in cobalt blue, golden yellow and rich green mineral glazes on creamy white tin-glazed ceramic. Broad intricate floral and leafy border bands follow the circular rim. Inside the central medallion is a large simplified decorative three-quarter bust portrait of a woman enjoying coffee: early 30s, curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater. Her small raised hand holds a decorated coffee cup close to her smiling lips; a croissant is painted beside her at the bottom of the medallion. All of the woman, coffee and croissant are visibly painted ceramic ornament, flattened and shaped by confident cobalt contour strokes, botanical curls and a limited glaze palette, with hand-painted hatch marks suggesting the knit. Use auburn-brown glaze accents in the hair and tortoiseshell glasses. Glossy vitreous highlights and faint glaze pooling reveal the curved handmade ceramic surface; slight irregularity in brushwork and scalloped rim. The dominant visual experience is Talavera ceramic art and its floral rhythms, never a photo portrait transferred to a plate. No realistic photographic face, no modern vector clip art. Generate entirely from this text, no reference images. No text, captions, stamps, signatures or watermarks."
++    },
++    {
++      "file": "392-kalighat.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Kalighat pat painting from Bengal: flowing watercolor and opaque pigment on plain warm off-white paper, emphatic sweeping black brush outlines and delicate softly graded shading within the forms. A single large simplified elegant woman is seated in a sculptural side-profile pose facing left, legs tucked to one side on a low seat, with a gracefully bending torso and long curving arm lifting a small coffee cup to her lips. Her form fills most of the square with generous undecorated paper around it. She is in her early 30s with curly auburn shoulder-length hair arranged as economical rhythmic brush spirals, visible freckles, round tortoiseshell glasses drawn in profile, and a mustard-yellow knit sweater suggested by restrained dark curved knit marks. Elegant exaggerated almond-shaped eye, graceful tapered fingers, confident rounded limbs and continuous sinuous contours dictated by Kalighat painting conventions. Her free hand rests near a little saucer holding a recognizable crescent croissant beside her on the low seat. Mustard ochre, burnt sienna, ink black, muted indigo and a little warm red, restrained translucent washes and soft volume on the face, sweater and arms. The energy is entirely in the figure and expressive brush line: plain unornamented background, no scenery, no floral border. Handmade traditional watercolor on paper, never photographic anatomy, a photo with a filter, or a contemporary cartoon. Generate entirely from this text, no reference images. No text, writing, captions, signatures or watermarks."
++    }
++  ]
++}
+
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse
+hook: PreToolUse Completed
+diff --git a/logs/389-392-imagegen-prompts.json b/logs/389-392-imagegen-prompts.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b356f5257701cc832af1fe8bc1b29ad7d7a7d1d
+--- /dev/null
++++ b/logs/389-392-imagegen-prompts.json
+@@ -0,0 +1,22 @@
++{
++  "tool": "built-in image_gen",
++  "reference_images": [],
++  "images": [
++    {
++      "file": "389-minhwa.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Korean minhwa folk painting on softly textured mulberry paper, with opaque bright mineral pigments and fine ink contours. Style completely governs the anatomy, perspective and composition. A broad, charmingly flat folk landscape: a gnarled pine spreads across the upper area, a magpie perches in it, and a large comically wide-eyed striped tiger with a humorous almost human expression sits beside a smaller woman enjoying coffee beneath the tree. The woman is in her early 30s, with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, and a mustard-yellow knit sweater, rendered through folk-painted decorative marks rather than realism. Show her seated full body on a mat, lifting a little coffee cup toward her smiling face; a croissant rests nearby on a small low tray. Use stacked planes, playful discrepancies of scale, stylized rocks and pine needles, confident ornamental brushwork, vermilion, malachite green, azurite blue, ochre and ink black. Naive lively animal anatomy and serene simplified human forms, authentic humorous Korean folk charm. This must look like a handmade minhwa painting, never like a photograph with a filter, modern cartoon or cinematic scene. Generate entirely from this text, no reference images. No text, calligraphy, captions, seal marks, signatures, or watermarks."
++    },
++    {
++      "file": "390-wycinanki.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. Authentic Polish wycinanki folk paper-cut artwork, a meticulously hand-cut, symmetrical layered arrangement of brilliantly colored opaque paper on pure white. The whole composition reads as a crisp flat ornamental cutout with a strong vertical mirror axis. In the center stands a stylized front-facing full-body woman in her early 30s with curly auburn shoulder-length hair formed from scalloped paper spirals, freckles from tiny paper dots, round tortoiseshell glasses from layered brown ring shapes, and a mustard-yellow knit sweater expressed with repeated decorative cut-paper chevrons. She enjoys coffee, holding a small coffee cup centrally with both hands near her face. A clearly recognizable golden layered-paper croissant sits immediately below the cup on a little central folk pedestal. Large mirrored roosters face inward on either side of her, their fan tails made from many colorful nested paper shapes; branching flowers, tulips, leaves and circular rosettes form an elaborate balanced symmetrical surround. Folk proportions, angular scissor cuts, beautiful negative-space perforations, stacked paper edges with extremely subtle physical relief, vivid crimson, pink, emerald, royal blue, mustard yellow and black paper. White stays visible around and through the cutout. Let the paper-cut tradition dictate every shape; no realistic human anatomy, no painted rendering, no photographic face, no illustration pretending to be a photo. Generate entirely from this text, no reference images. No letters, text, captions, signatures or watermarks."
++    },
++    {
++      "file": "391-talavera.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. A single exquisite Mexican Talavera ceramic plate fills almost the entire square, viewed directly face-on, with its complete round scalloped rim visible against a plain pale background. The artwork is authentically hand-painted in cobalt blue, golden yellow and rich green mineral glazes on creamy white tin-glazed ceramic. Broad intricate floral and leafy border bands follow the circular rim. Inside the central medallion is a large simplified decorative three-quarter bust portrait of a woman enjoying coffee: early 30s, curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater. Her small raised hand holds a decorated coffee cup close to her smiling lips; a croissant is painted beside her at the bottom of the medallion. All of the woman, coffee and croissant are visibly painted ceramic ornament, flattened and shaped by confident cobalt contour strokes, botanical curls and a limited glaze palette, with hand-painted hatch marks suggesting the knit. Use auburn-brown glaze accents in the hair and tortoiseshell glasses. Glossy vitreous highlights and faint glaze pooling reveal the curved handmade ceramic surface; slight irregularity in brushwork and scalloped rim. The dominant visual experience is Talavera ceramic art and its floral rhythms, never a photo portrait transferred to a plate. No realistic photographic face, no modern vector clip art. Generate entirely from this text, no reference images. No text, captions, stamps, signatures or watermarks."
++    },
++    {
++      "file": "392-kalighat.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Kalighat pat painting from Bengal: flowing watercolor and opaque pigment on plain warm off-white paper, emphatic sweeping black brush outlines and delicate softly graded shading within the forms. A single large simplified elegant woman is seated in a sculptural side-profile pose facing left, legs tucked to one side on a low seat, with a gracefully bending torso and long curving arm lifting a small coffee cup to her lips. Her form fills most of the square with generous undecorated paper around it. She is in her early 30s with curly auburn shoulder-length hair arranged as economical rhythmic brush spirals, visible freckles, round tortoiseshell glasses drawn in profile, and a mustard-yellow knit sweater suggested by restrained dark curved knit marks. Elegant exaggerated almond-shaped eye, graceful tapered fingers, confident rounded limbs and continuous sinuous contours dictated by Kalighat painting conventions. Her free hand rests near a little saucer holding a recognizable crescent croissant beside her on the low seat. Mustard ochre, burnt sienna, ink black, muted indigo and a little warm red, restrained translucent washes and soft volume on the face, sweater and arms. The energy is entirely in the figure and expressive brush line: plain unornamented background, no scenery, no floral border. Handmade traditional watercolor on paper, never photographic anatomy, a photo with a filter, or a contemporary cartoon. Generate entirely from this text, no reference images. No text, writing, captions, signatures or watermarks."
++    }
++  ]
++}
+
+hook: PreToolUse
+hook: PreToolUse Completed
+codex
+The minhwa and wycinanki images are generated, with distinct folk-painting and layered-paper compositions. The Talavera and Kalighat images are still rendering; then I’ll check the files and resize them to 1024×1024.
+diff --git a/logs/389-392-imagegen-prompts.json b/logs/389-392-imagegen-prompts.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b356f5257701cc832af1fe8bc1b29ad7d7a7d1d
+--- /dev/null
++++ b/logs/389-392-imagegen-prompts.json
+@@ -0,0 +1,22 @@
++{
++  "tool": "built-in image_gen",
++  "reference_images": [],
++  "images": [
++    {
++      "file": "389-minhwa.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Korean minhwa folk painting on softly textured mulberry paper, with opaque bright mineral pigments and fine ink contours. Style completely governs the anatomy, perspective and composition. A broad, charmingly flat folk landscape: a gnarled pine spreads across the upper area, a magpie perches in it, and a large comically wide-eyed striped tiger with a humorous almost human expression sits beside a smaller woman enjoying coffee beneath the tree. The woman is in her early 30s, with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, and a mustard-yellow knit sweater, rendered through folk-painted decorative marks rather than realism. Show her seated full body on a mat, lifting a little coffee cup toward her smiling face; a croissant rests nearby on a small low tray. Use stacked planes, playful discrepancies of scale, stylized rocks and pine needles, confident ornamental brushwork, vermilion, malachite green, azurite blue, ochre and ink black. Naive lively animal anatomy and serene simplified human forms, authentic humorous Korean folk charm. This must look like a handmade minhwa painting, never like a photograph with a filter, modern cartoon or cinematic scene. Generate entirely from this text, no reference images. No text, calligraphy, captions, seal marks, signatures, or watermarks."
++    },
++    {
++      "file": "390-wycinanki.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. Authentic Polish wycinanki folk paper-cut artwork, a meticulously hand-cut, symmetrical layered arrangement of brilliantly colored opaque paper on pure white. The whole composition reads as a crisp flat ornamental cutout with a strong vertical mirror axis. In the center stands a stylized front-facing full-body woman in her early 30s with curly auburn shoulder-length hair formed from scalloped paper spirals, freckles from tiny paper dots, round tortoiseshell glasses from layered brown ring shapes, and a mustard-yellow knit sweater expressed with repeated decorative cut-paper chevrons. She enjoys coffee, holding a small coffee cup centrally with both hands near her face. A clearly recognizable golden layered-paper croissant sits immediately below the cup on a little central folk pedestal. Large mirrored roosters face inward on either side of her, their fan tails made from many colorful nested paper shapes; branching flowers, tulips, leaves and circular rosettes form an elaborate balanced symmetrical surround. Folk proportions, angular scissor cuts, beautiful negative-space perforations, stacked paper edges with extremely subtle physical relief, vivid crimson, pink, emerald, royal blue, mustard yellow and black paper. White stays visible around and through the cutout. Let the paper-cut tradition dictate every shape; no realistic human anatomy, no painted rendering, no photographic face, no illustration pretending to be a photo. Generate entirely from this text, no reference images. No letters, text, captions, signatures or watermarks."
++    },
++    {
++      "file": "391-talavera.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. A single exquisite Mexican Talavera ceramic plate fills almost the entire square, viewed directly face-on, with its complete round scalloped rim visible against a plain pale background. The artwork is authentically hand-painted in cobalt blue, golden yellow and rich green mineral glazes on creamy white tin-glazed ceramic. Broad intricate floral and leafy border bands follow the circular rim. Inside the central medallion is a large simplified decorative three-quarter bust portrait of a woman enjoying coffee: early 30s, curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater. Her small raised hand holds a decorated coffee cup close to her smiling lips; a croissant is painted beside her at the bottom of the medallion. All of the woman, coffee and croissant are visibly painted ceramic ornament, flattened and shaped by confident cobalt contour strokes, botanical curls and a limited glaze palette, with hand-painted hatch marks suggesting the knit. Use auburn-brown glaze accents in the hair and tortoiseshell glasses. Glossy vitreous highlights and faint glaze pooling reveal the curved handmade ceramic surface; slight irregularity in brushwork and scalloped rim. The dominant visual experience is Talavera ceramic art and its floral rhythms, never a photo portrait transferred to a plate. No realistic photographic face, no modern vector clip art. Generate entirely from this text, no reference images. No text, captions, stamps, signatures or watermarks."
++    },
++    {
++      "file": "392-kalighat.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Kalighat pat painting from Bengal: flowing watercolor and opaque pigment on plain warm off-white paper, emphatic sweeping black brush outlines and delicate softly graded shading within the forms. A single large simplified elegant woman is seated in a sculptural side-profile pose facing left, legs tucked to one side on a low seat, with a gracefully bending torso and long curving arm lifting a small coffee cup to her lips. Her form fills most of the square with generous undecorated paper around it. She is in her early 30s with curly auburn shoulder-length hair arranged as economical rhythmic brush spirals, visible freckles, round tortoiseshell glasses drawn in profile, and a mustard-yellow knit sweater suggested by restrained dark curved knit marks. Elegant exaggerated almond-shaped eye, graceful tapered fingers, confident rounded limbs and continuous sinuous contours dictated by Kalighat painting conventions. Her free hand rests near a little saucer holding a recognizable crescent croissant beside her on the low seat. Mustard ochre, burnt sienna, ink black, muted indigo and a little warm red, restrained translucent washes and soft volume on the face, sweater and arms. The energy is entirely in the figure and expressive brush line: plain unornamented background, no scenery, no floral border. Handmade traditional watercolor on paper, never photographic anatomy, a photo with a filter, or a contemporary cartoon. Generate entirely from this text, no reference images. No text, writing, captions, signatures or watermarks."
++    }
++  ]
++}
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'sips --help' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+sips - scriptable image processing system.
+This tool is used to query or modify raster image files and ColorSync ICC profiles.
+Its functionality can also be used through the "Image Events" AppleScript suite.
+
+  Usages:
+    sips [image-functions] imagefile ... 
+    sips [profile-functions] profile ... 
+
+  Profile query functions: 
+    -g, --getProperty key 
+    -X, --extractTag tag tagFile 
+        --verify 
+    -1, --oneLine 
+
+  Image query functions: 
+    -g, --getProperty key 
+    -x, --extractProfile profile 
+    -1, --oneLine 
+
+  Profile modification functions: 
+    -s, --setProperty key value 
+    -d, --deleteProperty key 
+        --deleteTag tag 
+        --copyTag srcTag dstTag 
+        --loadTag tag tagFile 
+        --repair 
+    -o, --out file-or-directory 
+
+  Image modification functions: 
+    -s, --setProperty key value 
+    -d, --deleteProperty key 
+    -e, --embedProfile profile 
+    -E, --embedProfileIfNone profile 
+    -m, --matchTo profile 
+    -M, --matchToWithIntent profile intent 
+        --deleteColorManagementProperties 
+    -r, --rotate degreesCW 
+    -f, --flip horizontal|vertical 
+    -c, --cropToHeightWidth pixelsH pixelsW 
+        --cropOffset offsetY offsetH 
+    -p, --padToHeightWidth pixelsH pixelsW 
+        --padColor hexcolor 
+    -z, --resampleHeightWidth pixelsH pixelsW 
+        --resampleWidth pixelsW 
+        --resampleHeight pixelsH 
+    -Z, --resampleHeightWidthMax pixelsWH 
+    -i, --addIcon 
+        --optimizeColorForSharing 
+    -o, --out file-or-directory 
+    -j, --js file 
+
+  Other functions: 
+        --debug           Enable debugging output
+    -h, --help            Show help
+    -H, --helpProperties  Show help for properties
+        --man             Generate man pages
+    -v, --version         Show the version
+        --formats         Show the read/write formats
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'sips -g hasAlpha -g pixelWidth -g pixelHeight /Users/manuelbieh/.codex/generated_images/01a0e9b5-9195-7e91-a70a-0658c678cbd8/exec-0be64377-0b8b-47e1-bc4d-8beff28b8e64.png' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 2ms:
+/Users/manuelbieh/.codex/generated_images/01a0e9b5-9195-7e91-a70a-0658c678cbd8/exec-0be64377-0b8b-47e1-bc4d-8beff28b8e64.png
+  hasAlpha: yes
+  pixelWidth: 1254
+  pixelHeight: 1254
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "sips -s format png -z 1024 1024 '/Users/manuelbieh/.codex/generated_images/01a0e9b5-9195-7e91-a70a-0658c678cbd8/exec-a9c46576-f2d0-4016-b011-6693ee0abf52.png' --out '/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/389-minhwa.png'" in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 102ms:
+/Users/manuelbieh/.codex/generated_images/01a0e9b5-9195-7e91-a70a-0658c678cbd8/exec-a9c46576-f2d0-4016-b011-6693ee0abf52.png
+  /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/389-minhwa.png
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "sips -s format png -z 1024 1024 '/Users/manuelbieh/.codex/generated_images/01a0e9b5-9195-7e91-a70a-0658c678cbd8/exec-7acd1056-4a85-40b1-b80f-91d0c5248ba5.png' --out '/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/391-talavera.png'" in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 91ms:
+/Users/manuelbieh/.codex/generated_images/01a0e9b5-9195-7e91-a70a-0658c678cbd8/exec-7acd1056-4a85-40b1-b80f-91d0c5248ba5.png
+  /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/391-talavera.png
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "sips -s format png -z 1024 1024 '/Users/manuelbieh/.codex/generated_images/01a0e9b5-9195-7e91-a70a-0658c678cbd8/exec-533e6854-0130-404a-a31b-bf8b23aec963.png' --out '/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/392-kalighat.png'" in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 101ms:
+/Users/manuelbieh/.codex/generated_images/01a0e9b5-9195-7e91-a70a-0658c678cbd8/exec-533e6854-0130-404a-a31b-bf8b23aec963.png
+  /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/392-kalighat.png
+
+diff --git a/logs/389-392-imagegen-prompts.json b/logs/389-392-imagegen-prompts.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b356f5257701cc832af1fe8bc1b29ad7d7a7d1d
+--- /dev/null
++++ b/logs/389-392-imagegen-prompts.json
+@@ -0,0 +1,22 @@
++{
++  "tool": "built-in image_gen",
++  "reference_images": [],
++  "images": [
++    {
++      "file": "389-minhwa.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Korean minhwa folk painting on softly textured mulberry paper, with opaque bright mineral pigments and fine ink contours. Style completely governs the anatomy, perspective and composition. A broad, charmingly flat folk landscape: a gnarled pine spreads across the upper area, a magpie perches in it, and a large comically wide-eyed striped tiger with a humorous almost human expression sits beside a smaller woman enjoying coffee beneath the tree. The woman is in her early 30s, with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, and a mustard-yellow knit sweater, rendered through folk-painted decorative marks rather than realism. Show her seated full body on a mat, lifting a little coffee cup toward her smiling face; a croissant rests nearby on a small low tray. Use stacked planes, playful discrepancies of scale, stylized rocks and pine needles, confident ornamental brushwork, vermilion, malachite green, azurite blue, ochre and ink black. Naive lively animal anatomy and serene simplified human forms, authentic humorous Korean folk charm. This must look like a handmade minhwa painting, never like a photograph with a filter, modern cartoon or cinematic scene. Generate entirely from this text, no reference images. No text, calligraphy, captions, seal marks, signatures, or watermarks."
++    },
++    {
++      "file": "390-wycinanki.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. Authentic Polish wycinanki folk paper-cut artwork, a meticulously hand-cut, symmetrical layered arrangement of brilliantly colored opaque paper on pure white. The whole composition reads as a crisp flat ornamental cutout with a strong vertical mirror axis. In the center stands a stylized front-facing full-body woman in her early 30s with curly auburn shoulder-length hair formed from scalloped paper spirals, freckles from tiny paper dots, round tortoiseshell glasses from layered brown ring shapes, and a mustard-yellow knit sweater expressed with repeated decorative cut-paper chevrons. She enjoys coffee, holding a small coffee cup centrally with both hands near her face. A clearly recognizable golden layered-paper croissant sits immediately below the cup on a little central folk pedestal. Large mirrored roosters face inward on either side of her, their fan tails made from many colorful nested paper shapes; branching flowers, tulips, leaves and circular rosettes form an elaborate balanced symmetrical surround. Folk proportions, angular scissor cuts, beautiful negative-space perforations, stacked paper edges with extremely subtle physical relief, vivid crimson, pink, emerald, royal blue, mustard yellow and black paper. White stays visible around and through the cutout. Let the paper-cut tradition dictate every shape; no realistic human anatomy, no painted rendering, no photographic face, no illustration pretending to be a photo. Generate entirely from this text, no reference images. No letters, text, captions, signatures or watermarks."
++    },
++    {
++      "file": "391-talavera.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. A single exquisite Mexican Talavera ceramic plate fills almost the entire square, viewed directly face-on, with its complete round scalloped rim visible against a plain pale background. The artwork is authentically hand-painted in cobalt blue, golden yellow and rich green mineral glazes on creamy white tin-glazed ceramic. Broad intricate floral and leafy border bands follow the circular rim. Inside the central medallion is a large simplified decorative three-quarter bust portrait of a woman enjoying coffee: early 30s, curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater. Her small raised hand holds a decorated coffee cup close to her smiling lips; a croissant is painted beside her at the bottom of the medallion. All of the woman, coffee and croissant are visibly painted ceramic ornament, flattened and shaped by confident cobalt contour strokes, botanical curls and a limited glaze palette, with hand-painted hatch marks suggesting the knit. Use auburn-brown glaze accents in the hair and tortoiseshell glasses. Glossy vitreous highlights and faint glaze pooling reveal the curved handmade ceramic surface; slight irregularity in brushwork and scalloped rim. The dominant visual experience is Talavera ceramic art and its floral rhythms, never a photo portrait transferred to a plate. No realistic photographic face, no modern vector clip art. Generate entirely from this text, no reference images. No text, captions, stamps, signatures or watermarks."
++    },
++    {
++      "file": "392-kalighat.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Kalighat pat painting from Bengal: flowing watercolor and opaque pigment on plain warm off-white paper, emphatic sweeping black brush outlines and delicate softly graded shading within the forms. A single large simplified elegant woman is seated in a sculptural side-profile pose facing left, legs tucked to one side on a low seat, with a gracefully bending torso and long curving arm lifting a small coffee cup to her lips. Her form fills most of the square with generous undecorated paper around it. She is in her early 30s with curly auburn shoulder-length hair arranged as economical rhythmic brush spirals, visible freckles, round tortoiseshell glasses drawn in profile, and a mustard-yellow knit sweater suggested by restrained dark curved knit marks. Elegant exaggerated almond-shaped eye, graceful tapered fingers, confident rounded limbs and continuous sinuous contours dictated by Kalighat painting conventions. Her free hand rests near a little saucer holding a recognizable crescent croissant beside her on the low seat. Mustard ochre, burnt sienna, ink black, muted indigo and a little warm red, restrained translucent washes and soft volume on the face, sweater and arms. The energy is entirely in the figure and expressive brush line: plain unornamented background, no scenery, no floral border. Handmade traditional watercolor on paper, never photographic anatomy, a photo with a filter, or a contemporary cartoon. Generate entirely from this text, no reference images. No text, writing, captions, signatures or watermarks."
++    }
++  ]
++}
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "sips --man | col -b | rg -n -A 180 'JavaScript|javascript|Canvas|Output'" in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+19:It also supports executing JavaScript to either modify or generate images.
+20-.Pp
+21-.Sh FUNCTIONS
+22-.Pp
+23-Profile query functions:
+24-.Bl -tag -width xxxx -compact
+25-.Pp
+26-.It Fl g Ar key
+27-.It Fl -getProperty Ar key
+28:Output the property value for key to stdout.
+29-.Pp
+30-.It Fl X Ar tag Ar tagFile
+31-.It Fl -extractTag Ar tag Ar tagFile
+32-Write a profile tag element to tagFile.
+33-.Pp
+34-.It Fl -verify
+35-Verify any profile problems and log output to stdout.
+36-.Pp
+37-.It Fl 1
+38-.It Fl -oneLine
+39:Output for each file on a single line with tab delimiter
+40-.Pp
+41-.El
+42-Image query functions:
+43-.Bl -tag -width xxxx -compact
+44-.Pp
+45-.It Fl g Ar key
+46-.It Fl -getProperty Ar key
+47:Output the property value for key to stdout.
+48-.Pp
+49-.It Fl x Ar profile
+50-.It Fl -extractProfile Ar profile
+51-Get the embedded profile from image and write it to profile.
+52-.Pp
+53-.It Fl 1
+54-.It Fl -oneLine
+55:Output for each file on a single line with tab delimiter
+56-.Pp
+57-.El
+58-Profile modification functions:
+59-.Bl -tag -width xxxx -compact
+60-.Pp
+61-.It Fl s Ar key Ar value
+62-.It Fl -setProperty Ar key Ar value
+63-Set a property value for key to value.
+64-.Pp
+65-.It Fl d Ar key
+66-.It Fl -deleteProperty Ar key
+67-Remove a property value for key.
+68-.Pp
+69-.It Fl -deleteTag Ar tag
+70-Remove the tag element from a profile.
+71-.Pp
+72-.It Fl -copyTag Ar srcTag Ar dstTag
+73-Copy the srcTag element of a profile to dstTag.
+74-.Pp
+75-.It Fl -loadTag Ar tag Ar tagFile
+76-Set the tag element of a profile to the contents of tagFile.
+77-.Pp
+78-.It Fl -repair
+79-Repair any profile problems and log output to stdout.
+80-.Pp
+81-.It Fl o Ar file-or-directory
+82-.It Fl -out Ar file-or-directory
+83-.Pp
+84-.El
+85-Image modification functions:
+86-.Bl -tag -width xxxx -compact
+87-.Pp
+88-.It Fl s Ar key Ar value
+89-.It Fl -setProperty Ar key Ar value
+90-Set a property value for key to value.
+91-.Pp
+92-.It Fl d Ar key
+93-.It Fl -deleteProperty Ar key
+94-Remove a property value for key.
+95-.Pp
+96-.It Fl e Ar profile
+97-.It Fl -embedProfile Ar profile
+98-Embed profile in image.
+99-.Pp
+100-.It Fl E Ar profile
+101-.It Fl -embedProfileIfNone Ar profile
+102-Embed profile in image only if image doen't have a profile.
+103-.Pp
+104-.It Fl m Ar profile
+105-.It Fl -matchTo Ar profile
+106-Color match image to profile.
+107-.Pp
+108-.It Fl M Ar profile Ar intent
+109-.It Fl -matchToWithIntent Ar profile Ar intent
+110-Color match image to profile with rendering intent perceptual | relative | saturation | absolute.
+111-.Pp
+112-.It Fl -deleteColorManagementProperties
+113-Delete color management properties in TIFF, PNG, and EXIF dictionaries.
+114-.Pp
+115-.It Fl r Ar degreesCW
+116-.It Fl -rotate Ar degreesCW
+117-.Pp
+118-.It Fl f Ar horizontal|vertical
+119-.It Fl -flip Ar horizontal|vertical
+120-.Pp
+121-.It Fl c Ar pixelsH Ar pixelsW
+122-.It Fl -cropToHeightWidth Ar pixelsH Ar pixelsW
+123-Crop image to fit specified size.
+124-.Pp
+125-.It Fl -cropOffset Ar offsetY Ar offsetH
+126-Crop offset from top left corner.
+127-.Pp
+128-.It Fl p Ar pixelsH Ar pixelsW
+129-.It Fl -padToHeightWidth Ar pixelsH Ar pixelsW
+130-Pad image with pixels to fit specified size.
+131-.Pp
+132-.It Fl -padColor Ar hexcolor
+133-Use this color when padding. White=FFFFFF, Red=FF0000, Default=Black=000000
+134-.Pp
+135-.It Fl z Ar pixelsH Ar pixelsW
+136-.It Fl -resampleHeightWidth Ar pixelsH Ar pixelsW
+137-Resample image at specified size. Image apsect ratio may be altered.
+138-.Pp
+139-.It Fl -resampleWidth Ar pixelsW
+140-Resample image to specified width.
+141-.Pp
+142-.It Fl -resampleHeight Ar pixelsH
+143-Resample image to specified height.
+144-.Pp
+145-.It Fl Z Ar pixelsWH
+146-.It Fl -resampleHeightWidthMax Ar pixelsWH
+147-Resample image so height and width aren't greater than specified size.
+148-.Pp
+149-.It Fl i
+150-.It Fl -addIcon
+151-Add a Finder icon to image file.
+152-.Pp
+153-.It Fl -optimizeColorForSharing
+154-Optimize color for sharing.
+155-.Pp
+156-.It Fl o Ar file-or-directory
+157-.It Fl -out Ar file-or-directory
+158-.Pp
+159-.It Fl j Ar file
+160-.It Fl -js Ar file
+161:Execute JavaScript file
+162-.Pp
+163-.El
+164-Other functions:
+165-.Bl -tag -width xxxx -compact
+166-.Pp
+167-.It Fl -debug
+168-Enable debugging output
+169-.Pp
+170-.It Fl h
+171-.It Fl -help
+172-Show help
+173-.Pp
+174-.It Fl H
+175-.It Fl -helpProperties
+176-Show help for properties
+177-.Pp
+178-.It Fl -man
+179-Generate man pages
+180-.Pp
+181-.It Fl v
+182-.It Fl -version
+183-Show the version
+184-.Pp
+185-.It Fl -formats
+186-Show the read/write formats
+187-.Pp
+188-.El
+189:.Sh JavaScript
+190:HTML Canvas objects can be created and used to create a 2D drawing context.
+191-The commands for drawing into the context are well documented elsewhere.
+192-This section will describe the sips global object and other interesting classes.
+193-.Pp
+194-Global variable (sips) properties
+195-.Bl -tag -width xxxx -compact
+196-.It images
+197-Valid images passed as arguments converted into an array of Image objects
+198-.It arguments
+199-Arguments passed into the program as an array of strings
+200-.It size
+201-Recommended size for output. Setting the crop or resample flags will set this value.
+202-.It longestEdge
+203-If specified, the value of the -Z/--resampleHeightWidthMax option. [default: 0]
+204-.It outputPath
+205:Output directory [default: current directory]
+206-.El
+207-.Pp
+208-Image Object
+209-.Bl -tag -width xxxx -compact
+210-.It name
+211-Name of image
+212-.It size
+213-Size of image (pixels)
+214-.It properties
+215-Image properties
+216-.It getProperty(name)
+217-Return the image property for name, if any.
+218-.It sizeToFitLongestEdge(length)
+219-Return the size that will contain the image with the longest edge set to length. Maintains aspect ratio.
+220-.El
+221-.Pp
+222:Output Object
+223-.Bl -tag -width xxxx -compact
+224:.It new Output(context, name[, type])
+225:Output the context to disk with name and optional type (extension or UTI).
+226-.It addToQueue()
+227-Adds the output to the queue to be written to disk.
+228-.El
+229-.Pp
+230-Functions
+231-.Bl -tag -width xxxx -compact
+232-.It print(str)
+233:Output to standard output. Equivalent to console.log(str).
+234-.El
+235-.Pp
+236-.Sh OPTIONS
+237-The commands --getProperty, --setProperty, and --deleteProperty
+238-can use one of the following keys as a parameter.
+239-.Pp
+240-Special property keys:
+241-.Bl -tag -width xxxxxxxxxxxxxxx -compact
+242-.It all
+243-binary data
+244-.It allxml
+245-binary data
+246-.El
+247-.Pp
+248-Image property keys:
+249-.Bl -tag -width xxxxxxxxxxxxxxx -compact
+250-.It dpiHeight
+251-float
+252-.It dpiWidth
+253-float
+254-.It pixelHeight
+255-integer (read-only)
+256-.It pixelWidth
+257-integer (read-only)
+258-.It typeIdentifier
+259-string (read-only)
+260-.It format
+261-string jpeg | tiff | png | gif | jp2 | pict | bmp | qtif | psd | sgi | tga
+262-.It formatOptions
+263-string default | [low|normal|high|best|<percent>] | [lzw|packbits]
+264-.It space
+265-string (read-only)
+266-.It samplesPerPixel
+267-integer (read-only)
+268-.It bitsPerSample
+269-integer (read-only)
+270-.It creation
+271-string (read-only)
+272-.It make
+273-string
+274-.It model
+275-string
+276-.It software
+277-string (read-only)
+278-.It description
+279-string
+280-.It copyright
+281-string
+282-.It artist
+283-string
+284-.It profile
+285-binary data
+286-.It hasAlpha
+287-boolean (read-only)
+288-.El
+289-.Pp
+290-Profile property keys:
+291-.Bl -tag -width xxxxxxxxxxxxxxxxxx -compact
+292-.It description
+293-utf8 string
+294-.It size
+295-integer (read-only)
+296-.It cmm
+297-string
+298-.It version
+299-string
+300-.It class
+301-string (read-only)
+302-.It space
+303-string (read-only)
+304-.It pcs
+305-string (read-only)
+306-.It creation
+307-string
+308-.It platform
+309-string
+310-.It quality
+311-string normal | draft | best
+312-.It deviceManufacturer
+313-string
+314-.It deviceModel
+315-integer
+316-.It deviceAttributes0
+317-integer
+318-.It deviceAttributes1
+319-integer
+320-.It renderingIntent
+321-string perceptual | relative | saturation | absolute
+322-.It creator
+323-string
+324-.It copyright
+325-string
+326-.It md5
+327-string (read-only)
+328-.El
+329-.Pp
+
+diff --git a/logs/389-392-imagegen-prompts.json b/logs/389-392-imagegen-prompts.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b356f5257701cc832af1fe8bc1b29ad7d7a7d1d
+--- /dev/null
++++ b/logs/389-392-imagegen-prompts.json
+@@ -0,0 +1,22 @@
++{
++  "tool": "built-in image_gen",
++  "reference_images": [],
++  "images": [
++    {
++      "file": "389-minhwa.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Korean minhwa folk painting on softly textured mulberry paper, with opaque bright mineral pigments and fine ink contours. Style completely governs the anatomy, perspective and composition. A broad, charmingly flat folk landscape: a gnarled pine spreads across the upper area, a magpie perches in it, and a large comically wide-eyed striped tiger with a humorous almost human expression sits beside a smaller woman enjoying coffee beneath the tree. The woman is in her early 30s, with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, and a mustard-yellow knit sweater, rendered through folk-painted decorative marks rather than realism. Show her seated full body on a mat, lifting a little coffee cup toward her smiling face; a croissant rests nearby on a small low tray. Use stacked planes, playful discrepancies of scale, stylized rocks and pine needles, confident ornamental brushwork, vermilion, malachite green, azurite blue, ochre and ink black. Naive lively animal anatomy and serene simplified human forms, authentic humorous Korean folk charm. This must look like a handmade minhwa painting, never like a photograph with a filter, modern cartoon or cinematic scene. Generate entirely from this text, no reference images. No text, calligraphy, captions, seal marks, signatures, or watermarks."
++    },
++    {
++      "file": "390-wycinanki.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. Authentic Polish wycinanki folk paper-cut artwork, a meticulously hand-cut, symmetrical layered arrangement of brilliantly colored opaque paper on pure white. The whole composition reads as a crisp flat ornamental cutout with a strong vertical mirror axis. In the center stands a stylized front-facing full-body woman in her early 30s with curly auburn shoulder-length hair formed from scalloped paper spirals, freckles from tiny paper dots, round tortoiseshell glasses from layered brown ring shapes, and a mustard-yellow knit sweater expressed with repeated decorative cut-paper chevrons. She enjoys coffee, holding a small coffee cup centrally with both hands near her face. A clearly recognizable golden layered-paper croissant sits immediately below the cup on a little central folk pedestal. Large mirrored roosters face inward on either side of her, their fan tails made from many colorful nested paper shapes; branching flowers, tulips, leaves and circular rosettes form an elaborate balanced symmetrical surround. Folk proportions, angular scissor cuts, beautiful negative-space perforations, stacked paper edges with extremely subtle physical relief, vivid crimson, pink, emerald, royal blue, mustard yellow and black paper. White stays visible around and through the cutout. Let the paper-cut tradition dictate every shape; no realistic human anatomy, no painted rendering, no photographic face, no illustration pretending to be a photo. Generate entirely from this text, no reference images. No letters, text, captions, signatures or watermarks."
++    },
++    {
++      "file": "391-talavera.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. A single exquisite Mexican Talavera ceramic plate fills almost the entire square, viewed directly face-on, with its complete round scalloped rim visible against a plain pale background. The artwork is authentically hand-painted in cobalt blue, golden yellow and rich green mineral glazes on creamy white tin-glazed ceramic. Broad intricate floral and leafy border bands follow the circular rim. Inside the central medallion is a large simplified decorative three-quarter bust portrait of a woman enjoying coffee: early 30s, curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater. Her small raised hand holds a decorated coffee cup close to her smiling lips; a croissant is painted beside her at the bottom of the medallion. All of the woman, coffee and croissant are visibly painted ceramic ornament, flattened and shaped by confident cobalt contour strokes, botanical curls and a limited glaze palette, with hand-painted hatch marks suggesting the knit. Use auburn-brown glaze accents in the hair and tortoiseshell glasses. Glossy vitreous highlights and faint glaze pooling reveal the curved handmade ceramic surface; slight irregularity in brushwork and scalloped rim. The dominant visual experience is Talavera ceramic art and its floral rhythms, never a photo portrait transferred to a plate. No realistic photographic face, no modern vector clip art. Generate entirely from this text, no reference images. No text, captions, stamps, signatures or watermarks."
++    },
++    {
++      "file": "392-kalighat.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Kalighat pat painting from Bengal: flowing watercolor and opaque pigment on plain warm off-white paper, emphatic sweeping black brush outlines and delicate softly graded shading within the forms. A single large simplified elegant woman is seated in a sculptural side-profile pose facing left, legs tucked to one side on a low seat, with a gracefully bending torso and long curving arm lifting a small coffee cup to her lips. Her form fills most of the square with generous undecorated paper around it. She is in her early 30s with curly auburn shoulder-length hair arranged as economical rhythmic brush spirals, visible freckles, round tortoiseshell glasses drawn in profile, and a mustard-yellow knit sweater suggested by restrained dark curved knit marks. Elegant exaggerated almond-shaped eye, graceful tapered fingers, confident rounded limbs and continuous sinuous contours dictated by Kalighat painting conventions. Her free hand rests near a little saucer holding a recognizable crescent croissant beside her on the low seat. Mustard ochre, burnt sienna, ink black, muted indigo and a little warm red, restrained translucent washes and soft volume on the face, sweater and arms. The energy is entirely in the figure and expressive brush line: plain unornamented background, no scenery, no floral border. Handmade traditional watercolor on paper, never photographic anatomy, a photo with a filter, or a contemporary cartoon. Generate entirely from this text, no reference images. No text, writing, captions, signatures or watermarks."
++    }
++  ]
++}
+
+hook: PreToolUse
+2026-09-28T20:34:24.472308Z ERROR codex_core::tools::router: error=patch rejected: writing outside of the project; rejected by user approval settings
+hook: PreToolUse Completed
+diff --git a/logs/389-392-imagegen-prompts.json b/logs/389-392-imagegen-prompts.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b356f5257701cc832af1fe8bc1b29ad7d7a7d1d
+--- /dev/null
++++ b/logs/389-392-imagegen-prompts.json
+@@ -0,0 +1,22 @@
++{
++  "tool": "built-in image_gen",
++  "reference_images": [],
++  "images": [
++    {
++      "file": "389-minhwa.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Korean minhwa folk painting on softly textured mulberry paper, with opaque bright mineral pigments and fine ink contours. Style completely governs the anatomy, perspective and composition. A broad, charmingly flat folk landscape: a gnarled pine spreads across the upper area, a magpie perches in it, and a large comically wide-eyed striped tiger with a humorous almost human expression sits beside a smaller woman enjoying coffee beneath the tree. The woman is in her early 30s, with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, and a mustard-yellow knit sweater, rendered through folk-painted decorative marks rather than realism. Show her seated full body on a mat, lifting a little coffee cup toward her smiling face; a croissant rests nearby on a small low tray. Use stacked planes, playful discrepancies of scale, stylized rocks and pine needles, confident ornamental brushwork, vermilion, malachite green, azurite blue, ochre and ink black. Naive lively animal anatomy and serene simplified human forms, authentic humorous Korean folk charm. This must look like a handmade minhwa painting, never like a photograph with a filter, modern cartoon or cinematic scene. Generate entirely from this text, no reference images. No text, calligraphy, captions, seal marks, signatures, or watermarks."
++    },
++    {
++      "file": "390-wycinanki.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. Authentic Polish wycinanki folk paper-cut artwork, a meticulously hand-cut, symmetrical layered arrangement of brilliantly colored opaque paper on pure white. The whole composition reads as a crisp flat ornamental cutout with a strong vertical mirror axis. In the center stands a stylized front-facing full-body woman in her early 30s with curly auburn shoulder-length hair formed from scalloped paper spirals, freckles from tiny paper dots, round tortoiseshell glasses from layered brown ring shapes, and a mustard-yellow knit sweater expressed with repeated decorative cut-paper chevrons. She enjoys coffee, holding a small coffee cup centrally with both hands near her face. A clearly recognizable golden layered-paper croissant sits immediately below the cup on a little central folk pedestal. Large mirrored roosters face inward on either side of her, their fan tails made from many colorful nested paper shapes; branching flowers, tulips, leaves and circular rosettes form an elaborate balanced symmetrical surround. Folk proportions, angular scissor cuts, beautiful negative-space perforations, stacked paper edges with extremely subtle physical relief, vivid crimson, pink, emerald, royal blue, mustard yellow and black paper. White stays visible around and through the cutout. Let the paper-cut tradition dictate every shape; no realistic human anatomy, no painted rendering, no photographic face, no illustration pretending to be a photo. Generate entirely from this text, no reference images. No letters, text, captions, signatures or watermarks."
++    },
++    {
++      "file": "391-talavera.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. A single exquisite Mexican Talavera ceramic plate fills almost the entire square, viewed directly face-on, with its complete round scalloped rim visible against a plain pale background. The artwork is authentically hand-painted in cobalt blue, golden yellow and rich green mineral glazes on creamy white tin-glazed ceramic. Broad intricate floral and leafy border bands follow the circular rim. Inside the central medallion is a large simplified decorative three-quarter bust portrait of a woman enjoying coffee: early 30s, curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater. Her small raised hand holds a decorated coffee cup close to her smiling lips; a croissant is painted beside her at the bottom of the medallion. All of the woman, coffee and croissant are visibly painted ceramic ornament, flattened and shaped by confident cobalt contour strokes, botanical curls and a limited glaze palette, with hand-painted hatch marks suggesting the knit. Use auburn-brown glaze accents in the hair and tortoiseshell glasses. Glossy vitreous highlights and faint glaze pooling reveal the curved handmade ceramic surface; slight irregularity in brushwork and scalloped rim. The dominant visual experience is Talavera ceramic art and its floral rhythms, never a photo portrait transferred to a plate. No realistic photographic face, no modern vector clip art. Generate entirely from this text, no reference images. No text, captions, stamps, signatures or watermarks."
++    },
++    {
++      "file": "392-kalighat.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Kalighat pat painting from Bengal: flowing watercolor and opaque pigment on plain warm off-white paper, emphatic sweeping black brush outlines and delicate softly graded shading within the forms. A single large simplified elegant woman is seated in a sculptural side-profile pose facing left, legs tucked to one side on a low seat, with a gracefully bending torso and long curving arm lifting a small coffee cup to her lips. Her form fills most of the square with generous undecorated paper around it. She is in her early 30s with curly auburn shoulder-length hair arranged as economical rhythmic brush spirals, visible freckles, round tortoiseshell glasses drawn in profile, and a mustard-yellow knit sweater suggested by restrained dark curved knit marks. Elegant exaggerated almond-shaped eye, graceful tapered fingers, confident rounded limbs and continuous sinuous contours dictated by Kalighat painting conventions. Her free hand rests near a little saucer holding a recognizable crescent croissant beside her on the low seat. Mustard ochre, burnt sienna, ink black, muted indigo and a little warm red, restrained translucent washes and soft volume on the face, sweater and arms. The energy is entirely in the figure and expressive brush line: plain unornamented background, no scenery, no floral border. Handmade traditional watercolor on paper, never photographic anatomy, a photo with a filter, or a contemporary cartoon. Generate entirely from this text, no reference images. No text, writing, captions, signatures or watermarks."
++    }
++  ]
++}
+
+hook: PreToolUse
+hook: PreToolUse Completed
+apply patch
+patch: completed
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/logs/wycinanki-white-export.js
+diff --git a/logs/389-392-imagegen-prompts.json b/logs/389-392-imagegen-prompts.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b356f5257701cc832af1fe8bc1b29ad7d7a7d1d
+--- /dev/null
++++ b/logs/389-392-imagegen-prompts.json
+@@ -0,0 +1,22 @@
++{
++  "tool": "built-in image_gen",
++  "reference_images": [],
++  "images": [
++    {
++      "file": "389-minhwa.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Korean minhwa folk painting on softly textured mulberry paper, with opaque bright mineral pigments and fine ink contours. Style completely governs the anatomy, perspective and composition. A broad, charmingly flat folk landscape: a gnarled pine spreads across the upper area, a magpie perches in it, and a large comically wide-eyed striped tiger with a humorous almost human expression sits beside a smaller woman enjoying coffee beneath the tree. The woman is in her early 30s, with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, and a mustard-yellow knit sweater, rendered through folk-painted decorative marks rather than realism. Show her seated full body on a mat, lifting a little coffee cup toward her smiling face; a croissant rests nearby on a small low tray. Use stacked planes, playful discrepancies of scale, stylized rocks and pine needles, confident ornamental brushwork, vermilion, malachite green, azurite blue, ochre and ink black. Naive lively animal anatomy and serene simplified human forms, authentic humorous Korean folk charm. This must look like a handmade minhwa painting, never like a photograph with a filter, modern cartoon or cinematic scene. Generate entirely from this text, no reference images. No text, calligraphy, captions, seal marks, signatures, or watermarks."
++    },
++    {
++      "file": "390-wycinanki.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. Authentic Polish wycinanki folk paper-cut artwork, a meticulously hand-cut, symmetrical layered arrangement of brilliantly colored opaque paper on pure white. The whole composition reads as a crisp flat ornamental cutout with a strong vertical mirror axis. In the center stands a stylized front-facing full-body woman in her early 30s with curly auburn shoulder-length hair formed from scalloped paper spirals, freckles from tiny paper dots, round tortoiseshell glasses from layered brown ring shapes, and a mustard-yellow knit sweater expressed with repeated decorative cut-paper chevrons. She enjoys coffee, holding a small coffee cup centrally with both hands near her face. A clearly recognizable golden layered-paper croissant sits immediately below the cup on a little central folk pedestal. Large mirrored roosters face inward on either side of her, their fan tails made from many colorful nested paper shapes; branching flowers, tulips, leaves and circular rosettes form an elaborate balanced symmetrical surround. Folk proportions, angular scissor cuts, beautiful negative-space perforations, stacked paper edges with extremely subtle physical relief, vivid crimson, pink, emerald, royal blue, mustard yellow and black paper. White stays visible around and through the cutout. Let the paper-cut tradition dictate every shape; no realistic human anatomy, no painted rendering, no photographic face, no illustration pretending to be a photo. Generate entirely from this text, no reference images. No letters, text, captions, signatures or watermarks."
++    },
++    {
++      "file": "391-talavera.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. A single exquisite Mexican Talavera ceramic plate fills almost the entire square, viewed directly face-on, with its complete round scalloped rim visible against a plain pale background. The artwork is authentically hand-painted in cobalt blue, golden yellow and rich green mineral glazes on creamy white tin-glazed ceramic. Broad intricate floral and leafy border bands follow the circular rim. Inside the central medallion is a large simplified decorative three-quarter bust portrait of a woman enjoying coffee: early 30s, curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater. Her small raised hand holds a decorated coffee cup close to her smiling lips; a croissant is painted beside her at the bottom of the medallion. All of the woman, coffee and croissant are visibly painted ceramic ornament, flattened and shaped by confident cobalt contour strokes, botanical curls and a limited glaze palette, with hand-painted hatch marks suggesting the knit. Use auburn-brown glaze accents in the hair and tortoiseshell glasses. Glossy vitreous highlights and faint glaze pooling reveal the curved handmade ceramic surface; slight irregularity in brushwork and scalloped rim. The dominant visual experience is Talavera ceramic art and its floral rhythms, never a photo portrait transferred to a plate. No realistic photographic face, no modern vector clip art. Generate entirely from this text, no reference images. No text, captions, stamps, signatures or watermarks."
++    },
++    {
++      "file": "392-kalighat.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Kalighat pat painting from Bengal: flowing watercolor and opaque pigment on plain warm off-white paper, emphatic sweeping black brush outlines and delicate softly graded shading within the forms. A single large simplified elegant woman is seated in a sculptural side-profile pose facing left, legs tucked to one side on a low seat, with a gracefully bending torso and long curving arm lifting a small coffee cup to her lips. Her form fills most of the square with generous undecorated paper around it. She is in her early 30s with curly auburn shoulder-length hair arranged as economical rhythmic brush spirals, visible freckles, round tortoiseshell glasses drawn in profile, and a mustard-yellow knit sweater suggested by restrained dark curved knit marks. Elegant exaggerated almond-shaped eye, graceful tapered fingers, confident rounded limbs and continuous sinuous contours dictated by Kalighat painting conventions. Her free hand rests near a little saucer holding a recognizable crescent croissant beside her on the low seat. Mustard ochre, burnt sienna, ink black, muted indigo and a little warm red, restrained translucent washes and soft volume on the face, sweater and arms. The energy is entirely in the figure and expressive brush line: plain unornamented background, no scenery, no floral border. Handmade traditional watercolor on paper, never photographic anatomy, a photo with a filter, or a contemporary cartoon. Generate entirely from this text, no reference images. No text, writing, captions, signatures or watermarks."
++    }
++  ]
++}
+diff --git a/logs/wycinanki-white-export.js b/logs/wycinanki-white-export.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..64ab4a89e2de2861d703e82de3e24adcbc1cf613
+--- /dev/null
++++ b/logs/wycinanki-white-export.js
+@@ -0,0 +1,6 @@
++const canvas = new Canvas(1024, 1024);
++const context = canvas.getContext('2d');
++context.fillStyle = '#ffffff';
++context.fillRect(0, 0, 1024, 1024);
++context.drawImage(sips.images[0], 0, 0, 1024, 1024);
++new Output(context, '/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/390-wycinanki.png', 'png').addToQueue();
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'sips /Users/manuelbieh/.codex/generated_images/01a0e9b5-9195-7e91-a70a-0658c678cbd8/exec-0be64377-0b8b-47e1-bc4d-8beff28b8e64.png -j logs/wycinanki-white-export.js' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 233ms:
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'sips -g format -g pixelWidth -g pixelHeight styles/389-minhwa.png styles/390-wycinanki.png styles/391-talavera.png styles/392-kalighat.png' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+Warning: styles/390-wycinanki.png not a valid file - skipping
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/389-minhwa.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/391-talavera.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/392-kalighat.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+
+hook: PreToolUse
+hook: PreToolUse Completed
+2026-09-28T20:34:39.457565Z ERROR codex_core::tools::router: error=unable to locate image at `/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/390-wycinanki.png`: No such file or directory (os error 2)
+diff --git a/logs/389-392-imagegen-prompts.json b/logs/389-392-imagegen-prompts.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b356f5257701cc832af1fe8bc1b29ad7d7a7d1d
+--- /dev/null
++++ b/logs/389-392-imagegen-prompts.json
+@@ -0,0 +1,22 @@
++{
++  "tool": "built-in image_gen",
++  "reference_images": [],
++  "images": [
++    {
++      "file": "389-minhwa.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Korean minhwa folk painting on softly textured mulberry paper, with opaque bright mineral pigments and fine ink contours. Style completely governs the anatomy, perspective and composition. A broad, charmingly flat folk landscape: a gnarled pine spreads across the upper area, a magpie perches in it, and a large comically wide-eyed striped tiger with a humorous almost human expression sits beside a smaller woman enjoying coffee beneath the tree. The woman is in her early 30s, with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, and a mustard-yellow knit sweater, rendered through folk-painted decorative marks rather than realism. Show her seated full body on a mat, lifting a little coffee cup toward her smiling face; a croissant rests nearby on a small low tray. Use stacked planes, playful discrepancies of scale, stylized rocks and pine needles, confident ornamental brushwork, vermilion, malachite green, azurite blue, ochre and ink black. Naive lively animal anatomy and serene simplified human forms, authentic humorous Korean folk charm. This must look like a handmade minhwa painting, never like a photograph with a filter, modern cartoon or cinematic scene. Generate entirely from this text, no reference images. No text, calligraphy, captions, seal marks, signatures, or watermarks."
++    },
++    {
++      "file": "390-wycinanki.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. Authentic Polish wycinanki folk paper-cut artwork, a meticulously hand-cut, symmetrical layered arrangement of brilliantly colored opaque paper on pure white. The whole composition reads as a crisp flat ornamental cutout with a strong vertical mirror axis. In the center stands a stylized front-facing full-body woman in her early 30s with curly auburn shoulder-length hair formed from scalloped paper spirals, freckles from tiny paper dots, round tortoiseshell glasses from layered brown ring shapes, and a mustard-yellow knit sweater expressed with repeated decorative cut-paper chevrons. She enjoys coffee, holding a small coffee cup centrally with both hands near her face. A clearly recognizable golden layered-paper croissant sits immediately below the cup on a little central folk pedestal. Large mirrored roosters face inward on either side of her, their fan tails made from many colorful nested paper shapes; branching flowers, tulips, leaves and circular rosettes form an elaborate balanced symmetrical surround. Folk proportions, angular scissor cuts, beautiful negative-space perforations, stacked paper edges with extremely subtle physical relief, vivid crimson, pink, emerald, royal blue, mustard yellow and black paper. White stays visible around and through the cutout. Let the paper-cut tradition dictate every shape; no realistic human anatomy, no painted rendering, no photographic face, no illustration pretending to be a photo. Generate entirely from this text, no reference images. No letters, text, captions, signatures or watermarks."
++    },
++    {
++      "file": "391-talavera.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. A single exquisite Mexican Talavera ceramic plate fills almost the entire square, viewed directly face-on, with its complete round scalloped rim visible against a plain pale background. The artwork is authentically hand-painted in cobalt blue, golden yellow and rich green mineral glazes on creamy white tin-glazed ceramic. Broad intricate floral and leafy border bands follow the circular rim. Inside the central medallion is a large simplified decorative three-quarter bust portrait of a woman enjoying coffee: early 30s, curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater. Her small raised hand holds a decorated coffee cup close to her smiling lips; a croissant is painted beside her at the bottom of the medallion. All of the woman, coffee and croissant are visibly painted ceramic ornament, flattened and shaped by confident cobalt contour strokes, botanical curls and a limited glaze palette, with hand-painted hatch marks suggesting the knit. Use auburn-brown glaze accents in the hair and tortoiseshell glasses. Glossy vitreous highlights and faint glaze pooling reveal the curved handmade ceramic surface; slight irregularity in brushwork and scalloped rim. The dominant visual experience is Talavera ceramic art and its floral rhythms, never a photo portrait transferred to a plate. No realistic photographic face, no modern vector clip art. Generate entirely from this text, no reference images. No text, captions, stamps, signatures or watermarks."
++    },
++    {
++      "file": "392-kalighat.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Kalighat pat painting from Bengal: flowing watercolor and opaque pigment on plain warm off-white paper, emphatic sweeping black brush outlines and delicate softly graded shading within the forms. A single large simplified elegant woman is seated in a sculptural side-profile pose facing left, legs tucked to one side on a low seat, with a gracefully bending torso and long curving arm lifting a small coffee cup to her lips. Her form fills most of the square with generous undecorated paper around it. She is in her early 30s with curly auburn shoulder-length hair arranged as economical rhythmic brush spirals, visible freckles, round tortoiseshell glasses drawn in profile, and a mustard-yellow knit sweater suggested by restrained dark curved knit marks. Elegant exaggerated almond-shaped eye, graceful tapered fingers, confident rounded limbs and continuous sinuous contours dictated by Kalighat painting conventions. Her free hand rests near a little saucer holding a recognizable crescent croissant beside her on the low seat. Mustard ochre, burnt sienna, ink black, muted indigo and a little warm red, restrained translucent washes and soft volume on the face, sweater and arms. The energy is entirely in the figure and expressive brush line: plain unornamented background, no scenery, no floral border. Handmade traditional watercolor on paper, never photographic anatomy, a photo with a filter, or a contemporary cartoon. Generate entirely from this text, no reference images. No text, writing, captions, signatures or watermarks."
++    }
++  ]
++}
+diff --git a/logs/wycinanki-white-export.js b/logs/wycinanki-white-export.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..64ab4a89e2de2861d703e82de3e24adcbc1cf613
+--- /dev/null
++++ b/logs/wycinanki-white-export.js
+@@ -0,0 +1,6 @@
++const canvas = new Canvas(1024, 1024);
++const context = canvas.getContext('2d');
++context.fillStyle = '#ffffff';
++context.fillRect(0, 0, 1024, 1024);
++context.drawImage(sips.images[0], 0, 0, 1024, 1024);
++new Output(context, '/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/390-wycinanki.png', 'png').addToQueue();
+
+codex
+All four images are generated. I’m finishing the exports and ensuring the wycinanki has a solid white background, as requested.
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'sips --debug -j logs/wycinanki-white-export.js /Users/manuelbieh/.codex/generated_images/01a0e9b5-9195-7e91-a70a-0658c678cbd8/exec-0be64377-0b8b-47e1-bc4d-8beff28b8e64.png --out styles' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 187ms:
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "rg --files -g '*390*' -g '*wycinanki*' ." in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+./logs/wycinanki-white-export.js
+
+diff --git a/logs/389-392-imagegen-prompts.json b/logs/389-392-imagegen-prompts.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b356f5257701cc832af1fe8bc1b29ad7d7a7d1d
+--- /dev/null
++++ b/logs/389-392-imagegen-prompts.json
+@@ -0,0 +1,22 @@
++{
++  "tool": "built-in image_gen",
++  "reference_images": [],
++  "images": [
++    {
++      "file": "389-minhwa.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Korean minhwa folk painting on softly textured mulberry paper, with opaque bright mineral pigments and fine ink contours. Style completely governs the anatomy, perspective and composition. A broad, charmingly flat folk landscape: a gnarled pine spreads across the upper area, a magpie perches in it, and a large comically wide-eyed striped tiger with a humorous almost human expression sits beside a smaller woman enjoying coffee beneath the tree. The woman is in her early 30s, with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, and a mustard-yellow knit sweater, rendered through folk-painted decorative marks rather than realism. Show her seated full body on a mat, lifting a little coffee cup toward her smiling face; a croissant rests nearby on a small low tray. Use stacked planes, playful discrepancies of scale, stylized rocks and pine needles, confident ornamental brushwork, vermilion, malachite green, azurite blue, ochre and ink black. Naive lively animal anatomy and serene simplified human forms, authentic humorous Korean folk charm. This must look like a handmade minhwa painting, never like a photograph with a filter, modern cartoon or cinematic scene. Generate entirely from this text, no reference images. No text, calligraphy, captions, seal marks, signatures, or watermarks."
++    },
++    {
++      "file": "390-wycinanki.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. Authentic Polish wycinanki folk paper-cut artwork, a meticulously hand-cut, symmetrical layered arrangement of brilliantly colored opaque paper on pure white. The whole composition reads as a crisp flat ornamental cutout with a strong vertical mirror axis. In the center stands a stylized front-facing full-body woman in her early 30s with curly auburn shoulder-length hair formed from scalloped paper spirals, freckles from tiny paper dots, round tortoiseshell glasses from layered brown ring shapes, and a mustard-yellow knit sweater expressed with repeated decorative cut-paper chevrons. She enjoys coffee, holding a small coffee cup centrally with both hands near her face. A clearly recognizable golden layered-paper croissant sits immediately below the cup on a little central folk pedestal. Large mirrored roosters face inward on either side of her, their fan tails made from many colorful nested paper shapes; branching flowers, tulips, leaves and circular rosettes form an elaborate balanced symmetrical surround. Folk proportions, angular scissor cuts, beautiful negative-space perforations, stacked paper edges with extremely subtle physical relief, vivid crimson, pink, emerald, royal blue, mustard yellow and black paper. White stays visible around and through the cutout. Let the paper-cut tradition dictate every shape; no realistic human anatomy, no painted rendering, no photographic face, no illustration pretending to be a photo. Generate entirely from this text, no reference images. No letters, text, captions, signatures or watermarks."
++    },
++    {
++      "file": "391-talavera.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. A single exquisite Mexican Talavera ceramic plate fills almost the entire square, viewed directly face-on, with its complete round scalloped rim visible against a plain pale background. The artwork is authentically hand-painted in cobalt blue, golden yellow and rich green mineral glazes on creamy white tin-glazed ceramic. Broad intricate floral and leafy border bands follow the circular rim. Inside the central medallion is a large simplified decorative three-quarter bust portrait of a woman enjoying coffee: early 30s, curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater. Her small raised hand holds a decorated coffee cup close to her smiling lips; a croissant is painted beside her at the bottom of the medallion. All of the woman, coffee and croissant are visibly painted ceramic ornament, flattened and shaped by confident cobalt contour strokes, botanical curls and a limited glaze palette, with hand-painted hatch marks suggesting the knit. Use auburn-brown glaze accents in the hair and tortoiseshell glasses. Glossy vitreous highlights and faint glaze pooling reveal the curved handmade ceramic surface; slight irregularity in brushwork and scalloped rim. The dominant visual experience is Talavera ceramic art and its floral rhythms, never a photo portrait transferred to a plate. No realistic photographic face, no modern vector clip art. Generate entirely from this text, no reference images. No text, captions, stamps, signatures or watermarks."
++    },
++    {
++      "file": "392-kalighat.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Kalighat pat painting from Bengal: flowing watercolor and opaque pigment on plain warm off-white paper, emphatic sweeping black brush outlines and delicate softly graded shading within the forms. A single large simplified elegant woman is seated in a sculptural side-profile pose facing left, legs tucked to one side on a low seat, with a gracefully bending torso and long curving arm lifting a small coffee cup to her lips. Her form fills most of the square with generous undecorated paper around it. She is in her early 30s with curly auburn shoulder-length hair arranged as economical rhythmic brush spirals, visible freckles, round tortoiseshell glasses drawn in profile, and a mustard-yellow knit sweater suggested by restrained dark curved knit marks. Elegant exaggerated almond-shaped eye, graceful tapered fingers, confident rounded limbs and continuous sinuous contours dictated by Kalighat painting conventions. Her free hand rests near a little saucer holding a recognizable crescent croissant beside her on the low seat. Mustard ochre, burnt sienna, ink black, muted indigo and a little warm red, restrained translucent washes and soft volume on the face, sweater and arms. The energy is entirely in the figure and expressive brush line: plain unornamented background, no scenery, no floral border. Handmade traditional watercolor on paper, never photographic anatomy, a photo with a filter, or a contemporary cartoon. Generate entirely from this text, no reference images. No text, writing, captions, signatures or watermarks."
++    }
++  ]
++}
+diff --git a/logs/wycinanki-white-export.js b/logs/wycinanki-white-export.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..64ab4a89e2de2861d703e82de3e24adcbc1cf613
+--- /dev/null
++++ b/logs/wycinanki-white-export.js
+@@ -0,0 +1,6 @@
++const canvas = new Canvas(1024, 1024);
++const context = canvas.getContext('2d');
++context.fillStyle = '#ffffff';
++context.fillRect(0, 0, 1024, 1024);
++context.drawImage(sips.images[0], 0, 0, 1024, 1024);
++new Output(context, '/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/390-wycinanki.png', 'png').addToQueue();
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'sips -s format jpeg -s formatOptions best -z 1024 1024 /Users/manuelbieh/.codex/generated_images/01a0e9b5-9195-7e91-a70a-0658c678cbd8/exec-0be64377-0b8b-47e1-bc4d-8beff28b8e64.png --out logs/wycinanki-white-export.jpg' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 99ms:
+/Users/manuelbieh/.codex/generated_images/01a0e9b5-9195-7e91-a70a-0658c678cbd8/exec-0be64377-0b8b-47e1-bc4d-8beff28b8e64.png
+  /Users/manuelbieh/htdocs/dev/gpt-images/set-2/logs/wycinanki-white-export.jpg
+
+hook: PreToolUse
+hook: PreToolUse Completed
+diff --git a/logs/389-392-imagegen-prompts.json b/logs/389-392-imagegen-prompts.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b356f5257701cc832af1fe8bc1b29ad7d7a7d1d
+--- /dev/null
++++ b/logs/389-392-imagegen-prompts.json
+@@ -0,0 +1,22 @@
++{
++  "tool": "built-in image_gen",
++  "reference_images": [],
++  "images": [
++    {
++      "file": "389-minhwa.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Korean minhwa folk painting on softly textured mulberry paper, with opaque bright mineral pigments and fine ink contours. Style completely governs the anatomy, perspective and composition. A broad, charmingly flat folk landscape: a gnarled pine spreads across the upper area, a magpie perches in it, and a large comically wide-eyed striped tiger with a humorous almost human expression sits beside a smaller woman enjoying coffee beneath the tree. The woman is in her early 30s, with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, and a mustard-yellow knit sweater, rendered through folk-painted decorative marks rather than realism. Show her seated full body on a mat, lifting a little coffee cup toward her smiling face; a croissant rests nearby on a small low tray. Use stacked planes, playful discrepancies of scale, stylized rocks and pine needles, confident ornamental brushwork, vermilion, malachite green, azurite blue, ochre and ink black. Naive lively animal anatomy and serene simplified human forms, authentic humorous Korean folk charm. This must look like a handmade minhwa painting, never like a photograph with a filter, modern cartoon or cinematic scene. Generate entirely from this text, no reference images. No text, calligraphy, captions, seal marks, signatures, or watermarks."
++    },
++    {
++      "file": "390-wycinanki.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. Authentic Polish wycinanki folk paper-cut artwork, a meticulously hand-cut, symmetrical layered arrangement of brilliantly colored opaque paper on pure white. The whole composition reads as a crisp flat ornamental cutout with a strong vertical mirror axis. In the center stands a stylized front-facing full-body woman in her early 30s with curly auburn shoulder-length hair formed from scalloped paper spirals, freckles from tiny paper dots, round tortoiseshell glasses from layered brown ring shapes, and a mustard-yellow knit sweater expressed with repeated decorative cut-paper chevrons. She enjoys coffee, holding a small coffee cup centrally with both hands near her face. A clearly recognizable golden layered-paper croissant sits immediately below the cup on a little central folk pedestal. Large mirrored roosters face inward on either side of her, their fan tails made from many colorful nested paper shapes; branching flowers, tulips, leaves and circular rosettes form an elaborate balanced symmetrical surround. Folk proportions, angular scissor cuts, beautiful negative-space perforations, stacked paper edges with extremely subtle physical relief, vivid crimson, pink, emerald, royal blue, mustard yellow and black paper. White stays visible around and through the cutout. Let the paper-cut tradition dictate every shape; no realistic human anatomy, no painted rendering, no photographic face, no illustration pretending to be a photo. Generate entirely from this text, no reference images. No letters, text, captions, signatures or watermarks."
++    },
++    {
++      "file": "391-talavera.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. A single exquisite Mexican Talavera ceramic plate fills almost the entire square, viewed directly face-on, with its complete round scalloped rim visible against a plain pale background. The artwork is authentically hand-painted in cobalt blue, golden yellow and rich green mineral glazes on creamy white tin-glazed ceramic. Broad intricate floral and leafy border bands follow the circular rim. Inside the central medallion is a large simplified decorative three-quarter bust portrait of a woman enjoying coffee: early 30s, curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater. Her small raised hand holds a decorated coffee cup close to her smiling lips; a croissant is painted beside her at the bottom of the medallion. All of the woman, coffee and croissant are visibly painted ceramic ornament, flattened and shaped by confident cobalt contour strokes, botanical curls and a limited glaze palette, with hand-painted hatch marks suggesting the knit. Use auburn-brown glaze accents in the hair and tortoiseshell glasses. Glossy vitreous highlights and faint glaze pooling reveal the curved handmade ceramic surface; slight irregularity in brushwork and scalloped rim. The dominant visual experience is Talavera ceramic art and its floral rhythms, never a photo portrait transferred to a plate. No realistic photographic face, no modern vector clip art. Generate entirely from this text, no reference images. No text, captions, stamps, signatures or watermarks."
++    },
++    {
++      "file": "392-kalighat.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Kalighat pat painting from Bengal: flowing watercolor and opaque pigment on plain warm off-white paper, emphatic sweeping black brush outlines and delicate softly graded shading within the forms. A single large simplified elegant woman is seated in a sculptural side-profile pose facing left, legs tucked to one side on a low seat, with a gracefully bending torso and long curving arm lifting a small coffee cup to her lips. Her form fills most of the square with generous undecorated paper around it. She is in her early 30s with curly auburn shoulder-length hair arranged as economical rhythmic brush spirals, visible freckles, round tortoiseshell glasses drawn in profile, and a mustard-yellow knit sweater suggested by restrained dark curved knit marks. Elegant exaggerated almond-shaped eye, graceful tapered fingers, confident rounded limbs and continuous sinuous contours dictated by Kalighat painting conventions. Her free hand rests near a little saucer holding a recognizable crescent croissant beside her on the low seat. Mustard ochre, burnt sienna, ink black, muted indigo and a little warm red, restrained translucent washes and soft volume on the face, sweater and arms. The energy is entirely in the figure and expressive brush line: plain unornamented background, no scenery, no floral border. Handmade traditional watercolor on paper, never photographic anatomy, a photo with a filter, or a contemporary cartoon. Generate entirely from this text, no reference images. No text, writing, captions, signatures or watermarks."
++    }
++  ]
++}
+diff --git a/logs/wycinanki-white-export.js b/logs/wycinanki-white-export.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..64ab4a89e2de2861d703e82de3e24adcbc1cf613
+--- /dev/null
++++ b/logs/wycinanki-white-export.js
+@@ -0,0 +1,6 @@
++const canvas = new Canvas(1024, 1024);
++const context = canvas.getContext('2d');
++context.fillStyle = '#ffffff';
++context.fillRect(0, 0, 1024, 1024);
++context.drawImage(sips.images[0], 0, 0, 1024, 1024);
++new Output(context, '/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/390-wycinanki.png', 'png').addToQueue();
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'sips -s format png logs/wycinanki-white-export.jpg --out styles/390-wycinanki.png' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 83ms:
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/logs/wycinanki-white-export.jpg
+  /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/390-wycinanki.png
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'sips -g format -g pixelWidth -g pixelHeight styles/389-minhwa.png styles/390-wycinanki.png styles/391-talavera.png styles/392-kalighat.png' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/389-minhwa.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/390-wycinanki.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/391-talavera.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/392-kalighat.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'rm logs/wycinanki-white-export.js logs/wycinanki-white-export.jpg' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+diff --git a/logs/389-392-imagegen-prompts.json b/logs/389-392-imagegen-prompts.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b356f5257701cc832af1fe8bc1b29ad7d7a7d1d
+--- /dev/null
++++ b/logs/389-392-imagegen-prompts.json
+@@ -0,0 +1,22 @@
++{
++  "tool": "built-in image_gen",
++  "reference_images": [],
++  "images": [
++    {
++      "file": "389-minhwa.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Korean minhwa folk painting on softly textured mulberry paper, with opaque bright mineral pigments and fine ink contours. Style completely governs the anatomy, perspective and composition. A broad, charmingly flat folk landscape: a gnarled pine spreads across the upper area, a magpie perches in it, and a large comically wide-eyed striped tiger with a humorous almost human expression sits beside a smaller woman enjoying coffee beneath the tree. The woman is in her early 30s, with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, and a mustard-yellow knit sweater, rendered through folk-painted decorative marks rather than realism. Show her seated full body on a mat, lifting a little coffee cup toward her smiling face; a croissant rests nearby on a small low tray. Use stacked planes, playful discrepancies of scale, stylized rocks and pine needles, confident ornamental brushwork, vermilion, malachite green, azurite blue, ochre and ink black. Naive lively animal anatomy and serene simplified human forms, authentic humorous Korean folk charm. This must look like a handmade minhwa painting, never like a photograph with a filter, modern cartoon or cinematic scene. Generate entirely from this text, no reference images. No text, calligraphy, captions, seal marks, signatures, or watermarks."
++    },
++    {
++      "file": "390-wycinanki.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. Authentic Polish wycinanki folk paper-cut artwork, a meticulously hand-cut, symmetrical layered arrangement of brilliantly colored opaque paper on pure white. The whole composition reads as a crisp flat ornamental cutout with a strong vertical mirror axis. In the center stands a stylized front-facing full-body woman in her early 30s with curly auburn shoulder-length hair formed from scalloped paper spirals, freckles from tiny paper dots, round tortoiseshell glasses from layered brown ring shapes, and a mustard-yellow knit sweater expressed with repeated decorative cut-paper chevrons. She enjoys coffee, holding a small coffee cup centrally with both hands near her face. A clearly recognizable golden layered-paper croissant sits immediately below the cup on a little central folk pedestal. Large mirrored roosters face inward on either side of her, their fan tails made from many colorful nested paper shapes; branching flowers, tulips, leaves and circular rosettes form an elaborate balanced symmetrical surround. Folk proportions, angular scissor cuts, beautiful negative-space perforations, stacked paper edges with extremely subtle physical relief, vivid crimson, pink, emerald, royal blue, mustard yellow and black paper. White stays visible around and through the cutout. Let the paper-cut tradition dictate every shape; no realistic human anatomy, no painted rendering, no photographic face, no illustration pretending to be a photo. Generate entirely from this text, no reference images. No letters, text, captions, signatures or watermarks."
++    },
++    {
++      "file": "391-talavera.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. A single exquisite Mexican Talavera ceramic plate fills almost the entire square, viewed directly face-on, with its complete round scalloped rim visible against a plain pale background. The artwork is authentically hand-painted in cobalt blue, golden yellow and rich green mineral glazes on creamy white tin-glazed ceramic. Broad intricate floral and leafy border bands follow the circular rim. Inside the central medallion is a large simplified decorative three-quarter bust portrait of a woman enjoying coffee: early 30s, curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater. Her small raised hand holds a decorated coffee cup close to her smiling lips; a croissant is painted beside her at the bottom of the medallion. All of the woman, coffee and croissant are visibly painted ceramic ornament, flattened and shaped by confident cobalt contour strokes, botanical curls and a limited glaze palette, with hand-painted hatch marks suggesting the knit. Use auburn-brown glaze accents in the hair and tortoiseshell glasses. Glossy vitreous highlights and faint glaze pooling reveal the curved handmade ceramic surface; slight irregularity in brushwork and scalloped rim. The dominant visual experience is Talavera ceramic art and its floral rhythms, never a photo portrait transferred to a plate. No realistic photographic face, no modern vector clip art. Generate entirely from this text, no reference images. No text, captions, stamps, signatures or watermarks."
++    },
++    {
++      "file": "392-kalighat.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Kalighat pat painting from Bengal: flowing watercolor and opaque pigment on plain warm off-white paper, emphatic sweeping black brush outlines and delicate softly graded shading within the forms. A single large simplified elegant woman is seated in a sculptural side-profile pose facing left, legs tucked to one side on a low seat, with a gracefully bending torso and long curving arm lifting a small coffee cup to her lips. Her form fills most of the square with generous undecorated paper around it. She is in her early 30s with curly auburn shoulder-length hair arranged as economical rhythmic brush spirals, visible freckles, round tortoiseshell glasses drawn in profile, and a mustard-yellow knit sweater suggested by restrained dark curved knit marks. Elegant exaggerated almond-shaped eye, graceful tapered fingers, confident rounded limbs and continuous sinuous contours dictated by Kalighat painting conventions. Her free hand rests near a little saucer holding a recognizable crescent croissant beside her on the low seat. Mustard ochre, burnt sienna, ink black, muted indigo and a little warm red, restrained translucent washes and soft volume on the face, sweater and arms. The energy is entirely in the figure and expressive brush line: plain unornamented background, no scenery, no floral border. Handmade traditional watercolor on paper, never photographic anatomy, a photo with a filter, or a contemporary cartoon. Generate entirely from this text, no reference images. No text, writing, captions, signatures or watermarks."
++    }
++  ]
++}
+diff --git a/logs/wycinanki-white-export.js b/logs/wycinanki-white-export.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..64ab4a89e2de2861d703e82de3e24adcbc1cf613
+--- /dev/null
++++ b/logs/wycinanki-white-export.js
+@@ -0,0 +1,6 @@
++const canvas = new Canvas(1024, 1024);
++const context = canvas.getContext('2d');
++context.fillStyle = '#ffffff';
++context.fillRect(0, 0, 1024, 1024);
++context.drawImage(sips.images[0], 0, 0, 1024, 1024);
++new Output(context, '/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/390-wycinanki.png', 'png').addToQueue();
+
+codex
+Generated all four fresh without references and verified each is a 1024×1024 PNG:
+
+- [389-minhwa.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/389-minhwa.png)
+- [390-wycinanki.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/390-wycinanki.png)
+- [391-talavera.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/391-talavera.png)
+- [392-kalighat.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/392-kalighat.png)
+
+[Generation prompts](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/logs/389-392-imagegen-prompts.json) used with the built-in image tool.
+diff --git a/logs/389-392-imagegen-prompts.json b/logs/389-392-imagegen-prompts.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..5b356f5257701cc832af1fe8bc1b29ad7d7a7d1d
+--- /dev/null
++++ b/logs/389-392-imagegen-prompts.json
+@@ -0,0 +1,22 @@
++{
++  "tool": "built-in image_gen",
++  "reference_images": [],
++  "images": [
++    {
++      "file": "389-minhwa.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Korean minhwa folk painting on softly textured mulberry paper, with opaque bright mineral pigments and fine ink contours. Style completely governs the anatomy, perspective and composition. A broad, charmingly flat folk landscape: a gnarled pine spreads across the upper area, a magpie perches in it, and a large comically wide-eyed striped tiger with a humorous almost human expression sits beside a smaller woman enjoying coffee beneath the tree. The woman is in her early 30s, with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, and a mustard-yellow knit sweater, rendered through folk-painted decorative marks rather than realism. Show her seated full body on a mat, lifting a little coffee cup toward her smiling face; a croissant rests nearby on a small low tray. Use stacked planes, playful discrepancies of scale, stylized rocks and pine needles, confident ornamental brushwork, vermilion, malachite green, azurite blue, ochre and ink black. Naive lively animal anatomy and serene simplified human forms, authentic humorous Korean folk charm. This must look like a handmade minhwa painting, never like a photograph with a filter, modern cartoon or cinematic scene. Generate entirely from this text, no reference images. No text, calligraphy, captions, seal marks, signatures, or watermarks."
++    },
++    {
++      "file": "390-wycinanki.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. Authentic Polish wycinanki folk paper-cut artwork, a meticulously hand-cut, symmetrical layered arrangement of brilliantly colored opaque paper on pure white. The whole composition reads as a crisp flat ornamental cutout with a strong vertical mirror axis. In the center stands a stylized front-facing full-body woman in her early 30s with curly auburn shoulder-length hair formed from scalloped paper spirals, freckles from tiny paper dots, round tortoiseshell glasses from layered brown ring shapes, and a mustard-yellow knit sweater expressed with repeated decorative cut-paper chevrons. She enjoys coffee, holding a small coffee cup centrally with both hands near her face. A clearly recognizable golden layered-paper croissant sits immediately below the cup on a little central folk pedestal. Large mirrored roosters face inward on either side of her, their fan tails made from many colorful nested paper shapes; branching flowers, tulips, leaves and circular rosettes form an elaborate balanced symmetrical surround. Folk proportions, angular scissor cuts, beautiful negative-space perforations, stacked paper edges with extremely subtle physical relief, vivid crimson, pink, emerald, royal blue, mustard yellow and black paper. White stays visible around and through the cutout. Let the paper-cut tradition dictate every shape; no realistic human anatomy, no painted rendering, no photographic face, no illustration pretending to be a photo. Generate entirely from this text, no reference images. No letters, text, captions, signatures or watermarks."
++    },
++    {
++      "file": "391-talavera.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. A single exquisite Mexican Talavera ceramic plate fills almost the entire square, viewed directly face-on, with its complete round scalloped rim visible against a plain pale background. The artwork is authentically hand-painted in cobalt blue, golden yellow and rich green mineral glazes on creamy white tin-glazed ceramic. Broad intricate floral and leafy border bands follow the circular rim. Inside the central medallion is a large simplified decorative three-quarter bust portrait of a woman enjoying coffee: early 30s, curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater. Her small raised hand holds a decorated coffee cup close to her smiling lips; a croissant is painted beside her at the bottom of the medallion. All of the woman, coffee and croissant are visibly painted ceramic ornament, flattened and shaped by confident cobalt contour strokes, botanical curls and a limited glaze palette, with hand-painted hatch marks suggesting the knit. Use auburn-brown glaze accents in the hair and tortoiseshell glasses. Glossy vitreous highlights and faint glaze pooling reveal the curved handmade ceramic surface; slight irregularity in brushwork and scalloped rim. The dominant visual experience is Talavera ceramic art and its floral rhythms, never a photo portrait transferred to a plate. No realistic photographic face, no modern vector clip art. Generate entirely from this text, no reference images. No text, captions, stamps, signatures or watermarks."
++    },
++    {
++      "file": "392-kalighat.png",
++      "prompt": "Create ONE fresh text-only image, square 1024x1024. Use case: stylized-concept. An authentic Kalighat pat painting from Bengal: flowing watercolor and opaque pigment on plain warm off-white paper, emphatic sweeping black brush outlines and delicate softly graded shading within the forms. A single large simplified elegant woman is seated in a sculptural side-profile pose facing left, legs tucked to one side on a low seat, with a gracefully bending torso and long curving arm lifting a small coffee cup to her lips. Her form fills most of the square with generous undecorated paper around it. She is in her early 30s with curly auburn shoulder-length hair arranged as economical rhythmic brush spirals, visible freckles, round tortoiseshell glasses drawn in profile, and a mustard-yellow knit sweater suggested by restrained dark curved knit marks. Elegant exaggerated almond-shaped eye, graceful tapered fingers, confident rounded limbs and continuous sinuous contours dictated by Kalighat painting conventions. Her free hand rests near a little saucer holding a recognizable crescent croissant beside her on the low seat. Mustard ochre, burnt sienna, ink black, muted indigo and a little warm red, restrained translucent washes and soft volume on the face, sweater and arms. The energy is entirely in the figure and expressive brush line: plain unornamented background, no scenery, no floral border. Handmade traditional watercolor on paper, never photographic anatomy, a photo with a filter, or a contemporary cartoon. Generate entirely from this text, no reference images. No text, writing, captions, signatures or watermarks."
++    }
++  ]
++}
+diff --git a/logs/wycinanki-white-export.js b/logs/wycinanki-white-export.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..64ab4a89e2de2861d703e82de3e24adcbc1cf613
+--- /dev/null
++++ b/logs/wycinanki-white-export.js
+@@ -0,0 +1,6 @@
++const canvas = new Canvas(1024, 1024);
++const context = canvas.getContext('2d');
++context.fillStyle = '#ffffff';
++context.fillRect(0, 0, 1024, 1024);
++context.drawImage(sips.images[0], 0, 0, 1024, 1024);
++new Output(context, '/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/390-wycinanki.png', 'png').addToQueue();
+
+hook: Stop
+hook: Stop Completed
+tokens used
+43,213
+Generated all four fresh without references and verified each is a 1024×1024 PNG:
+
+- [389-minhwa.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/389-minhwa.png)
+- [390-wycinanki.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/390-wycinanki.png)
+- [391-talavera.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/391-talavera.png)
+- [392-kalighat.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/392-kalighat.png)
+
+[Generation prompts](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/logs/389-392-imagegen-prompts.json) used with the built-in image tool.

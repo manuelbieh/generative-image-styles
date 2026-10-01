@@ -1,0 +1,28 @@
+Generated with the built-in image generation tool. No reference images used.
+
+69-neon-sign.png
+
+Create one fresh image from text only, no reference image. Square 1024x1024.
+Use case: photorealistic-natural. An authentic nighttime photograph of a handmade glowing neon tube sign mounted on a dark, rain-damp brick wall. The sign depicts the silhouette of a woman enjoying a sip of coffee, with a small croissant icon nearby. She is in her early 30s, has curly auburn shoulder-length hair, freckles, round tortoiseshell glasses, and a mustard-yellow knit sweater; translate all of these traits into economical bent-neon contours: looping pink curls, round amber glasses, tiny freckle lights, and golden-yellow sweater outlines with a few knit-like zigzags. The person exists ONLY as a neon sign, not a flesh-and-blood woman. Restrained pink and yellow neon tubes, visible glass bends, standoff clips and discreet wires, realistic luminous bloom and reflected pink-gold light in the wet mortar and bricks. Oblique street-level photographic framing of the entire sign, the sipping profile and cup clearly readable, generous surrounding dark brick, strong nocturnal atmosphere. Let actual neon sign fabrication dictate the simplified anatomy and line-based design. No lettering, no words, no captions, no signatures, no watermarks.
+
+---
+
+70-kirby-comic.png
+
+Create one fresh image from text only, no reference image. Square 1024x1024.
+Use case: illustration-story. An authentic 1960s Jack Kirby superhero comic panel. A woman superhero in her early 30s, with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater, joyfully enjoying coffee amid an explosive cosmic adventure. Dynamic full-body diagonal composition and extreme dramatic foreshortening: her large foreground hand presents a steaming coffee cup toward the viewer, her head farther back with a delighted confident grin, and her legs thrust back into cosmic space. A nearby croissant floats beside its tumbling saucer. The sweater and curls retain their identities but the anatomy is monumental, angular, blocky and heroic, with powerful graphic hands and kinetic twisting action. Dense black cosmic energy crackle, concentric energy bursts and geometric cosmic machinery frame her. Bold brush inks, heavy spotted blacks, hard angular highlights, flat saturated mustard yellow, vermilion, electric blue and magenta, visible coarse halftone dots, slightly misregistered limited-color printing on warm vintage pulp paper. This must be drawn and printed comic art throughout, no photorealism or photo-filter appearance. One dramatic single panel, no text anywhere, no speech bubbles, no captions, no signatures, no watermarks.
+
+---
+
+71-pop-up-book.png
+
+Create one fresh image from text only, no reference image. Square 1024x1024.
+Use case: product-mockup. A real open children's pop-up book photographed from a high three-quarter overhead angle, fully visible resting on a tabletop. The open book reveals an elaborate paper-engineered cafe scene rising from its central gutter: layered folding cardstock cafe walls and arched windows, a small counter, pleated paper furniture, visible V-folds, slots, glue tabs, hinges, scored creases and blank pull tabs extending from the pages. A charming freestanding paper cutout woman in her early 30s sits at a miniature folded cafe table, enjoying a cup of coffee with a cardstock croissant nearby. She has curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater, all drawn in simple delightful children's illustration shapes on the cutout, with a printed knit pattern. Her anatomy is whimsical flat paper illustration, not realistic human anatomy. Compose the woman as one small figure within the entire dimensional pop-up scene. Soft mint, cream, peach and warm yellow cardstock palette, matte paper fibers, visibly layered cut edges, cast shadows proving the structure is paper. Soft natural studio light. Photographic image of the physical crafted book, not an illustration pretending to be a photograph, no real person. All pages and pull tabs have NO text, no captions, no lettering, no signatures, no watermarks.
+
+---
+
+72-muralism.png
+
+Create one fresh image from text only, no reference image. Square 1024x1024.
+Use case: illustration-story. An authentic Diego Rivera-style monumental fresco mural on a large plaster wall, depicting coffee as a communal link between cafe life, the market and agriculture. Wide communal scene rendered entirely in matte fresco painting: the principal woman in her early 30s sits solidly in the foreground in three-quarter view, enjoying a small earthenware cup of coffee, a croissant on a terracotta plate close beside her. Curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater. Her physique and face follow monumental rounded Mexican muralist forms: broad powerful hands, sculptural cylindrical arms, a simplified rounded face, weighty seated posture, broad planes and rhythmic contours. Behind her, market sellers with produce baskets and coffee farmers harvesting red coffee cherries and carrying sacks form an interlocking panorama of dignified labor, filling the large wall with balanced architectural groupings. Earthy terracotta, ochre, muted deep green and warm plaster cream palette, mineral pigments embedded in plaster, subtle fresco wear, dry matte texture. Frontal view of the mural, painted figures fill almost all the square, small exposed plaster edges convey the wall. Shallow compressed mural perspective and monumental sculptural volumes, no photographic human rendering and no filter aesthetic. No text, captions, signatures or watermarks.
+
