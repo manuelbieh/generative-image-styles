@@ -6,6 +6,7 @@ Filtering, pagination and lazy loading happen client-side.
 """
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -36,7 +37,8 @@ reference_file = "reference.jpg" if dist else "reference.png"
 prompts_file = set_dir / "prompts.json"
 prompts = json.loads(prompts_file.read_text()) if prompts_file.exists() else {}
 # Original generation prompts stay in prompts.json. The site shows the reusable
-# style prompt, which does not describe the gallery character.
+# style prompt, which does not describe the gallery character and must work both with an
+# attached reference image and with a scene described in text.
 style_prompts_file = set_dir / "style-prompts.json"
 style_prompts = json.loads(style_prompts_file.read_text()) if style_prompts_file.exists() else {}
 shown_prompts = style_prompts or prompts
@@ -63,6 +65,10 @@ for line in (set_dir / "styles.tsv").read_text().splitlines():
 unknown = {t for s in styles for t in s["tags"]} - TAG_LABELS.keys()
 if unknown:
     sys.exit(f"unknown tags: {', '.join(sorted(unknown))}")
+
+source_bound = [stem for stem, text in style_prompts.items() if re.search(r"\breference\b", text, re.I)]
+if source_bound:
+    sys.exit(f"style prompts must not assume a reference image: {', '.join(source_bound)}")
 
 reference = ""
 if (set_dir / "reference.png").exists():
@@ -220,7 +226,7 @@ page = f"""<!doctype html>
 <dialog id="prompt-dialog" aria-labelledby="prompt-title">
   <div class="dialog-inner">
     <div class="dialog-head">
-      <div><h2 id="prompt-title"></h2><p>Reusable style prompt</p></div>
+      <div><h2 id="prompt-title"></h2><p>Add to a reference image or to your own scene description</p></div>
       <button class="dialog-close" type="button" aria-label="Close" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="prompt-text" id="prompt-text" role="region" aria-label="Prompt" tabindex="0"></div>
