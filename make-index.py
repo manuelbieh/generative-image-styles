@@ -35,6 +35,11 @@ out_dir = set_dir / "dist" if dist else set_dir
 reference_file = "reference.jpg" if dist else "reference.png"
 prompts_file = set_dir / "prompts.json"
 prompts = json.loads(prompts_file.read_text()) if prompts_file.exists() else {}
+# Original generation prompts stay in prompts.json. The site shows the reusable
+# style prompt, which does not describe the gallery character.
+style_prompts_file = set_dir / "style-prompts.json"
+style_prompts = json.loads(style_prompts_file.read_text()) if style_prompts_file.exists() else {}
+shown_prompts = style_prompts or prompts
 styles = []
 for line in (set_dir / "styles.tsv").read_text().splitlines():
     if not line.strip():
@@ -52,7 +57,7 @@ for line in (set_dir / "styles.tsv").read_text().splitlines():
         "desc": desc,
         "tags": tags,
         "stem": stem,
-        "hasPrompt": stem in prompts,
+        "hasPrompt": stem in shown_prompts,
     })
 
 unknown = {t for s in styles for t in s["tags"]} - TAG_LABELS.keys()
@@ -72,7 +77,7 @@ if (set_dir / "reference.png").exists():
 
 # Prompts are about 1 MB, so they live in a script that loads on first use instead of in the page.
 # A script tag (unlike fetch) also works when index.html is opened straight from disk.
-prompts_js = "window.stylePrompts = " + json.dumps({s["stem"]: prompts[s["stem"]] for s in styles if s["hasPrompt"]}, ensure_ascii=False) + ";\n"
+prompts_js = "window.stylePrompts = " + json.dumps({s["stem"]: shown_prompts[s["stem"]] for s in styles if s["hasPrompt"]}, ensure_ascii=False) + ";\n"
 prompts_src = f"prompts.js?v={hashlib.sha1(prompts_js.encode()).hexdigest()[:10]}"
 
 data = json.dumps({"pageSize": PAGE_SIZE, "tagLabels": TAG_LABELS, "promptsSrc": prompts_src, "styles": styles}, ensure_ascii=False)
@@ -215,7 +220,7 @@ page = f"""<!doctype html>
 <dialog id="prompt-dialog" aria-labelledby="prompt-title">
   <div class="dialog-inner">
     <div class="dialog-head">
-      <div><h2 id="prompt-title"></h2><p>Prompt sent to the image model</p></div>
+      <div><h2 id="prompt-title"></h2><p>Reusable style prompt</p></div>
       <button class="dialog-close" type="button" aria-label="Close" data-close><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
     </div>
     <div class="prompt-text" id="prompt-text" role="region" aria-label="Prompt" tabindex="0"></div>
@@ -528,7 +533,7 @@ function card(s) {{
   const tags = s.tags.map(t => `<button class="tag" data-tag="${{t}}">${{tagLabels[t]}}</button>`).join("");
   const saved = inCollection(s.n, DEFAULT_COLLECTION);
   const promptButton = s.hasPrompt
-    ? `<button class="prompt-button" type="button" data-stem="${{s.stem}}" aria-label="Show prompt for ${{title}}" title="Show prompt">${{promptIcon}}</button>`
+    ? `<button class="prompt-button" type="button" data-stem="${{s.stem}}" aria-label="Show style prompt for ${{title}}" title="Style prompt">${{promptIcon}}</button>`
     : "";
   const saveLabel = saved ? `Remove ${{title}} from Saved` : `Save ${{title}}`;
   return `<figure>
