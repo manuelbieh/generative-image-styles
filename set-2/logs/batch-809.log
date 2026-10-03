@@ -1,0 +1,2345 @@
+OpenAI Codex v0.157.0
+--------
+workdir: /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+model: gpt-6-astra
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: xhigh
+reasoning summaries: none
+session id: 01a0ff3d-078c-7fd1-9c01-42d9ca75342f
+--------
+user
+Use your image generation tool to create one image per style listed below, 1024x1024 square. Do NOT use any reference image — generate each one fresh from text.
+
+Character (the only constant): a woman in her early 30s with curly auburn shoulder-length hair, freckles, round tortoiseshell glasses and a mustard-yellow knit sweater, enjoying a coffee (croissant nearby).
+
+The style is the priority, not the photo. For each image, let the style fully dictate proportions, anatomy, framing, camera angle, pose, setting details, color palette, lighting and medium — exactly as an authentic piece in that style would look. Do not make it look like a photo with a filter, and do not keep a common composition across images: vary the framing (close-up, full body, wide scene, profile, etc.) to whatever suits each style best. The images should look radically different from each other. No text, captions, signatures or watermarks.
+
+If a request is refused because it names a specific artist or franchise, retry with a purely descriptive wording of the visual style.
+
+Save each result to the exact path given (convert to PNG and resize to 1024x1024 with sips if needed). Do not skip any. At the end, list the files you saved.
+
+- ./styles/809-clay-render.png : Untextured gray clay 3D render: matte uniform gray material on every surface, soft ambient occlusion, a studio HDRI with gentle shadows, a sculpted bust-and-body figure like a modeling preview. She is large, sculpted curly hair, round glasses, knit sweater texture sculpted in, holding a coffee cup, a croissant on a gray table. No color, no text.
+- ./styles/810-rice-paddy-art.png : Japanese rice paddy art (tanbo art) seen from a drone: a giant picture planted in a flooded field with rice varieties of different leaf colors, deep purple, yellow, white and green, summer daylight, tiny farm roads and houses at the edges. The planted picture is a woman's portrait filling the field: curly hair, round glasses, holding a cup. No text.
+- ./styles/811-high-speed-flash.png : Harold Edgerton style high-speed flash photograph: an instant frozen by a microsecond strobe, coffee splashing out of a cup in a crisp crown of droplets, croissant flakes suspended in air, a pure black background, sharp specular highlights. She is large, curly hair frozen mid-swing, round glasses, mustard sweater, caught startled. No text.
+- ./styles/812-gond.png : Gond painting from central India: bold flat figures and animals filled entirely with patterns of fine dots, dashes and lines, bright acrylic colors on a plain background, a stylized tree of life with birds. She is large, curly hair filled with pattern, round glasses, mustard garment of dashes, holding a coffee cup. No text.
+
+hook: SessionStart
+hook: SessionStart Completed
+codex
+I’m using the imagegen skill to generate four fresh images with distinct compositions, then save each as a 1024×1024 PNG at the requested path.
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'cat /Users/manuelbieh/.agents/skills/using-superpowers/SKILL.md' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+exec
+/bin/zsh -lc 'cat /Users/manuelbieh/.codex/skills/.system/imagegen/SKILL.md' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+---
+name: using-superpowers
+description: Use when starting any conversation - establishes how to find and use skills, requiring Skill tool invocation before ANY response including clarifying questions
+---
+
+<SUBAGENT-STOP>
+If you were dispatched as a subagent to execute a specific task, skip this skill.
+</SUBAGENT-STOP>
+
+<EXTREMELY-IMPORTANT>
+If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
+
+IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
+
+This is not negotiable. This is not optional. You cannot rationalize your way out of this.
+</EXTREMELY-IMPORTANT>
+
+## Instruction Priority
+
+Superpowers skills override default system prompt behavior, but **user instructions always take precedence**:
+
+1. **User's explicit instructions** (CLAUDE.md, GEMINI.md, AGENTS.md, direct requests) — highest priority
+2. **Superpowers skills** — override default system behavior where they conflict
+3. **Default system prompt** — lowest priority
+
+If CLAUDE.md, GEMINI.md, or AGENTS.md says "don't use TDD" and a skill says "always use TDD," follow the user's instructions. The user is in control.
+
+## How to Access Skills
+
+**In Claude Code:** Use the `Skill` tool. When you invoke a skill, its content is loaded and presented to you—follow it directly. Never use the Read tool on skill files.
+
+**In Copilot CLI:** Use the `skill` tool. Skills are auto-discovered from installed plugins. The `skill` tool works the same as Claude Code's `Skill` tool.
+
+**In Gemini CLI:** Skills activate via the `activate_skill` tool. Gemini loads skill metadata at session start and activates the full content on demand.
+
+**In other environments:** Check your platform's documentation for how skills are loaded.
+
+## Platform Adaptation
+
+Skills use Claude Code tool names. Non-CC platforms: see `references/copilot-tools.md` (Copilot CLI), `references/codex-tools.md` (Codex) for tool equivalents. Gemini CLI users get the tool mapping loaded automatically via GEMINI.md.
+
+# Using Skills
+
+## The Rule
+
+**Invoke relevant or requested skills BEFORE any response or action.** Even a 1% chance a skill might apply means that you should invoke the skill to check. If an invoked skill turns out to be wrong for the situation, you don't need to use it.
+
+```dot
+digraph skill_flow {
+    "User message received" [shape=doublecircle];
+    "About to EnterPlanMode?" [shape=doublecircle];
+    "Already brainstormed?" [shape=diamond];
+    "Invoke brainstorming skill" [shape=box];
+    "Might any skill apply?" [shape=diamond];
+    "Invoke Skill tool" [shape=box];
+    "Announce: 'Using [skill] to [purpose]'" [shape=box];
+    "Has checklist?" [shape=diamond];
+    "Create TodoWrite todo per item" [shape=box];
+    "Follow skill exactly" [shape=box];
+    "Respond (including clarifications)" [shape=doublecircle];
+
+    "About to EnterPlanMode?" -> "Already brainstormed?";
+    "Already brainstormed?" -> "Invoke brainstorming skill" [label="no"];
+    "Already brainstormed?" -> "Might any skill apply?" [label="yes"];
+    "Invoke brainstorming skill" -> "Might any skill apply?";
+
+    "User message received" -> "Might any skill apply?";
+    "Might any skill apply?" -> "Invoke Skill tool" [label="yes, even 1%"];
+    "Might any skill apply?" -> "Respond (including clarifications)" [label="definitely not"];
+    "Invoke Skill tool" -> "Announce: 'Using [skill] to [purpose]'";
+    "Announce: 'Using [skill] to [purpose]'" -> "Has checklist?";
+    "Has checklist?" -> "Create TodoWrite todo per item" [label="yes"];
+    "Has checklist?" -> "Follow skill exactly" [label="no"];
+    "Create TodoWrite todo per item" -> "Follow skill exactly";
+}
+```
+
+## Red Flags
+
+These thoughts mean STOP—you're rationalizing:
+
+| Thought | Reality |
+|---------|---------|
+| "This is just a simple question" | Questions are tasks. Check for skills. |
+| "I need more context first" | Skill check comes BEFORE clarifying questions. |
+| "Let me explore the codebase first" | Skills tell you HOW to explore. Check first. |
+| "I can check git/files quickly" | Files lack conversation context. Check for skills. |
+| "Let me gather information first" | Skills tell you HOW to gather information. |
+| "This doesn't need a formal skill" | If a skill exists, use it. |
+| "I remember this skill" | Skills evolve. Read current version. |
+| "This doesn't count as a task" | Action = task. Check for skills. |
+| "The skill is overkill" | Simple things become complex. Use it. |
+| "I'll just do this one thing first" | Check BEFORE doing anything. |
+| "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
+| "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
+
+## Skill Priority
+
+When multiple skills could apply, use this order:
+
+1. **Process skills first** (brainstorming, debugging) - these determine HOW to approach the task
+2. **Implementation skills second** (frontend-design, mcp-builder) - these guide execution
+
+"Let's build X" → brainstorming first, then implementation skills.
+"Fix this bug" → debugging first, then domain-specific skills.
+
+## Skill Types
+
+**Rigid** (TDD, debugging): Follow exactly. Don't adapt away discipline.
+
+**Flexible** (patterns): Adapt principles to context.
+
+The skill itself tells you which.
+
+## User Instructions
+
+Instructions say WHAT, not HOW. "Add X" or "Fix Y" doesn't mean skip workflows.
+
+ succeeded in 0ms:
+---
+name: "imagegen"
+description: "Generate or edit raster images when the task benefits from AI-created bitmap visuals such as photos, illustrations, textures, sprites, mockups, or transparent-background cutouts. Use when Codex should create a brand-new image, transform an existing image, or derive visual variants from references, and the output should be a bitmap asset rather than repo-native code or vector. Do not use when the task is better handled by editing existing SVG/vector/code-native assets, extending an established icon or logo system, or building the visual directly in HTML/CSS/canvas."
+---
+
+# Image Generation Skill
+
+Generates or edits images for the current project (for example website assets, game assets, UI mockups, product mockups, wireframes, logo design, photorealistic images, or infographics).
+
+## Top-level modes and rules
+
+This skill has exactly two top-level modes:
+
+- **Default built-in tool mode (preferred):** built-in `image_gen` tool for image generation, editing, and transparent-image requests. Does not require `OPENAI_API_KEY`.
+- **Fallback CLI mode:** `scripts/image_gen.py` CLI. Use when the user explicitly asks for or confirms the CLI/API/model path. Requires `OPENAI_API_KEY`.
+
+Within CLI fallback, the CLI exposes three subcommands:
+
+- `generate`
+- `edit`
+- `generate-batch`
+
+Rules:
+- Use the built-in `image_gen` tool by default for normal image generation and editing requests.
+- Do not switch to CLI fallback for ordinary quality, size, or file-path control.
+- For transparent images, ask built-in `image_gen` for a transparent background and preserve the generated alpha.
+- Never silently switch from built-in `image_gen` or CLI `gpt-image-2` to CLI `gpt-image-1.5`; ask the user first unless they explicitly requested `gpt-image-1.5`.
+- The word `batch` by itself does not mean CLI fallback. If the user asks for many assets or says to batch-generate assets without explicitly asking for CLI/API/model controls, stay on the built-in path and issue one built-in call per requested asset or variant.
+- If the built-in tool fails or is unavailable, tell the user the CLI fallback exists and that it requires `OPENAI_API_KEY`. Proceed only if the user explicitly asks for that fallback.
+- If the user explicitly asks for CLI mode, use the bundled `scripts/image_gen.py` workflow. Do not create one-off SDK runners.
+- Never modify `scripts/image_gen.py`. If something is missing, ask the user before doing anything else.
+
+Built-in save-path policy:
+- In built-in tool mode, Codex saves generated images under `$CODEX_HOME/*` by default.
+- Do not describe or rely on OS temp as the default built-in destination.
+- Do not describe or rely on a destination-path argument (if any) on the built-in `image_gen` tool. If a specific location is needed, generate first and then move or copy the selected output from `$CODEX_HOME/generated_images/...`.
+- Save-path precedence in built-in mode:
+  1. If the user names a destination, move or copy the selected output there.
+  2. If the image is meant for the current project, move or copy the final selected image into the workspace before finishing.
+  3. If the image is only for preview or brainstorming, render it inline; the underlying file can remain at the default `$CODEX_HOME/*` path.
+- Never leave a project-referenced asset only at the default `$CODEX_HOME/*` path.
+- Do not overwrite an existing asset unless the user explicitly asked for replacement; otherwise create a sibling versioned filename such as `hero-v2.png` or `item-icon-edited.png`.
+
+Shared prompt guidance for both modes lives in `references/prompting.md` and `references/sample-prompts.md`.
+
+Fallback-only docs/resources for CLI mode:
+- `references/cli.md`
+- `references/image-api.md`
+- `references/codex-network.md`
+- `scripts/image_gen.py`
+
+## When to use
+- Generate a new image (concept art, product shot, cover, website hero)
+- Generate a new image using one or more reference images for style, composition, or mood
+- Edit an existing image (inpainting, lighting or weather transformations, background replacement, object removal, compositing, transparent background)
+- Produce many assets or variants for one task
+
+## When not to use
+- Extending or matching an existing SVG/vector icon set, logo system, or illustration library inside the repo
+- Creating simple shapes, diagrams, wireframes, or icons that are better produced directly in SVG, HTML/CSS, or canvas
+- Making a small project-local asset edit when the source file already exists in an editable native format
+- Any task where the user clearly wants deterministic code-native output instead of a generated bitmap
+
+## Decision tree
+
+Think about two separate questions:
+
+1. **Intent:** is this a new image or an edit of an existing image?
+2. **Execution strategy:** is this one asset or many assets/variants?
+
+Intent:
+- If the user wants to modify an existing image while preserving parts of it, treat the request as **edit**.
+- If the user provides images only as references for style, composition, mood, or subject guidance, treat the request as **generate**.
+- If the user provides no images, treat the request as **generate**.
+
+Built-in edit semantics:
+- Built-in edit mode is for images already visible in the conversation context, such as attached images or images generated earlier in the thread.
+- If the user wants to edit a local image file with the built-in tool, first load it with built-in `view_image` tool so the image is visible in the conversation context, then proceed with the built-in edit flow.
+- Do not promise arbitrary filesystem-path editing through the built-in tool.
+- If a local file still needs direct file-path control, masks, or other explicit CLI-only parameters, use the explicit CLI fallback only when the user asks for it.
+- For edits, preserve invariants aggressively and save non-destructively by default.
+
+Execution strategy:
+- In the built-in default path, produce many assets or variants by issuing one `image_gen` call per requested asset or variant.
+- In the CLI fallback path, use the CLI `generate-batch` subcommand only when the user explicitly chose CLI mode and needs many prompts/assets.
+- For many distinct assets, do not use `n` as a substitute for separate prompts. `n` is for variants of one prompt; distinct assets need distinct built-in calls or distinct CLI `generate-batch` jobs.
+
+Assume the user wants a new image unless they clearly ask to change an existing one.
+
+## Workflow
+1. Decide the top-level mode: built-in by default, including transparent-output requests; fallback CLI only if explicitly requested or confirmed.
+2. Decide the intent: `generate` or `edit`.
+3. Decide whether the output is preview-only or meant to be consumed by the current project.
+4. Decide the execution strategy: single asset vs repeated built-in calls vs CLI `generate-batch`.
+5. Collect inputs up front: prompt(s), exact text (verbatim), constraints/avoid list, and any input images.
+6. For every input image, label its role explicitly:
+   - reference image
+   - edit target
+   - supporting insert/style/compositing input
+7. If the edit target is only on the local filesystem and you are staying on the built-in path, inspect it with `view_image` first so the image is available in conversation context.
+8. If the user asked for a photo, illustration, sprite, product image, banner, or other explicitly raster-style asset, use `image_gen` rather than substituting SVG/HTML/CSS placeholders. If the request is for an icon, logo, or UI graphic that should match existing repo-native SVG/vector/code assets, prefer editing those directly instead.
+9. Augment the prompt based on specificity:
+   - If the user's prompt is already specific and detailed, normalize it into a clear spec without adding creative requirements.
+   - If the user's prompt is generic, add tasteful augmentation only when it materially improves output quality.
+10. Use the built-in `image_gen` tool by default.
+11. For transparent-output requests, ask built-in `image_gen` for a transparent background and preserve the generated alpha channel.
+12. Inspect outputs and validate: subject, style, composition, text accuracy, and invariants/avoid items.
+13. Iterate with a single targeted change, then re-check.
+14. For preview-only work, render the image inline; the underlying file may remain at the default `$CODEX_HOME/generated_images/...` path.
+15. For project-bound work, move or copy the selected artifact into the workspace and update any consuming code or references. Never leave a project-referenced asset only at the default `$CODEX_HOME/generated_images/...` path.
+16. For batches or multi-asset requests, persist every requested deliverable final in the workspace unless the user explicitly asked to keep outputs preview-only. Discarded variants do not need to be kept unless requested.
+17. If the user explicitly chooses or confirms the CLI fallback, then use the fallback-only docs for model, quality, size, `input_fidelity`, masks, output format, output paths, and network setup.
+18. Always report the final saved path(s) for any workspace-bound asset(s), plus the final prompt or prompt set and whether the built-in tool or fallback CLI mode was used.
+
+## Transparent image requests
+
+Ask built-in `image_gen` for a genuinely transparent background and preserve its alpha.
+
+## Prompt augmentation
+
+Reformat user prompts into a structured, production-oriented spec. Make the user's goal clearer and more actionable, but do not blindly add detail.
+
+Treat this as prompt-shaping guidance, not a closed schema. Use only the lines that help, and add a short extra labeled line when it materially improves clarity.
+
+### Specificity policy
+
+Use the user's prompt specificity to decide how much augmentation is appropriate:
+
+- If the prompt is already specific and detailed, preserve that specificity and only normalize/structure it.
+- If the prompt is generic, you may add tasteful augmentation when it will materially improve the result.
+
+Allowed augmentations:
+- composition or framing hints
+- polish level or intended-use hints
+- practical layout guidance
+- reasonable scene concreteness that supports the stated request
+
+Not allowed augmentations:
+- extra characters or objects that are not implied by the request
+- brand names, slogans, palettes, or narrative beats that are not implied
+- arbitrary side-specific placement unless the surrounding layout supports it
+
+## Use-case taxonomy (exact slugs)
+
+Classify each request into one of these buckets and keep the slug consistent across prompts and references.
+
+Generate:
+- photorealistic-natural — candid/editorial lifestyle scenes with real texture and natural lighting.
+- product-mockup — product/packaging shots, catalog imagery, merch concepts.
+- ui-mockup — app/web interface mockups and wireframes; specify the desired fidelity.
+- infographic-diagram — diagrams/infographics with structured layout and text.
+- scientific-educational — classroom explainers, scientific diagrams, and learning visuals with required labels and accuracy constraints.
+- ads-marketing — campaign concepts and ad creatives with audience, brand position, scene, and exact tagline/copy.
+- productivity-visual — slide, chart, workflow, and data-heavy business visuals.
+- logo-brand — logo/mark exploration, vector-friendly.
+- illustration-story — comics, children’s book art, narrative scenes.
+- stylized-concept — style-driven concept art, 3D/stylized renders.
+- historical-scene — period-accurate/world-knowledge scenes.
+
+Edit:
+- text-localization — translate/replace in-image text, preserve layout.
+- identity-preserve — try-on, person-in-scene; lock face/body/pose.
+- precise-object-edit — remove/replace a specific element (including interior swaps).
+- lighting-weather — time-of-day/season/atmosphere changes only.
+- background-extraction — transparent background / clean cutout. Ask built-in `image_gen` for actual transparency.
+- style-transfer — apply reference style while changing subject/scene.
+- compositing — multi-image insert/merge with matched lighting/perspective.
+- sketch-to-render — drawing/line art to photoreal render.
+
+## Shared prompt schema
+
+Use the following labeled spec as shared prompt scaffolding for both top-level modes:
+
+```text
+Use case: <taxonomy slug>
+Asset type: <where the asset will be used>
+Primary request: <user's main prompt>
+Input images: <Image 1: role; Image 2: role> (optional)
+Scene/backdrop: <environment>
+Subject: <main subject>
+Style/medium: <photo/illustration/3D/etc>
+Composition/framing: <wide/close/top-down; placement>
+Lighting/mood: <lighting + mood>
+Color palette: <palette notes>
+Materials/textures: <surface details>
+Text (verbatim): "<exact text>"
+Constraints: <must keep/must avoid>
+Avoid: <negative constraints>
+```
+
+Notes:
+- `Asset type` and `Input images` are prompt scaffolding, not dedicated CLI flags.
+- `Scene/backdrop` refers to the visual setting. It is not the same as the fallback CLI `background` parameter, which controls output transparency behavior.
+- Fallback-only execution notes such as `Quality:`, `Input fidelity:`, masks, output format, and output paths belong in the CLI path only. Do not treat them as built-in `image_gen` tool arguments.
+
+Augmentation rules:
+- Keep it short.
+- Add only the details needed to improve the prompt materially.
+- For edits, explicitly list invariants (`change only X; keep Y unchanged`).
+- If any critical detail is missing and blocks success, ask a question; otherwise proceed.
+
+## Examples
+
+### Generation example (hero image)
+```text
+Use case: product-mockup
+Asset type: landing page hero
+Primary request: a minimal hero image of a ceramic coffee mug
+Style/medium: clean product photography
+Composition/framing: wide composition with usable negative space for page copy if needed
+Lighting/mood: soft studio lighting
+Constraints: no logos, no text, no watermark
+```
+
+### Edit example (invariants)
+```text
+Use case: precise-object-edit
+Asset type: product photo background replacement
+Primary request: replace only the background with a warm sunset gradient
+Constraints: change only the background; keep the product and its edges unchanged; no text; no watermark
+```
+
+## Prompting best practices
+- Structure prompt as scene/backdrop -> subject -> details -> constraints.
+- Include intended use (ad, UI mock, infographic) to set the mode and polish level.
+- Use camera/composition language for photorealism.
+- Only use SVG/vector stand-ins when the user explicitly asked for vector output or a non-image placeholder.
+- Quote exact text and specify typography + placement.
+- For tricky words, spell them letter-by-letter and require verbatim rendering.
+- For multi-image inputs, reference images by index and describe how they should be used.
+- For edits, repeat invariants every iteration to reduce drift.
+- Iterate with single-change follow-ups.
+- If the prompt is generic, add only the extra detail that will materially help.
+- If the prompt is already detailed, normalize it instead of expanding it.
+- For CLI fallback only, see `references/cli.md` and `references/image-api.md` for model, `quality`, `input_fidelity`, masks, output format, and output-path guidance.
+- For transparent images, ask built-in `image_gen` for actual transparency and preserve its alpha.
+
+More principles shared by both modes: `references/prompting.md`.
+Copy/paste specs shared by both modes: `references/sample-prompts.md`.
+
+## Guidance by asset type
+Asset-type templates (website assets, game assets, wireframes, logo) are consolidated in `references/sample-prompts.md`.
+
+## gpt-image-2 guidance for CLI fallback
+
+The fallback CLI defaults to `gpt-image-2`.
+
+- Use `gpt-image-2` for new CLI/API workflows unless the user confirms a different model.
+- CLI `gpt-image-2` does not support `background=transparent`; ask before using `gpt-image-1.5` unless the user explicitly requested that model.
+- `gpt-image-2` always uses high fidelity for image inputs; do not set `input_fidelity` with this model.
+- `gpt-image-2` supports `quality` values `low`, `medium`, `high`, and `auto`.
+- Use `quality low` for fast drafts, thumbnails, and quick iterations. Use `medium`, `high`, or `auto` for final assets, dense text, diagrams, identity-sensitive edits, or high-resolution outputs.
+- Square images are typically fastest to generate. Use `1024x1024` for fast square drafts.
+- If the user asks for 4K-style output, use `3840x2160` for landscape or `2160x3840` for portrait.
+- `gpt-image-2` size may be `auto` or `WIDTHxHEIGHT` if all constraints hold: max edge `<= 3840px`, both edges multiples of `16px`, long-to-short ratio `<= 3:1`, total pixels between `655,360` and `8,294,400`.
+
+Popular `gpt-image-2` sizes:
+- `1024x1024` square
+- `1536x1024` landscape
+- `1024x1536` portrait
+- `2048x2048` 2K square
+- `2048x1152` 2K landscape
+- `3840x2160` 4K landscape
+- `2160x3840` 4K portrait
+- `auto`
+
+## Fallback CLI mode only
+
+### Temp and output conventions
+These conventions apply only to the CLI fallback. They do not describe built-in `image_gen` output behavior.
+- Use `tmp/imagegen/` for intermediate files (for example JSONL batches); delete them when done.
+- Write final artifacts under `output/imagegen/`.
+- Use `--out` or `--out-dir` to control output paths; keep filenames stable and descriptive.
+
+### Dependencies
+Prefer `uv` for dependency management in this repo.
+
+Required Python package:
+```bash
+uv pip install openai
+```
+
+Optional for image inspection and downscaling:
+```bash
+uv pip install pillow
+```
+
+Portability note:
+- If you are using the installed skill outside this repo, install dependencies into that environment with its package manager.
+- In uv-managed environments, `uv pip install ...` remains the preferred path.
+
+### Environment
+- `OPENAI_API_KEY` must be set for live API calls.
+- Do not ask the user for `OPENAI_API_KEY` when using the built-in `image_gen` tool.
+- Never ask the user to paste the full key in chat. Ask them to set it locally and confirm when ready.
+
+If the key is missing, give the user these steps:
+1. Create an API key in the OpenAI platform UI: https://platform.openai.com/api-keys
+2. Set `OPENAI_API_KEY` as an environment variable in their system.
+3. Offer to guide them through setting the environment variable for their OS/shell if needed.
+
+If installation is not possible in this environment, tell the user which dependency is missing and how to install it into their active environment.
+
+### Script-mode notes
+- CLI commands + examples: `references/cli.md`
+- API parameter quick reference: `references/image-api.md`
+- Network approvals / sandbox settings for CLI mode: `references/codex-network.md`
+
+## Reference map
+- `references/prompting.md`: shared prompting principles for both modes.
+- `references/sample-prompts.md`: shared copy/paste prompt recipes for both modes.
+- `references/cli.md`: fallback-only CLI usage via `scripts/image_gen.py`.
+- `references/image-api.md`: fallback-only API/CLI parameter reference.
+- `references/codex-network.md`: fallback-only network/sandbox troubleshooting for CLI mode.
+- `scripts/image_gen.py`: fallback-only CLI implementation. Use only when the user explicitly chooses or confirms CLI mode.
+
+exec
+/bin/zsh -lc "pwd; rg --files -g 'AGENTS.md' -g '*.png' -g '*.jpg' -g '*.webp' -g '"'!node_modules'"' -g '"'!styles/**'"' ." in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2
+./.check.jpg
+./reference.png
+./dist/og.jpg
+./dist/reference.jpg
+./logs/709-spider-man-pointing-3arms.png
+./dist/thumbs/134-archer.webp
+./dist/thumbs/556-1950s-tv-commercial.webp
+./dist/thumbs/447-spirograph.webp
+./dist/thumbs/62-risograph.webp
+./dist/thumbs/234-rugrats.webp
+./dist/thumbs/222-string-art.webp
+./dist/thumbs/592-solarization.webp
+./dist/thumbs/533-barbie-dreamhouse.webp
+./dist/thumbs/265-vinyl-figure.webp
+./dist/thumbs/420-terrarium.webp
+./dist/thumbs/766-ryden.webp
+./dist/thumbs/431-tamagotchi.webp
+./dist/thumbs/599-fruit-crate-label.webp
+./dist/thumbs/246-metropolis-1927.webp
+./dist/thumbs/29-byzantine-mosaic.webp
+./dist/thumbs/325-lain.webp
+./dist/thumbs/390-wycinanki.webp
+./dist/thumbs/203-nes-zelda.webp
+./dist/thumbs/281-sienkiewicz.webp
+./dist/thumbs/665-mirrors-edge.webp
+./dist/thumbs/388-seed-packet.webp
+./dist/thumbs/444-subway-map.webp
+./dist/thumbs/751-tanguy.webp
+./dist/thumbs/94-magritte.webp
+./dist/thumbs/542-ladybird-books.webp
+./dist/thumbs/662-real-monsters.webp
+./dist/thumbs/655-john-carpenter.webp
+./dist/thumbs/603-de-chirico.webp
+./dist/thumbs/580-holy-mountain.webp
+./dist/thumbs/309-pre-raphaelite.webp
+./dist/thumbs/608-eyvind-earle.webp
+./dist/thumbs/99-cave-painting.webp
+./dist/thumbs/273-mignola.webp
+./dist/thumbs/433-arcade-side-art.webp
+./dist/thumbs/757-sorayama.webp
+./dist/thumbs/190-avatar.webp
+./dist/thumbs/115-sand-sculpture.webp
+./dist/thumbs/268-tin-toy.webp
+./dist/thumbs/737-ikuhara.webp
+./dist/thumbs/719-diane-arbus.webp
+./dist/thumbs/316-animaniacs.webp
+./dist/thumbs/616-fairly-oddparents.webp
+./dist/thumbs/292-sendak.webp
+./dist/thumbs/457-porcelain-figurine.webp
+./dist/thumbs/314-phineas-ferb.webp
+./dist/thumbs/654-ozu.webp
+./dist/thumbs/376-wood-relief.webp
+./dist/thumbs/244-mob-psycho.webp
+./dist/thumbs/507-grosz.webp
+./dist/thumbs/414-knitting-chart.webp
+./dist/thumbs/333-wong-kar-wai.webp
+./dist/thumbs/657-park-chan-wook.webp
+./dist/thumbs/200-fleischer-superman.webp
+./dist/thumbs/67-fashion-illustration.webp
+./dist/thumbs/295-searle.webp
+./dist/thumbs/632-enki-bilal.webp
+./dist/thumbs/206-hollow-knight.webp
+./dist/thumbs/199-lupin.webp
+./dist/thumbs/532-godzilla-1954.webp
+./dist/thumbs/165-asterix.webp
+./dist/thumbs/643-the-lighthouse.webp
+./dist/thumbs/02-simpsons.webp
+./dist/thumbs/453-alebrije.webp
+./dist/thumbs/357-little-nemo.webp
+./dist/thumbs/114-marionette.webp
+./dist/thumbs/161-flash-animation.webp
+./dist/thumbs/345-stardew.webp
+./dist/thumbs/208-okami.webp
+./dist/thumbs/512-sanrio.webp
+./dist/thumbs/425-maya-stela.webp
+./dist/thumbs/598-fisher-price.webp
+./dist/thumbs/229-van-eyck.webp
+./dist/thumbs/196-evangelion.webp
+./dist/thumbs/417-coin.webp
+./dist/thumbs/424-crop-circle.webp
+./dist/thumbs/204-katamari.webp
+./dist/thumbs/349-night-in-the-woods.webp
+./dist/thumbs/552-1930s-newsreel.webp
+./dist/thumbs/606-remedios-varo.webp
+./dist/thumbs/263-laser-yearbook.webp
+./dist/thumbs/52-persian-miniature.webp
+./dist/thumbs/779-kim-possible.webp
+./dist/thumbs/209-undertale.webp
+./dist/thumbs/146-gilliam-cutout.webp
+./dist/thumbs/07-claymation.webp
+./dist/thumbs/217-lego-mosaic.webp
+./dist/thumbs/781-film-noir.webp
+./dist/thumbs/729-koons.webp
+./dist/thumbs/384-swiss-poster.webp
+./dist/thumbs/649-ludwig-bemelmans.webp
+./dist/thumbs/290-persepolis.webp
+./dist/thumbs/468-rockos-modern-life.webp
+./dist/thumbs/06-lego.webp
+./dist/thumbs/177-caravaggio.webp
+./dist/thumbs/555-1950s-appliance-ad.webp
+./dist/thumbs/620-scavengers-reign.webp
+./dist/thumbs/10-pop-art.webp
+./dist/thumbs/492-gashapon.webp
+./dist/thumbs/364-golden-books.webp
+./dist/thumbs/440-spreadsheet-art.webp
+./dist/thumbs/739-asano.webp
+./dist/thumbs/346-overwatch.webp
+./dist/thumbs/464-lucian-freud.webp
+./dist/thumbs/117-courtroom-sketch.webp
+./dist/thumbs/328-madoka.webp
+./dist/thumbs/499-kaleidoscope.webp
+./dist/thumbs/182-kandinsky.webp
+./dist/thumbs/469-ed-edd-eddy.webp
+./dist/thumbs/587-love-and-rockets.webp
+./dist/thumbs/618-regular-show.webp
+./dist/thumbs/205-cuphead.webp
+./dist/thumbs/550-1920s-home-movie.webp
+./dist/thumbs/233-wyeth.webp
+./dist/thumbs/312-dexters-lab.webp
+./dist/thumbs/725-friedrich.webp
+./dist/thumbs/578-berserk.webp
+./dist/thumbs/675-universal-monsters.webp
+./dist/thumbs/258-persona-5.webp
+./dist/thumbs/378-glass-figurine.webp
+./dist/thumbs/795-scrimshaw.webp
+./dist/thumbs/25-gothic-stop-motion.webp
+./dist/thumbs/20-rubber-hose.webp
+./dist/thumbs/494-nianhua.webp
+./dist/thumbs/254-among-us.webp
+./dist/thumbs/460-soap-bubble.webp
+./dist/thumbs/84-perler-beads.webp
+./dist/thumbs/274-chris-ware.webp
+./dist/thumbs/668-tillie-walden.webp
+./dist/thumbs/247-technicolor-musical.webp
+./dist/thumbs/421-underwater.webp
+./dist/thumbs/646-martin-parr.webp
+./dist/thumbs/72-muralism.webp
+./dist/thumbs/19-vaporwave.webp
+./dist/thumbs/184-schiele.webp
+./dist/thumbs/152-sugimori.webp
+./dist/thumbs/287-tezuka.webp
+./dist/thumbs/595-marquetry.webp
+./dist/thumbs/101-game-boy.webp
+./dist/thumbs/718-faith-ringgold.webp
+./dist/thumbs/623-portal.webp
+./dist/thumbs/270-coloring-book.webp
+./dist/thumbs/338-atari-2600.webp
+./dist/thumbs/181-basquiat.webp
+./dist/thumbs/491-nutcracker.webp
+./dist/thumbs/638-she-ra.webp
+./dist/thumbs/463-miro.webp
+./dist/thumbs/102-ascii-art.webp
+./dist/thumbs/677-apichatpong.webp
+./dist/thumbs/519-obra-dinn.webp
+./dist/thumbs/730-giger.webp
+./dist/thumbs/670-amy-sherald.webp
+./dist/thumbs/554-1940s-pulp-cover.webp
+./dist/thumbs/671-alice-neel.webp
+./dist/thumbs/298-oliver-jeffers.webp
+./dist/thumbs/483-autochrome.webp
+./dist/thumbs/127-urban-sketching.webp
+./dist/thumbs/130-family-guy.webp
+./dist/thumbs/481-sempe.webp
+./dist/thumbs/155-magical-girl.webp
+./dist/thumbs/285-hilda.webp
+./dist/thumbs/699-dicorcia.webp
+./dist/thumbs/628-edmund-dulac.webp
+./dist/thumbs/721-dragons-crown.webp
+./dist/thumbs/560-1960s-airline-ad.webp
+./dist/thumbs/344-limbo.webp
+./dist/thumbs/796-ansel-adams.webp
+./dist/thumbs/324-chainsaw-man.webp
+./dist/thumbs/782-matrix.webp
+./dist/thumbs/93-munch.webp
+./dist/thumbs/126-newsprint.webp
+./dist/thumbs/403-watermelon-carving.webp
+./dist/thumbs/144-spongebob.webp
+./dist/thumbs/573-alma-thomas.webp
+./dist/thumbs/690-krazy-kat.webp
+./dist/thumbs/784-mononoke-2007.webp
+./dist/thumbs/300-jon-klassen.webp
+./dist/thumbs/583-gris.webp
+./dist/thumbs/712-roll-safe.webp
+./dist/thumbs/797-slit-scan.webp
+./dist/thumbs/509-mr-men.webp
+./dist/thumbs/439-emoji-mosaic.webp
+./dist/thumbs/771-russian-icon.webp
+./dist/thumbs/341-ff7.webp
+./dist/thumbs/471-amano.webp
+./dist/thumbs/320-smurfs.webp
+./dist/thumbs/523-post-it-mosaic.webp
+./dist/thumbs/221-topiary.webp
+./dist/thumbs/160-myst.webp
+./dist/thumbs/342-botw.webp
+./dist/thumbs/691-edward-koren.webp
+./dist/thumbs/12-van-gogh.webp
+./dist/thumbs/356-mafalda.webp
+./dist/thumbs/689-chicory.webp
+./dist/thumbs/103-balloon-animal.webp
+./dist/thumbs/761-sfar.webp
+./dist/thumbs/503-janosch.webp
+./dist/thumbs/419-ship-in-bottle.webp
+./dist/thumbs/786-mii.webp
+./dist/thumbs/286-hugo-pratt.webp
+./dist/thumbs/412-museum-diorama.webp
+./dist/thumbs/249-shaw-brothers.webp
+./dist/thumbs/545-hard-candy.webp
+./dist/thumbs/269-travel-poster.webp
+./dist/thumbs/582-twin-peaks.webp
+./dist/thumbs/744-redon.webp
+./dist/thumbs/308-murakami.webp
+./dist/thumbs/619-venture-bros.webp
+./dist/thumbs/51-edward-hopper.webp
+./dist/thumbs/767-briggs.webp
+./dist/thumbs/121-bollywood-poster.webp
+./dist/thumbs/305-rousseau.webp
+./dist/thumbs/46-voxel.webp
+./dist/thumbs/289-single-panel-gag.webp
+./dist/thumbs/497-papel-picado.webp
+./dist/thumbs/770-escher.webp
+./dist/thumbs/251-sonic.webp
+./dist/thumbs/773-shaun-tan.webp
+./dist/thumbs/50-pointillism.webp
+./dist/thumbs/660-infinity-train.webp
+./dist/thumbs/611-kurosawa.webp
+./dist/thumbs/609-saul-leiter.webp
+./dist/thumbs/748-wrightson.webp
+./dist/thumbs/299-victo-ngai.webp
+./dist/thumbs/79-crayon-drawing.webp
+./dist/thumbs/723-charlie-and-lola.webp
+./dist/thumbs/728-leger.webp
+./dist/thumbs/673-fargo.webp
+./dist/thumbs/645-gregory-crewdson.webp
+./dist/thumbs/352-garfield.webp
+./dist/thumbs/339-c64.webp
+./dist/thumbs/88-delft-tile.webp
+./dist/thumbs/585-rayman.webp
+./dist/thumbs/379-pancake-art.webp
+./dist/thumbs/521-instagram-2012.webp
+./dist/thumbs/03-cubism.webp
+./dist/thumbs/516-kubo.webp
+./dist/thumbs/722-ace-attorney.webp
+./dist/thumbs/319-care-bears.webp
+./dist/thumbs/686-monogatari.webp
+./dist/thumbs/405-moss-art.webp
+./dist/thumbs/175-toast-art.webp
+./dist/thumbs/396-polly-pocket.webp
+./dist/thumbs/264-playmobil.webp
+./dist/thumbs/272-pysanka.webp
+./dist/thumbs/465-durer-woodcut.webp
+./dist/full/259-hollywood-glamour.jpg
+./dist/full/751-tanguy.jpg
+./dist/full/09-manga.jpg
+./dist/full/620-scavengers-reign.jpg
+./dist/full/04-ukiyo-e.jpg
+./dist/full/651-saul-steinberg.jpg
+./dist/full/478-crash-bandicoot.jpg
+./dist/full/323-spy-family.jpg
+./dist/full/797-slit-scan.jpg
+./dist/full/714-lisa-frank.jpg
+./dist/full/268-tin-toy.jpg
+./dist/full/199-lupin.jpg
+./dist/full/669-jeff-lemire.jpg
+./dist/full/595-marquetry.jpg
+./dist/full/771-russian-icon.jpg
+./dist/full/556-1950s-tv-commercial.jpg
+./dist/full/85-pompeii-fresco.jpg
+./dist/full/476-papers-please.jpg
+./dist/full/549-1920s-magazine-ad.jpg
+./dist/full/618-regular-show.jpg
+./dist/full/296-leyendecker.jpg
+./dist/full/124-shinkai.jpg
+./dist/full/252-doom.jpg
+./dist/full/115-sand-sculpture.jpg
+./dist/full/510-miffy.jpg
+./dist/full/416-cameo.jpg
+./dist/full/180-rothko.jpg
+./dist/full/224-jazz-record.jpg
+./dist/full/335-spaghetti-western.jpg
+./dist/full/43-peanuts.jpg
+./dist/full/543-electron-microscope.jpg
+./dist/full/321-inspector-gadget.jpg
+./dist/full/168-fantasy-card.jpg
+./dist/full/80-etch-a-sketch.jpg
+./dist/full/609-saul-leiter.jpg
+./dist/full/541-fashion-plate.jpg
+./dist/full/34-mexican-folk.jpg
+./dist/full/410-da-vinci-notebook.jpg
+./dist/full/48-ink-wash.jpg
+./dist/full/257-oregon-trail.jpg
+./dist/full/422-fireworks.jpg
+./dist/full/316-animaniacs.jpg
+./dist/full/364-golden-books.jpg
+./dist/full/83-double-exposure.jpg
+./dist/full/738-nihei.jpg
+./dist/full/303-gauguin.jpg
+./dist/full/355-watchmen.jpg
+./dist/full/330-blade-runner.jpg
+./dist/full/506-otto-dix.jpg
+./dist/full/213-disposable-camera.jpg
+./dist/full/353-bone.jpg
+./dist/full/72-muralism.jpg
+./dist/full/433-arcade-side-art.jpg
+./dist/full/391-talavera.jpg
+./dist/full/394-sylvanian.jpg
+./dist/full/407-holo-card.jpg
+./dist/full/269-travel-poster.jpg
+./dist/full/752-condo.jpg
+./dist/full/430-vectrex.jpg
+./dist/full/339-c64.jpg
+./dist/full/715-darkest-dungeon.jpg
+./dist/full/645-gregory-crewdson.jpg
+./dist/full/773-shaun-tan.jpg
+./dist/full/148-fantastic-planet.jpg
+./dist/full/783-jacques-demy.jpg
+./dist/full/62-risograph.jpg
+./dist/full/513-boondocks.jpg
+./dist/full/568-1990s-kids-commercial.jpg
+./dist/full/713-bernie-chair.jpg
+./dist/full/232-botero.jpg
+./dist/full/101-game-boy.jpg
+./dist/full/399-isometric-room.jpg
+./dist/full/59-kawaii-sticker.jpg
+./dist/full/739-asano.jpg
+./dist/full/267-patchwork-quilt.jpg
+./dist/full/225-matisse-cutouts.jpg
+./dist/full/723-charlie-and-lola.jpg
+./dist/full/550-1920s-home-movie.jpg
+./dist/full/188-hey-arnold.jpg
+./dist/full/256-grim-fandango.jpg
+./dist/full/397-peg-doll.jpg
+./dist/full/70-kirby-comic.jpg
+./dist/full/414-knitting-chart.jpg
+./dist/full/787-habbo.jpg
+./dist/full/793-jack-o-lantern.jpg
+./dist/full/246-metropolis-1927.jpg
+./dist/full/530-teletubbies.jpg
+./dist/full/234-rugrats.jpg
+./dist/full/685-leiji-matsumoto.jpg
+./dist/full/652-charles-addams.jpg
+./dist/full/195-satoshi-kon.jpg
+./dist/full/349-night-in-the-woods.jpg
+./dist/full/172-tiki-mug.jpg
+./dist/full/642-fellini.jpg
+./dist/full/745-homer.jpg
+./dist/full/427-royal-icing-cookie.jpg
+./dist/full/404-coffee-bean-mosaic.jpg
+./dist/full/348-kings-quest.jpg
+./dist/full/171-matryoshka.jpg
+./dist/full/322-demon-slayer.jpg
+./dist/full/612-suspiria.jpg
+./dist/full/540-blankets.jpg
+./dist/full/390-wycinanki.jpg
+./dist/full/671-alice-neel.jpg
+./dist/full/46-voxel.jpg
+./dist/full/200-fleischer-superman.jpg
+./dist/full/406-shadow-sculpture.jpg
+./dist/full/720-don-bluth.jpg
+./dist/full/229-van-eyck.jpg
+./dist/full/120-sims-isometric.jpg
+./dist/full/21-blueprint.jpg
+./dist/full/699-dicorcia.jpg
+./dist/full/784-mononoke-2007.jpg
+./dist/full/702-distracted-boyfriend.jpg
+./dist/full/13-stained-glass.jpg
+./dist/full/104-fondant-cake.jpg
+./dist/full/764-thangka.jpg
+./dist/full/424-crop-circle.jpg
+./dist/full/511-babar.jpg
+./dist/full/388-seed-packet.jpg
+./dist/full/110-3d-emoji.jpg
+./dist/full/58-hanna-barbera.jpg
+./dist/full/123-bayeux-tapestry.jpg
+./dist/full/365-froud.jpg
+./dist/full/260-tilt-shift.jpg
+./dist/full/601-francis-bacon.jpg
+./dist/full/740-schuiten.jpg
+./dist/full/01-studio-ghibli.jpg
+./dist/full/746-cassatt.jpg
+./dist/full/644-midsommar.jpg
+./dist/full/51-edward-hopper.jpg
+./dist/full/634-strange-planet.jpg
+./dist/full/756-aoshima.jpg
+./dist/full/203-nes-zelda.jpg
+./dist/full/704-this-is-fine.jpg
+./dist/full/762-hasui.jpg
+./dist/full/127-urban-sketching.jpg
+./dist/full/440-spreadsheet-art.jpg
+./dist/full/338-atari-2600.jpg
+./dist/full/47-renaissance-fresco.jpg
+./dist/full/128-sargent.jpg
+./dist/full/664-bioshock.jpg
+./dist/full/222-string-art.jpg
+./dist/full/294-gorey.jpg
+./dist/full/64-latte-art.jpg
+./dist/full/162-ms-paint.jpg
+./dist/full/347-kirby-yarn.jpg
+./dist/full/76-spider-verse.jpg
+./dist/full/241-attack-on-titan.jpg
+./dist/full/79-crayon-drawing.jpg
+./dist/full/694-lyonel-feininger.jpg
+./dist/full/577-popeye-fleischer.jpg
+./dist/full/367-isometric-infographic.jpg
+./dist/full/526-sorolla.jpg
+./dist/full/84-perler-beads.jpg
+./dist/full/66-marble-statue.jpg
+./dist/full/103-balloon-animal.jpg
+./dist/full/733-norstein.jpg
+./dist/full/417-coin.jpg
+./dist/full/39-victorian-engraving.jpg
+./dist/full/207-team-fortress.jpg
+./dist/full/15-egyptian.jpg
+./dist/full/593-kirlian.jpg
+./dist/full/290-persepolis.jpg
+./dist/full/734-hosoda.jpg
+./dist/full/445-circuit-board.jpg
+./dist/full/529-pee-wee-playhouse.jpg
+./dist/full/594-shibori.jpg
+./dist/full/660-infinity-train.jpg
+./dist/full/202-diablo.jpg
+./dist/full/50-pointillism.jpg
+./dist/full/173-lite-brite.jpg
+./dist/full/161-flash-animation.jpg
+./dist/full/176-coffee-stain.jpg
+./dist/full/146-gilliam-cutout.jpg
+./dist/full/324-chainsaw-man.jpg
+./dist/full/637-my-little-pony.jpg
+./dist/full/54-animal-crossing.jpg
+./dist/full/496-palekh.jpg
+./dist/full/696-alex-katz.jpg
+./dist/full/183-toulouse-lautrec.jpg
+./dist/full/333-wong-kar-wai.jpg
+./dist/full/334-caligari.jpg
+./dist/full/41-storybook-watercolor.jpg
+./dist/full/286-hugo-pratt.jpg
+./dist/full/153-beavis-butthead.jpg
+./dist/full/677-apichatpong.jpg
+./dist/full/638-she-ra.jpg
+./dist/full/796-ansel-adams.jpg
+./dist/full/758-mcquarrie.jpg
+./dist/full/772-malika-favre.jpg
+./dist/full/71-pop-up-book.jpg
+./dist/full/716-beksinski.jpg
+./dist/full/147-yellow-submarine.jpg
+./dist/full/191-invader-zim.jpg
+./dist/full/774-van-allsburg.jpg
+./dist/full/08-pixel-art.jpg
+./dist/full/18-low-poly.jpg
+./dist/full/592-solarization.jpg
+./dist/full/201-street-fighter.jpg
+./dist/full/189-samurai-jack.jpg
+./dist/full/479-hewlett.jpg
+./dist/full/663-kentucky-route-zero.jpg
+./dist/full/464-lucian-freud.jpg
+./dist/full/262-thermal.jpg
+./dist/full/447-spirograph.jpg
+./dist/full/731-parrish.jpg
+./dist/full/528-thunderbirds.jpg
+./dist/full/140-over-the-garden-wall.jpg
+./dist/full/711-deep-fried-meme.jpg
+./dist/full/537-earthbound.jpg
+./dist/full/678-kore-eda.jpg
+./dist/full/284-scott-pilgrim.jpg
+./dist/full/204-katamari.jpg
+./dist/full/789-bobblehead.jpg
+./dist/full/130-family-guy.jpg
+./dist/full/258-persona-5.jpg
+./dist/full/477-fez.jpg
+./dist/full/631-philippe-druillet.jpg
+./dist/full/187-futurama.jpg
+./dist/full/560-1960s-airline-ad.jpg
+./dist/full/763-mughal.jpg
+./dist/full/443-topographic.jpg
+./dist/full/605-jacob-lawrence.jpg
+./dist/full/385-matchbox-label.jpg
+./dist/full/795-scrimshaw.jpg
+./dist/full/659-animagic.jpg
+./dist/full/707-wojak.jpg
+./dist/full/163-clip-art.jpg
+./dist/full/782-matrix.jpg
+./dist/full/55-ps1-graphics.jpg
+./dist/full/617-ducktales.jpg
+./dist/full/623-portal.jpg
+./dist/full/159-hd-2d.jpg
+./dist/full/309-pre-raphaelite.jpg
+./dist/full/215-polaroid.jpg
+./dist/full/599-fruit-crate-label.jpg
+./dist/full/655-john-carpenter.jpg
+./dist/full/708-always-has-been.jpg
+./dist/full/16-cross-stitch.jpg
+./dist/full/164-moomin.jpg
+./dist/full/423-drone-show.jpg
+./dist/full/473-svankmajer.jpg
+./dist/full/619-venture-bros.jpg
+./dist/full/725-friedrich.jpg
+./dist/full/273-mignola.jpg
+./dist/full/44-keith-haring.jpg
+./dist/full/170-banknote.jpg
+./dist/full/589-syd-mead.jpg
+./dist/full/263-laser-yearbook.jpg
+./dist/full/238-scooby-doo.jpg
+./dist/full/343-ori.jpg
+./dist/full/705-drake-format.jpg
+./dist/full/380-cardboard.jpg
+./dist/full/143-bojack.jpg
+./dist/full/679-de-palma.jpg
+./dist/full/340-zx-spectrum.jpg
+./dist/full/89-origami.jpg
+./dist/full/770-escher.jpg
+./dist/full/381-wire-sculpture.jpg
+./dist/full/471-amano.jpg
+./dist/full/449-soviet-metro-mosaic.jpg
+./dist/full/92-monet.jpg
+./dist/full/109-steadman.jpg
+./dist/full/792-needle-felt.jpg
+./dist/full/253-journey.jpg
+./dist/full/781-film-noir.jpg
+./dist/full/282-90s-superhero.jpg
+./dist/full/382-bento.jpg
+./dist/full/302-el-greco.jpg
+./dist/full/301-goya.jpg
+./dist/full/361-ungerer.jpg
+./dist/full/411-mars-rover.jpg
+./dist/full/428-early-cgi.jpg
+./dist/full/317-johnny-bravo.jpg
+./dist/full/362-charley-harper.jpg
+./dist/full/192-steven-universe.jpg
+./dist/full/485-film-negative.jpg
+./dist/full/667-jillian-tamaki.jpg
+./dist/full/675-universal-monsters.jpg
+./dist/full/265-vinyl-figure.jpg
+./dist/full/341-ff7.jpg
+./dist/full/727-cezanne.jpg
+./dist/full/624-psychonauts.jpg
+./dist/full/606-remedios-varo.jpg
+./dist/full/403-watermelon-carving.jpg
+./dist/full/99-cave-painting.jpg
+./dist/full/244-mob-psycho.jpg
+./dist/full/236-tmnt-1987.jpg
+./dist/full/230-hundertwasser.jpg
+./dist/full/514-castlevania.jpg
+./dist/full/742-vallotton.jpg
+./dist/full/325-lain.jpg
+./dist/full/614-del-toro.jpg
+./dist/full/42-ligne-claire.jpg
+./dist/full/555-1950s-appliance-ad.jpg
+./dist/full/276-crumb.jpg
+./dist/full/359-rackham.jpg
+./dist/full/709-spider-man-pointing.jpg
+./dist/full/278-archie.jpg
+./dist/full/552-1930s-newsreel.jpg
+./dist/full/139-jojo.jpg
+./dist/full/40-art-deco.jpg
+./dist/full/463-miro.jpg
+./dist/full/776-darwyn-cooke.jpg
+./dist/full/700-ernest-celestine.jpg
+./dist/full/766-ryden.jpg
+./dist/full/352-garfield.jpg
+./dist/full/156-trigger-anime.jpg
+./dist/full/519-obra-dinn.jpg
+./dist/full/405-moss-art.jpg
+./dist/full/357-little-nemo.jpg
+./dist/full/24-line-art.jpg
+./dist/full/60-tarot-card.jpg
+./dist/full/646-martin-parr.jpg
+./dist/full/377-papier-mache.jpg
+./dist/full/392-kalighat.jpg
+./dist/full/272-pysanka.jpg
+./dist/full/370-pinhole.jpg
+./dist/full/319-care-bears.jpg
+./dist/full/735-mizuki.jpg
+./dist/full/402-constellation.jpg
+./dist/full/489-painted-mug.jpg
+./dist/full/691-edward-koren.jpg
+./dist/full/217-lego-mosaic.jpg
+./dist/full/68-tattoo-flash.jpg
+./dist/full/495-huichol.jpg
+./dist/full/287-tezuka.jpg
+./dist/full/63-mid-century.jpg
+./dist/full/401-cloud-formation.jpg
+./dist/full/503-janosch.jpg
+./dist/full/580-holy-mountain.jpg
+./dist/full/274-chris-ware.jpg
+./dist/full/315-gumball.jpg
+./dist/full/419-ship-in-bottle.jpg
+./dist/full/132-rick-and-morty.jpg
+./dist/full/22-klimt.jpg
+./dist/full/482-heath-robinson.jpg
+./dist/full/106-city-pop.jpg
+./dist/full/313-courage.jpg
+./dist/full/703-woman-yelling-at-a-cat.jpg
+./dist/full/126-newsprint.jpg
+./dist/full/539-valerian.jpg
+./dist/full/190-avatar.jpg
+./dist/full/105-bob-ross.jpg
+./dist/full/499-kaleidoscope.jpg
+./dist/full/10-pop-art.jpg
+./dist/full/23-south-park.jpg
+./dist/full/149-borderlands.jpg
+./dist/full/345-stardew.jpg
+./dist/full/658-baz-luhrmann.jpg
+./dist/full/220-chocolate.jpg
+./dist/full/331-mad-max.jpg
+./dist/full/06-lego.jpg
+./dist/full/261-light-painting.jpg
+./dist/full/635-owl-house.jpg
+./dist/full/442-receipt.jpg
+./dist/full/636-aqua-teen.jpg
+./dist/full/181-basquiat.jpg
+./dist/full/138-dragon-ball.jpg
+./dist/full/654-ozu.jpg
+./dist/full/613-jacques-tati.jpg
+./dist/full/461-hilma-af-klint.jpg
+./dist/full/761-sfar.jpg
+./dist/full/546-truck-art.jpg
+./dist/full/420-terrarium.jpg
+./dist/full/179-turner.jpg
+./dist/full/551-1930s-streamline-ad.jpg
+./dist/thumbs/495-huichol.webp
+./dist/thumbs/15-egyptian.webp
+./dist/thumbs/635-owl-house.webp
+./dist/thumbs/154-pokemon-anime.webp
+./dist/thumbs/473-svankmajer.webp
+./dist/thumbs/383-jigsaw.webp
+./dist/thumbs/238-scooby-doo.webp
+./dist/thumbs/123-bayeux-tapestry.webp
+./dist/thumbs/740-schuiten.webp
+./dist/thumbs/754-giacometti.webp
+./dist/thumbs/478-crash-bandicoot.webp
+./dist/thumbs/157-klaus.webp
+./dist/thumbs/310-beardsley.webp
+./dist/thumbs/487-wax-figure.webp
+./dist/thumbs/557-1950s-photojournalism.webp
+./dist/thumbs/60-tarot-card.webp
+./dist/thumbs/517-guilty-gear.webp
+./dist/thumbs/474-cartoon-saloon.webp
+./dist/thumbs/653-tarkovsky.webp
+./dist/thumbs/418-chess-piece.webp
+./dist/thumbs/459-hand-shadows.webp
+./dist/thumbs/373-x-ray.webp
+./dist/thumbs/340-zx-spectrum.webp
+./dist/thumbs/83-double-exposure.webp
+./dist/thumbs/296-leyendecker.webp
+./dist/thumbs/245-tron.webp
+./dist/thumbs/304-degas.webp
+./dist/thumbs/138-dragon-ball.webp
+./dist/thumbs/485-film-negative.webp
+./dist/thumbs/758-mcquarrie.webp
+./dist/thumbs/508-kirchner.webp
+./dist/thumbs/563-1970s-disco-ad.webp
+./dist/full/472-fantasia.jpg
+./dist/full/245-tron.jpg
+./dist/full/264-playmobil.jpg
+./dist/full/67-fashion-illustration.jpg
+./dist/full/798-sand-animation.jpg
+./dist/full/600-voronoi.jpg
+./dist/full/336-harryhausen.jpg
+./dist/full/61-linocut.jpg
+./dist/full/465-durer-woodcut.jpg
+./dist/full/141-looney-tunes.jpg
+./dist/full/194-bluey.jpg
+./dist/full/574-thiebaud.jpg
+./dist/full/144-spongebob.jpg
+./dist/full/312-dexters-lab.jpg
+./dist/full/569-1990s-geocities.jpg
+./dist/thumbs/128-sargent.webp
+./dist/thumbs/458-scarecrow.webp
+./dist/thumbs/143-bojack.webp
+./dist/thumbs/634-strange-planet.webp
+./dist/thumbs/624-psychonauts.webp
+./dist/thumbs/149-borderlands.webp
+./dist/thumbs/658-baz-luhrmann.webp
+./dist/thumbs/355-watchmen.webp
+./dist/thumbs/442-receipt.webp
+./dist/thumbs/607-ivan-bilibin.webp
+./dist/thumbs/432-pinball-backglass.webp
+./dist/thumbs/530-teletubbies.webp
+./dist/thumbs/167-garbage-pail.webp
+./dist/thumbs/756-aoshima.webp
+./dist/thumbs/387-gig-poster.webp
+./dist/thumbs/22-klimt.webp
+./dist/thumbs/236-tmnt-1987.webp
+./dist/thumbs/137-gravity-falls.webp
+./dist/thumbs/104-fondant-cake.webp
+./dist/thumbs/185-okeeffe.webp
+./dist/thumbs/26-wes-anderson.webp
+./dist/thumbs/153-beavis-butthead.webp
+./dist/thumbs/38-cyberpunk-anime.webp
+./dist/thumbs/613-jacques-tati.webp
+./dist/thumbs/332-amelie.webp
+./dist/thumbs/529-pee-wee-playhouse.webp
+./dist/thumbs/569-1990s-geocities.webp
+./dist/thumbs/785-roblox.webp
+./dist/thumbs/169-postage-stamp.webp
+./dist/thumbs/477-fez.webp
+./dist/thumbs/313-courage.webp
+./dist/thumbs/705-drake-format.webp
+./dist/full/226-modigliani.jpg
+./dist/full/460-soap-bubble.jpg
+./dist/full/686-monogatari.jpg
+./dist/full/247-technicolor-musical.jpg
+./dist/full/583-gris.jpg
+./dist/full/523-post-it-mosaic.jpg
+./dist/full/53-muppet.jpg
+./dist/full/487-wax-figure.jpg
+./dist/full/441-dot-matrix.jpg
+./dist/full/375-drone-overhead.jpg
+./dist/full/547-retablo.jpg
+./dist/full/625-leonora-carrington.jpg
+./dist/thumbs/140-over-the-garden-wall.webp
+./dist/thumbs/163-clip-art.webp
+./dist/thumbs/697-sonia-delaunay.webp
+./dist/thumbs/776-darwyn-cooke.webp
+./dist/thumbs/219-bottle-caps.webp
+./dist/thumbs/170-banknote.webp
+./dist/thumbs/685-leiji-matsumoto.webp
+./dist/thumbs/714-lisa-frank.webp
+./dist/thumbs/656-hammer-horror.webp
+./dist/thumbs/588-james-jean.webp
+./dist/thumbs/37-cartoon-network.webp
+./dist/thumbs/343-ori.webp
+./dist/thumbs/683-batman-beyond.webp
+./dist/thumbs/755-mickalene.webp
+./dist/thumbs/90-quilling.webp
+./dist/thumbs/731-parrish.webp
+./dist/thumbs/709-spider-man-pointing.webp
+./dist/thumbs/780-shin-chan.webp
+./dist/thumbs/543-electron-microscope.webp
+./dist/thumbs/336-harryhausen.webp
+./dist/thumbs/192-steven-universe.webp
+./dist/thumbs/408-times-square.webp
+./dist/thumbs/374-photobooth.webp
+./dist/thumbs/303-gauguin.webp
+./dist/thumbs/334-caligari.webp
+./dist/thumbs/327-gundam.webp
+./dist/thumbs/213-disposable-camera.webp
+./dist/thumbs/41-storybook-watercolor.webp
+./dist/thumbs/787-habbo.webp
+./dist/thumbs/553-1940s-homefront-poster.webp
+./dist/thumbs/681-teen-titans.webp
+./dist/thumbs/337-struzan.webp
+./dist/full/690-krazy-kat.jpg
+./dist/full/75-rotoscope.jpg
+./dist/full/295-searle.jpg
+./dist/full/462-klee.jpg
+./dist/full/455-kokeshi.jpg
+./dist/full/249-shaw-brothers.jpg
+./dist/full/590-paper-doll.jpg
+./dist/full/639-bee-and-puppycat.jpg
+./dist/thumbs/148-fantastic-planet.webp
+./dist/thumbs/642-fellini.webp
+./dist/thumbs/365-froud.webp
+./dist/thumbs/23-south-park.webp
+./dist/thumbs/574-thiebaud.webp
+./dist/thumbs/752-condo.webp
+./dist/thumbs/242-doraemon.webp
+./dist/thumbs/514-castlevania.webp
+./dist/thumbs/591-redscale.webp
+./dist/thumbs/475-game-and-watch.webp
+./dist/thumbs/294-gorey.webp
+./dist/thumbs/08-pixel-art.webp
+./dist/thumbs/147-yellow-submarine.webp
+./dist/thumbs/443-topographic.webp
+./dist/thumbs/726-renoir.webp
+./dist/thumbs/368-vogue-editorial.webp
+./dist/thumbs/566-1980s-camcorder.webp
+./dist/thumbs/111-bauhaus.webp
+./dist/thumbs/687-littlebigplanet.webp
+./dist/thumbs/369-cartier-bresson.webp
+./dist/thumbs/572-2000s-webcam.webp
+./dist/thumbs/676-primal.webp
+./dist/thumbs/627-nihonga.webp
+./dist/thumbs/252-doom.webp
+./dist/thumbs/330-blade-runner.webp
+./dist/thumbs/171-matryoshka.webp
+./dist/thumbs/156-trigger-anime.webp
+./dist/thumbs/541-fashion-plate.webp
+./dist/thumbs/759-trnka.webp
+./dist/thumbs/43-peanuts.webp
+./dist/thumbs/164-moomin.webp
+./dist/thumbs/445-circuit-board.webp
+./dist/full/643-the-lighthouse.jpg
+./dist/full/521-instagram-2012.jpg
+./dist/full/318-magic-school-bus.jpg
+./dist/full/576-tom-and-jerry.jpg
+./dist/full/755-mickalene.jpg
+./dist/full/502-wilhelm-busch.jpg
+./dist/thumbs/239-he-man.webp
+./dist/thumbs/684-aeon-flux.webp
+./dist/thumbs/651-saul-steinberg.webp
+./dist/thumbs/366-elvgren.webp
+./dist/thumbs/211-infrared.webp
+./dist/thumbs/528-thunderbirds.webp
+./dist/thumbs/119-safety-card.webp
+./dist/thumbs/450-heraldry.webp
+./dist/thumbs/74-cel-shaded.webp
+./dist/thumbs/322-demon-slayer.webp
+./dist/thumbs/763-mughal.webp
+./dist/thumbs/753-calder.webp
+./dist/thumbs/427-royal-icing-cookie.webp
+./dist/thumbs/180-rothko.webp
+./dist/thumbs/385-matchbox-label.webp
+./dist/thumbs/667-jillian-tamaki.webp
+./dist/thumbs/617-ducktales.webp
+./dist/thumbs/69-neon-sign.webp
+./dist/thumbs/589-syd-mead.webp
+./dist/thumbs/502-wilhelm-busch.webp
+./dist/thumbs/769-paula-rego.webp
+./dist/thumbs/381-wire-sculpture.webp
+./dist/thumbs/354-saga.webp
+./dist/thumbs/124-shinkai.webp
+./dist/thumbs/399-isometric-room.webp
+./dist/thumbs/558-1960s-mod-photoshoot.webp
+./dist/thumbs/326-maruko.webp
+./dist/thumbs/647-masaaki-yuasa.webp
+./dist/thumbs/335-spaghetti-western.webp
+./dist/thumbs/413-gingerbread.webp
+./dist/thumbs/302-el-greco.webp
+./dist/thumbs/409-arm-tattoo.webp
+./dist/full/356-mafalda.jpg
+./dist/full/616-fairly-oddparents.jpg
+./dist/full/78-sin-city.jpg
+./dist/thumbs/790-scale-figure.webp
+./dist/thumbs/765-brom.webp
+./dist/thumbs/106-city-pop.webp
+./dist/thumbs/32-stencil-graffiti.webp
+./dist/thumbs/438-spectrogram.webp
+./dist/thumbs/794-mola.webp
+./dist/thumbs/430-vectrex.webp
+./dist/thumbs/678-kore-eda.webp
+./dist/thumbs/534-dune.webp
+./dist/thumbs/91-graffiti-mural.webp
+./dist/thumbs/695-pierre-bonnard.webp
+./dist/thumbs/31-chalkboard.webp
+./dist/thumbs/596-enamel-pin.webp
+./dist/thumbs/549-1920s-magazine-ad.webp
+./dist/thumbs/150-disco-elysium.webp
+./dist/thumbs/241-attack-on-titan.webp
+./dist/thumbs/297-eric-carle.webp
+./dist/thumbs/462-klee.webp
+./dist/thumbs/347-kirby-yarn.webp
+./dist/thumbs/449-soviet-metro-mosaic.webp
+./dist/thumbs/524-cuckoo-clock.webp
+./dist/thumbs/35-warhol.webp
+./dist/thumbs/568-1990s-kids-commercial.webp
+./dist/thumbs/575-petrykivka.webp
+./dist/thumbs/176-coffee-stain.webp
+./dist/thumbs/359-rackham.webp
+./dist/thumbs/11-art-nouveau.webp
+./dist/thumbs/231-kusama.webp
+./dist/thumbs/538-beano.webp
+./dist/thumbs/283-webtoon.webp
+./dist/thumbs/579-yotsuba.webp
+./dist/thumbs/597-paint-by-numbers.webp
+./dist/full/100-snow-globe.jpg
+./dist/full/701-corporate-memphis.jpg
+./dist/full/134-archer.jpg
+./dist/full/785-roblox.jpg
+./dist/full/29-byzantine-mosaic.jpg
+./dist/full/788-digitized-fighter.jpg
+./dist/full/136-powerpuff.jpg
+./dist/thumbs/402-constellation.webp
+./dist/thumbs/672-david-lachapelle.webp
+./dist/thumbs/581-space-odyssey.webp
+./dist/thumbs/511-babar.webp
+./dist/thumbs/570-2000s-silhouette-ad.webp
+./dist/thumbs/710-surprised-pikachu.webp
+./dist/thumbs/307-pollock.webp
+./dist/thumbs/641-belleville.webp
+./dist/thumbs/472-fantasia.webp
+./dist/thumbs/429-wireframe.webp
+./dist/thumbs/775-roger-dean.webp
+./dist/thumbs/216-cyanotype.webp
+./dist/thumbs/207-team-fortress.webp
+./dist/thumbs/747-vallejo.webp
+./dist/thumbs/100-snow-globe.webp
+./dist/thumbs/370-pinhole.webp
+./dist/thumbs/564-1980s-glamour-shots.webp
+./dist/thumbs/586-ghost-world.webp
+./dist/thumbs/34-mexican-folk.webp
+./dist/thumbs/82-tintype.webp
+./dist/thumbs/400-puffy-3d.webp
+./dist/thumbs/406-shadow-sculpture.webp
+./dist/thumbs/426-gargoyle.webp
+./dist/thumbs/434-anaglyph-3d.webp
+./dist/thumbs/135-daria.webp
+./dist/thumbs/493-william-morris.webp
+./dist/thumbs/526-sorolla.webp
+./dist/thumbs/513-boondocks.webp
+./dist/thumbs/59-kawaii-sticker.webp
+./dist/thumbs/669-jeff-lemire.webp
+./dist/thumbs/178-vermeer.webp
+./dist/thumbs/323-spy-family.webp
+./dist/full/131-bobs-burgers.jpg
+./dist/full/86-aztec-codex.jpg
+./dist/full/114-marionette.jpg
+./dist/full/591-redscale.jpg
+./dist/full/545-hard-candy.jpg
+./dist/full/112-rosemaling.jpg
+./dist/full/668-tillie-walden.jpg
+./dist/thumbs/496-palekh.webp
+./dist/thumbs/415-playing-card.webp
+./dist/thumbs/108-quentin-blake.webp
+./dist/thumbs/214-cctv.webp
+./dist/thumbs/151-hades.webp
+./dist/thumbs/393-otomi.webp
+./dist/thumbs/571-2000s-digicam.webp
+./dist/thumbs/13-stained-glass.webp
+./dist/thumbs/271-naturalist-plate.webp
+./dist/thumbs/504-sendung-mit-der-maus.webp
+./dist/thumbs/717-kaws.webp
+./dist/thumbs/486-lace-doily.webp
+./dist/thumbs/284-scott-pilgrim.webp
+./dist/thumbs/480-dave-mckean.webp
+./dist/thumbs/454-wayang-kulit.webp
+./dist/thumbs/742-vallotton.webp
+./dist/thumbs/202-diablo.webp
+./dist/thumbs/225-matisse-cutouts.webp
+./dist/thumbs/280-alex-ross.webp
+./dist/thumbs/637-my-little-pony.webp
+./dist/thumbs/484-paparazzi.webp
+./dist/thumbs/633-jacques-tardi.webp
+./dist/thumbs/401-cloud-formation.webp
+./dist/thumbs/01-studio-ghibli.webp
+./dist/thumbs/174-3d-chalk.webp
+./dist/thumbs/223-cereal-box.webp
+./dist/thumbs/798-sand-animation.webp
+./dist/thumbs/680-catdog.webp
+./dist/thumbs/372-night-vision.webp
+./dist/thumbs/648-hyper-light-drifter.webp
+./dist/thumbs/605-jacob-lawrence.webp
+./dist/thumbs/688-outer-wilds.webp
+./dist/full/91-graffiti-mural.jpg
+./dist/full/563-1970s-disco-ad.jpg
+./dist/full/726-renoir.jpg
+./dist/full/122-polish-poster.jpg
+./dist/thumbs/193-peppa-pig.webp
+./dist/thumbs/428-early-cgi.webp
+./dist/thumbs/367-isometric-infographic.webp
+./dist/thumbs/490-rubber-duck.webp
+./dist/thumbs/371-fisheye.webp
+./dist/thumbs/363-tenniel.webp
+./dist/thumbs/87-madhubani.webp
+./dist/thumbs/525-dubuffet.webp
+./dist/thumbs/28-constructivist.webp
+./dist/thumbs/479-hewlett.webp
+./dist/thumbs/732-hirschfeld.webp
+./dist/thumbs/133-king-of-the-hill.webp
+./dist/thumbs/248-saul-bass.webp
+./dist/thumbs/535-splatoon.webp
+./dist/thumbs/14-greek-pottery.webp
+./dist/thumbs/577-popeye-fleischer.webp
+./dist/thumbs/674-sofia-coppola.webp
+./dist/thumbs/256-grim-fandango.webp
+./dist/thumbs/179-turner.webp
+./dist/thumbs/789-bobblehead.webp
+./dist/thumbs/652-charles-addams.webp
+./dist/thumbs/116-ice-sculpture.webp
+./dist/thumbs/17-amigurumi.webp
+./dist/thumbs/257-oregon-trail.webp
+./dist/thumbs/788-digitized-fighter.webp
+./dist/thumbs/615-color-wuxia.webp
+./dist/thumbs/230-hundertwasser.webp
+./dist/thumbs/331-mad-max.webp
+./dist/thumbs/112-rosemaling.webp
+./dist/thumbs/42-ligne-claire.webp
+./dist/thumbs/435-stereoscope.webp
+./dist/thumbs/629-mo-willems.webp
+./dist/full/633-jacques-tardi.jpg
+./dist/full/221-topiary.jpg
+./dist/full/25-gothic-stop-motion.jpg
+./dist/full/332-amelie.jpg
+./dist/full/88-delft-tile.jpg
+./dist/full/77-arcane.jpg
+./dist/full/769-paula-rego.jpg
+./dist/full/698-daido-moriyama.jpg
+./dist/full/351-franquin.jpg
+./dist/full/602-op-art.jpg
+./dist/thumbs/510-miffy.webp
+./dist/thumbs/61-linocut.webp
+./dist/thumbs/358-beatrix-potter.webp
+./dist/thumbs/547-retablo.webp
+./dist/thumbs/437-deep-dream.webp
+./dist/thumbs/259-hollywood-glamour.webp
+./dist/thumbs/590-paper-doll.webp
+./dist/thumbs/724-dont-hug-me.webp
+./dist/thumbs/78-sin-city.webp
+./dist/thumbs/54-animal-crossing.webp
+./dist/thumbs/772-malika-favre.webp
+./dist/thumbs/777-toppi.webp
+./dist/thumbs/407-holo-card.webp
+./dist/thumbs/237-pingu.webp
+./dist/thumbs/218-pyrography.webp
+./dist/thumbs/18-low-poly.webp
+./dist/thumbs/261-light-painting.webp
+./dist/thumbs/375-drone-overhead.webp
+./dist/thumbs/708-always-has-been.webp
+./dist/thumbs/63-mid-century.webp
+./dist/thumbs/212-holga.webp
+./dist/thumbs/187-futurama.webp
+./dist/thumbs/317-johnny-bravo.webp
+./dist/thumbs/539-valerian.webp
+./dist/thumbs/04-ukiyo-e.webp
+./dist/thumbs/183-toulouse-lautrec.webp
+./dist/thumbs/567-1990s-fashion-ad.webp
+./dist/thumbs/68-tattoo-flash.webp
+./dist/thumbs/701-corporate-memphis.webp
+./dist/thumbs/210-monument-valley.webp
+./dist/thumbs/132-rick-and-morty.webp
+./dist/thumbs/561-1970s-tv-commercial.webp
+./dist/full/412-museum-diorama.jpg
+./dist/full/408-times-square.jpg
+./dist/full/169-postage-stamp.jpg
+./dist/full/432-pinball-backglass.jpg
+./dist/full/497-papel-picado.jpg
+./dist/thumbs/411-mars-rover.webp
+./dist/thumbs/482-heath-robinson.webp
+./dist/thumbs/768-mizuno.webp
+./dist/thumbs/565-1980s-tv-commercial.webp
+./dist/thumbs/228-hockney.webp
+./dist/thumbs/321-inspector-gadget.webp
+./dist/thumbs/348-kings-quest.webp
+./dist/thumbs/92-monet.webp
+./dist/thumbs/584-donkey-kong-country.webp
+./dist/thumbs/350-blacksad.webp
+./dist/thumbs/614-del-toro.webp
+./dist/thumbs/422-fireworks.webp
+./dist/thumbs/75-rotoscope.webp
+./dist/thumbs/716-beksinski.webp
+./dist/thumbs/70-kirby-comic.webp
+./dist/thumbs/226-modigliani.webp
+./dist/thumbs/792-needle-felt.webp
+./dist/thumbs/188-hey-arnold.webp
+./dist/thumbs/168-fantasy-card.webp
+./dist/thumbs/622-jet-set-radio.webp
+./dist/thumbs/630-dav-pilkey.webp
+./dist/thumbs/64-latte-art.webp
+./dist/thumbs/522-napkin-sketch.webp
+./dist/thumbs/389-minhwa.webp
+./dist/thumbs/232-botero.webp
+./dist/thumbs/86-aztec-codex.webp
+./dist/thumbs/394-sylvanian.webp
+./dist/thumbs/520-tunic.webp
+./dist/thumbs/540-blankets.webp
+./dist/thumbs/631-philippe-druillet.webp
+./dist/thumbs/275-charles-burns.webp
+./dist/thumbs/56-norman-rockwell.webp
+./dist/full/409-arm-tattoo.jpg
+./dist/full/790-scale-figure.jpg
+./dist/full/454-wayang-kulit.jpg
+./dist/full/488-tin-foil.jpg
+./dist/full/534-dune.jpg
+./dist/full/728-leger.jpg
+./dist/full/280-alex-ross.jpg
+./dist/full/757-sorayama.jpg
+./dist/full/250-n64.jpg
+./dist/thumbs/461-hilma-af-klint.webp
+./dist/thumbs/16-cross-stitch.webp
+./dist/thumbs/715-darkest-dungeon.webp
+./dist/thumbs/760-hayashida.webp
+./dist/thumbs/476-papers-please.webp
+./dist/thumbs/158-paper-mario.webp
+./dist/thumbs/362-charley-harper.webp
+./dist/thumbs/279-ec-horror.webp
+./dist/thumbs/451-sarcophagus.webp
+./dist/thumbs/621-blue-eye-samurai.webp
+./dist/thumbs/58-hanna-barbera.webp
+./dist/thumbs/663-kentucky-route-zero.webp
+./dist/thumbs/351-franquin.webp
+./dist/thumbs/311-fauvism.webp
+./dist/thumbs/527-gerhard-richter.webp
+./dist/thumbs/360-kay-nielsen.webp
+./dist/thumbs/774-van-allsburg.webp
+./dist/thumbs/679-de-palma.webp
+./dist/thumbs/707-wojak.webp
+./dist/thumbs/30-illuminated-manuscript.webp
+./dist/thumbs/301-goya.webp
+./dist/thumbs/703-woman-yelling-at-a-cat.webp
+./dist/thumbs/47-renaissance-fresco.webp
+./dist/thumbs/166-calvin-hobbes.webp
+./dist/thumbs/131-bobs-burgers.webp
+./dist/thumbs/55-ps1-graphics.webp
+./dist/thumbs/639-bee-and-puppycat.webp
+./dist/thumbs/636-aqua-teen.webp
+./dist/thumbs/49-toonstruck.webp
+./dist/thumbs/107-bosch.webp
+./dist/thumbs/501-loriot.webp
+./dist/thumbs/778-70s-shojo.webp
+./dist/full/196-evangelion.jpg
+./dist/full/421-underwater.jpg
+./dist/full/177-caravaggio.jpg
+./dist/full/603-de-chirico.jpg
+./dist/full/255-fortnite.jpg
+./dist/thumbs/416-cameo.webp
+./dist/thumbs/746-cassatt.webp
+./dist/thumbs/224-jazz-record.webp
+./dist/thumbs/267-patchwork-quilt.webp
+./dist/thumbs/734-hosoda.webp
+./dist/thumbs/391-talavera.webp
+./dist/thumbs/95-mondrian.webp
+./dist/thumbs/172-tiki-mug.webp
+./dist/thumbs/65-arcimboldo.webp
+./dist/thumbs/515-puss-in-boots.webp
+./dist/thumbs/764-thangka.webp
+./dist/thumbs/436-glitch.webp
+./dist/thumbs/693-peter-arno.webp
+./dist/thumbs/456-parade-balloon.webp
+./dist/thumbs/277-mad-magazine.webp
+./dist/thumbs/531-frieren.webp
+./dist/thumbs/05-3d-animation.webp
+./dist/thumbs/98-seuss.webp
+./dist/thumbs/186-lempicka.webp
+./dist/thumbs/73-vga-adventure.webp
+./dist/thumbs/201-street-fighter.webp
+./dist/thumbs/551-1930s-streamline-ad.webp
+./dist/thumbs/195-satoshi-kon.webp
+./dist/thumbs/700-ernest-celestine.webp
+./dist/thumbs/799-pin-art.webp
+./dist/thumbs/318-magic-school-bus.webp
+./dist/thumbs/704-this-is-fine.webp
+./dist/thumbs/53-muppet.webp
+./dist/thumbs/698-daido-moriyama.webp
+./dist/thumbs/44-keith-haring.webp
+./dist/thumbs/470-tekkonkinkreet.webp
+./dist/thumbs/694-lyonel-feininger.webp
+./dist/full/197-one-piece.jpg
+./dist/full/780-shin-chan.jpg
+./dist/full/310-beardsley.jpg
+./dist/full/314-phineas-ferb.jpg
+./dist/thumbs/604-yoshitomo-nara.webp
+./dist/thumbs/441-dot-matrix.webp
+./dist/thumbs/142-ren-stimpy.webp
+./dist/thumbs/559-1960s-super-8.webp
+./dist/thumbs/145-robot-chicken.webp
+./dist/thumbs/329-bubblegum-crisis.webp
+./dist/thumbs/45-shadow-puppet.webp
+./dist/thumbs/89-origami.webp
+./dist/thumbs/57-moebius.webp
+./dist/thumbs/398-plush.webp
+./dist/thumbs/733-norstein.webp
+./dist/thumbs/136-powerpuff.webp
+./dist/thumbs/361-ungerer.webp
+./dist/thumbs/692-william-steig.webp
+./dist/thumbs/640-kipo.webp
+./dist/thumbs/745-homer.webp
+./dist/thumbs/71-pop-up-book.webp
+./dist/thumbs/33-surrealism.webp
+./dist/thumbs/713-bernie-chair.webp
+./dist/thumbs/139-jojo.webp
+./dist/thumbs/118-ikea-manual.webp
+./dist/thumbs/129-south-park-coffee-shop.webp
+./dist/thumbs/452-terracotta-warrior.webp
+./dist/thumbs/446-rubber-stamp.webp
+./dist/thumbs/235-batman-tas.webp
+./dist/thumbs/783-jacques-demy.webp
+./dist/thumbs/738-nihei.webp
+./dist/thumbs/392-kalighat.webp
+./dist/thumbs/702-distracted-boyfriend.webp
+./dist/thumbs/122-polish-poster.webp
+./dist/thumbs/664-bioshock.webp
+./dist/thumbs/448-frottage.webp
+./dist/full/607-ivan-bilibin.jpg
+./dist/full/446-rubber-stamp.jpg
+./dist/full/358-beatrix-potter.jpg
+./dist/full/524-cuckoo-clock.jpg
+./dist/full/573-alma-thomas.jpg
+./dist/thumbs/85-pompeii-fresco.webp
+./dist/thumbs/548-view-master.webp
+./dist/thumbs/24-line-art.webp
+./dist/thumbs/105-bob-ross.webp
+./dist/thumbs/21-blueprint.webp
+./dist/thumbs/315-gumball.webp
+./dist/thumbs/666-takehiko-inoue.webp
+./dist/thumbs/423-drone-show.webp
+./dist/thumbs/48-ink-wash.webp
+./dist/thumbs/506-otto-dix.webp
+./dist/thumbs/191-invader-zim.webp
+./dist/thumbs/720-don-bluth.webp
+./dist/thumbs/518-hotline-miami.webp
+./dist/thumbs/612-suspiria.webp
+./dist/thumbs/353-bone.webp
+./dist/thumbs/243-kyoani.webp
+./dist/thumbs/659-animagic.webp
+./dist/thumbs/536-silent-hill.webp
+./dist/thumbs/125-horror-manga.webp
+./dist/thumbs/682-x-men-92.webp
+./dist/thumbs/466-floral-portrait.webp
+./dist/thumbs/762-hasui.webp
+./dist/thumbs/141-looney-tunes.webp
+./dist/thumbs/741-mattotti.webp
+./dist/thumbs/80-etch-a-sketch.webp
+./dist/thumbs/377-papier-mache.webp
+./dist/thumbs/727-cezanne.webp
+./dist/thumbs/162-ms-paint.webp
+./dist/thumbs/109-steadman.webp
+./dist/thumbs/173-lite-brite.webp
+./dist/thumbs/120-sims-isometric.webp
+./dist/thumbs/77-arcane.webp
+./dist/full/175-toast-art.jpg
+./dist/full/383-jigsaw.jpg
+./dist/full/342-botw.jpg
+./dist/full/87-madhubani.jpg
+./dist/full/743-moreau.jpg
+./dist/thumbs/215-polaroid.webp
+./dist/thumbs/537-earthbound.webp
+./dist/thumbs/306-grant-wood.webp
+./dist/thumbs/505-kollwitz.webp
+./dist/thumbs/793-jack-o-lantern.webp
+./dist/thumbs/395-fashion-doll.webp
+./dist/thumbs/288-stick-figure.webp
+./dist/thumbs/706-expanding-brain.webp
+./dist/thumbs/800-frutiger-aero.webp
+./dist/thumbs/260-tilt-shift.webp
+./dist/thumbs/498-rorschach.webp
+./dist/thumbs/27-rembrandt.webp
+./dist/thumbs/600-voronoi.webp
+./dist/thumbs/240-cowboy-bebop.webp
+./dist/thumbs/278-archie.webp
+./dist/thumbs/96-frazetta.webp
+./dist/thumbs/562-1970s-catalog-photo.webp
+./dist/thumbs/81-kodachrome.webp
+./dist/thumbs/386-xerox-zine.webp
+./dist/thumbs/198-naruto.webp
+./dist/thumbs/601-francis-bacon.webp
+./dist/thumbs/266-kintsugi.webp
+./dist/thumbs/791-papercraft.webp
+./dist/thumbs/382-bento.webp
+./dist/thumbs/626-chuck-close.webp
+./dist/thumbs/253-journey.webp
+./dist/thumbs/546-truck-art.webp
+./dist/thumbs/488-tin-foil.webp
+./dist/thumbs/189-samurai-jack.webp
+./dist/thumbs/749-whistler.webp
+./dist/thumbs/455-kokeshi.webp
+./dist/thumbs/227-chagall.webp
+./dist/full/692-william-steig.jpg
+./dist/full/501-loriot.jpg
+./dist/full/150-disco-elysium.jpg
+./dist/full/415-playing-card.jpg
+./dist/full/160-myst.jpg
+./dist/full/688-outer-wilds.jpg
+./dist/full/666-takehiko-inoue.jpg
+./dist/full/350-blacksad.jpg
+./dist/thumbs/110-3d-emoji.webp
+./dist/thumbs/194-bluey.webp
+./dist/thumbs/625-leonora-carrington.webp
+./dist/thumbs/661-thundercats.webp
+./dist/thumbs/291-richard-scarry.webp
+./dist/thumbs/743-moreau.webp
+./dist/thumbs/262-thermal.webp
+./dist/thumbs/113-batik.webp
+./dist/thumbs/97-gta-loading-screen.webp
+./dist/thumbs/593-kirlian.webp
+./dist/thumbs/397-peg-doll.webp
+./dist/thumbs/696-alex-katz.webp
+./dist/thumbs/650-new-yorker-cartoon.webp
+./dist/thumbs/36-disney-2d.webp
+./dist/thumbs/594-shibori.webp
+./dist/thumbs/500-droste.webp
+./dist/thumbs/66-marble-statue.webp
+./dist/thumbs/282-90s-superhero.webp
+./dist/thumbs/610-nc-wyeth.webp
+./dist/thumbs/410-da-vinci-notebook.webp
+./dist/thumbs/750-manet.webp
+./dist/full/65-arcimboldo.jpg
+./dist/full/108-quentin-blake.jpg
+./dist/full/96-frazetta.jpg
+./dist/full/509-mr-men.jpg
+./dist/thumbs/544-macrame.webp
+./dist/thumbs/255-fortnite.webp
+./dist/thumbs/380-cardboard.webp
+./dist/thumbs/735-mizuki.webp
+./dist/thumbs/736-obata.webp
+./dist/thumbs/644-midsommar.webp
+./dist/thumbs/250-n64.webp
+./dist/thumbs/576-tom-and-jerry.webp
+./dist/thumbs/404-coffee-bean-mosaic.webp
+./dist/thumbs/76-spider-verse.webp
+./dist/thumbs/489-painted-mug.webp
+./dist/full/515-puss-in-boots.jpg
+./dist/full/155-magical-girl.jpg
+./dist/full/456-parade-balloon.jpg
+./dist/full/158-paper-mario.jpg
+./dist/thumbs/09-manga.webp
+./dist/thumbs/39-victorian-engraving.webp
+./dist/thumbs/159-hd-2d.webp
+./dist/thumbs/293-silverstein.webp
+./dist/thumbs/467-squigglevision.webp
+./dist/thumbs/197-one-piece.webp
+./dist/full/626-chuck-close.jpg
+./dist/full/438-spectrogram.jpg
+./dist/full/732-hirschfeld.jpg
+./dist/thumbs/276-crumb.webp
+./dist/thumbs/711-deep-fried-meme.webp
+./dist/thumbs/40-art-deco.webp
+./dist/thumbs/220-chocolate.webp
+./dist/thumbs/602-op-art.webp
+./dist/full/74-cel-shaded.jpg
+./dist/full/729-koons.jpg
+./dist/full/49-toonstruck.jpg
+./dist/full/184-schiele.jpg
+./dist/full/398-plush.jpg
+./dist/full/754-giacometti.jpg
+./dist/full/248-saul-bass.jpg
+./dist/full/152-sugimori.jpg
+./dist/full/737-ikuhara.jpg
+./dist/full/300-jon-klassen.jpg
+./dist/full/597-paint-by-numbers.jpg
+./dist/full/376-wood-relief.jpg
+./dist/full/379-pancake-art.jpg
+./dist/full/165-asterix.jpg
+./dist/full/198-naruto.jpg
+./dist/full/684-aeon-flux.jpg
+./dist/full/37-cartoon-network.jpg
+./dist/full/650-new-yorker-cartoon.jpg
+./dist/full/279-ec-horror.jpg
+./dist/full/125-horror-manga.jpg
+./dist/full/695-pierre-bonnard.jpg
+./dist/full/712-roll-safe.jpg
+./dist/full/444-subway-map.jpg
+./dist/full/111-bauhaus.jpg
+./dist/full/193-peppa-pig.jpg
+./dist/full/368-vogue-editorial.jpg
+./dist/full/373-x-ray.jpg
+./dist/full/493-william-morris.jpg
+./dist/full/518-hotline-miami.jpg
+./dist/full/457-porcelain-figurine.jpg
+./dist/full/575-petrykivka.jpg
+./dist/full/400-puffy-3d.jpg
+./dist/full/596-enamel-pin.jpg
+./dist/full/93-munch.jpg
+./dist/full/299-victo-ngai.jpg
+./dist/full/205-cuphead.jpg
+./dist/full/326-maruko.jpg
+./dist/full/786-mii.jpg
+./dist/full/759-trnka.jpg
+./dist/full/218-pyrography.jpg
+./dist/full/748-wrightson.jpg
+./dist/full/507-grosz.jpg
+./dist/full/233-wyeth.jpg
+./dist/full/641-belleville.jpg
+./dist/full/481-sempe.jpg
+./dist/full/235-batman-tas.jpg
+./dist/full/19-vaporwave.jpg
+./dist/full/137-gravity-falls.jpg
+./dist/full/608-eyvind-earle.jpg
+./dist/full/682-x-men-92.jpg
+./dist/full/30-illuminated-manuscript.jpg
+./dist/full/562-1970s-catalog-photo.jpg
+./dist/full/304-degas.jpg
+./dist/full/490-rubber-duck.jpg
+./dist/full/369-cartier-bresson.jpg
+./dist/full/308-murakami.jpg
+./dist/full/231-kusama.jpg
+./dist/full/697-sonia-delaunay.jpg
+./dist/full/387-gig-poster.jpg
+./dist/full/470-tekkonkinkreet.jpg
+./dist/full/730-giger.jpg
+./dist/full/581-space-odyssey.jpg
+./dist/full/467-squigglevision.jpg
+./dist/full/227-chagall.jpg
+./dist/full/97-gta-loading-screen.jpg
+./dist/full/33-surrealism.jpg
+./dist/full/628-edmund-dulac.jpg
+./dist/full/275-charles-burns.jpg
+./dist/full/747-vallejo.jpg
+./dist/full/661-thundercats.jpg
+./dist/full/719-diane-arbus.jpg
+./dist/full/544-macrame.jpg
+./dist/full/475-game-and-watch.jpg
+./dist/full/31-chalkboard.jpg
+./dist/full/223-cereal-box.jpg
+./dist/full/779-kim-possible.jpg
+./dist/full/07-claymation.jpg
+./dist/full/469-ed-edd-eddy.jpg
+./dist/full/426-gargoyle.jpg
+./dist/full/119-safety-card.jpg
+./dist/full/429-wireframe.jpg
+./dist/full/542-ladybird-books.jpg
+./dist/full/578-berserk.jpg
+./dist/full/662-real-monsters.jpg
+./dist/full/565-1980s-tv-commercial.jpg
+./dist/full/483-autochrome.jpg
+./dist/full/604-yoshitomo-nara.jpg
+./dist/full/610-nc-wyeth.jpg
+./dist/full/566-1980s-camcorder.jpg
+./dist/full/484-paparazzi.jpg
+./dist/full/522-napkin-sketch.jpg
+./dist/full/744-redon.jpg
+./dist/full/598-fisher-price.jpg
+./dist/full/32-stencil-graffiti.jpg
+./dist/full/520-tunic.jpg
+./dist/full/05-3d-animation.jpg
+./dist/full/243-kyoani.jpg
+./dist/full/512-sanrio.jpg
+./dist/full/117-courtroom-sketch.jpg
+./dist/full/434-anaglyph-3d.jpg
+./dist/full/775-roger-dean.jpg
+./dist/full/95-mondrian.jpg
+./dist/full/389-minhwa.jpg
+./dist/full/90-quilling.jpg
+./dist/full/20-rubber-hose.jpg
+./dist/full/206-hollow-knight.jpg
+./dist/full/653-tarkovsky.jpg
+./dist/full/640-kipo.jpg
+./dist/full/396-polly-pocket.jpg
+./dist/full/777-toppi.jpg
+./dist/full/166-calvin-hobbes.jpg
+./dist/full/277-mad-magazine.jpg
+./dist/full/531-frieren.jpg
+./dist/full/486-lace-doily.jpg
+./dist/full/219-bottle-caps.jpg
+./dist/full/436-glitch.jpg
+./dist/full/372-night-vision.jpg
+./dist/full/254-among-us.jpg
+./dist/full/285-hilda.jpg
+./dist/full/647-masaaki-yuasa.jpg
+./dist/full/293-silverstein.jpg
+./dist/full/27-rembrandt.jpg
+./dist/full/615-color-wuxia.jpg
+./dist/full/525-dubuffet.jpg
+./dist/full/721-dragons-crown.jpg
+./dist/full/242-doraemon.jpg
+./dist/full/292-sendak.jpg
+./dist/full/749-whistler.jpg
+./dist/full/107-bosch.jpg
+./dist/full/571-2000s-digicam.jpg
+./dist/full/288-stick-figure.jpg
+./dist/full/154-pokemon-anime.jpg
+./dist/full/632-enki-bilal.jpg
+./dist/full/648-hyper-light-drifter.jpg
+./dist/full/516-kubo.jpg
+./dist/full/474-cartoon-saloon.jpg
+./dist/full/17-amigurumi.jpg
+./dist/full/535-splatoon.jpg
+./dist/full/360-kay-nielsen.jpg
+./dist/full/778-70s-shojo.jpg
+./dist/full/492-gashapon.jpg
+./dist/full/450-heraldry.jpg
+./dist/full/209-undertale.jpg
+./dist/full/548-view-master.jpg
+./dist/full/346-overwatch.jpg
+./dist/full/768-mizuno.jpg
+./dist/full/533-barbie-dreamhouse.jpg
+./dist/full/491-nutcracker.jpg
+./dist/full/239-he-man.jpg
+./dist/full/45-shadow-puppet.jpg
+./dist/full/228-hockney.jpg
+./dist/full/681-teen-titans.jpg
+./dist/full/291-richard-scarry.jpg
+./dist/full/271-naturalist-plate.jpg
+./dist/full/451-sarcophagus.jpg
+./dist/full/57-moebius.jpg
+./dist/full/760-hayashida.jpg
+./dist/full/657-park-chan-wook.jpg
+./dist/full/307-pollock.jpg
+./dist/full/468-rockos-modern-life.jpg
+./dist/full/505-kollwitz.jpg
+./dist/full/585-rayman.jpg
+./dist/full/28-constructivist.jpg
+./dist/full/251-sonic.jpg
+./dist/full/98-seuss.jpg
+./dist/full/81-kodachrome.jpg
+./dist/full/208-okami.jpg
+./dist/full/320-smurfs.jpg
+./dist/full/167-garbage-pail.jpg
+./dist/full/665-mirrors-edge.jpg
+./dist/full/371-fisheye.jpg
+./dist/full/82-tintype.jpg
+./dist/full/216-cyanotype.jpg
+./dist/full/113-batik.jpg
+./dist/full/753-calder.jpg
+./dist/full/425-maya-stela.jpg
+./dist/full/384-swiss-poster.jpg
+./dist/full/329-bubblegum-crisis.jpg
+./dist/full/452-terracotta-warrior.jpg
+./dist/full/386-xerox-zine.jpg
+./dist/full/674-sofia-coppola.jpg
+./dist/full/270-coloring-book.jpg
+./dist/full/527-gerhard-richter.jpg
+./dist/full/118-ikea-manual.jpg
+./dist/full/52-persian-miniature.jpg
+./dist/full/185-okeeffe.jpg
+./dist/full/03-cubism.jpg
+./dist/full/289-single-panel-gag.jpg
+./dist/full/676-primal.jpg
+./dist/full/363-tenniel.jpg
+./dist/full/157-klaus.jpg
+./dist/full/311-fauvism.jpg
+./dist/full/366-elvgren.jpg
+./dist/full/494-nianhua.jpg
+./dist/full/413-gingerbread.jpg
+./dist/full/337-struzan.jpg
+./dist/full/459-hand-shadows.jpg
+./dist/full/718-faith-ringgold.jpg
+./dist/full/133-king-of-the-hill.jpg
+./dist/full/186-lempicka.jpg
+./dist/full/558-1960s-mod-photoshoot.jpg
+./dist/full/504-sendung-mit-der-maus.jpg
+./dist/full/02-simpsons.jpg
+./dist/full/791-papercraft.jpg
+./dist/full/12-van-gogh.jpg
+./dist/full/680-catdog.jpg
+./dist/full/14-greek-pottery.jpg
+./dist/full/212-holga.jpg
+./dist/full/240-cowboy-bebop.jpg
+./dist/full/622-jet-set-radio.jpg
+./dist/full/214-cctv.jpg
+./dist/full/536-silent-hill.jpg
+./dist/full/588-james-jean.jpg
+./dist/full/710-surprised-pikachu.jpg
+./dist/full/570-2000s-silhouette-ad.jpg
+./dist/full/102-ascii-art.jpg
+./dist/full/587-love-and-rockets.jpg
+./dist/full/627-nihonga.jpg
+./dist/full/418-chess-piece.jpg
+./dist/full/572-2000s-webcam.jpg
+./dist/full/500-droste.jpg
+./dist/full/687-littlebigplanet.jpg
+./dist/full/36-disney-2d.jpg
+./dist/full/281-sienkiewicz.jpg
+./dist/full/378-glass-figurine.jpg
+./dist/full/328-madoka.jpg
+./dist/full/210-monument-valley.jpg
+./dist/full/431-tamagotchi.jpg
+./dist/full/532-godzilla-1954.jpg
+./dist/full/582-twin-peaks.jpg
+./dist/full/94-magritte.jpg
+./dist/full/741-mattotti.jpg
+./dist/full/145-robot-chicken.jpg
+./dist/full/395-fashion-doll.jpg
+./dist/full/670-amy-sherald.jpg
+./dist/full/584-donkey-kong-country.jpg
+./dist/full/480-dave-mckean.jpg
+./dist/full/283-webtoon.jpg
+./dist/full/38-cyberpunk-anime.jpg
+./dist/full/717-kaws.jpg
+./dist/full/297-eric-carle.jpg
+./dist/full/559-1960s-super-8.jpg
+./dist/full/630-dav-pilkey.jpg
+./dist/full/306-grant-wood.jpg
+./dist/full/724-dont-hug-me.jpg
+./dist/full/586-ghost-world.jpg
+./dist/full/564-1980s-glamour-shots.jpg
+./dist/full/767-briggs.jpg
+./dist/full/466-floral-portrait.jpg
+./dist/full/683-batman-beyond.jpg
+./dist/full/567-1990s-fashion-ad.jpg
+./dist/full/135-daria.jpg
+./dist/full/35-warhol.jpg
+./dist/full/56-norman-rockwell.jpg
+./dist/full/121-bollywood-poster.jpg
+./dist/full/129-south-park-coffee-shop.jpg
+./dist/full/621-blue-eye-samurai.jpg
+./dist/full/305-rousseau.jpg
+./dist/full/116-ice-sculpture.jpg
+./dist/full/151-hades.jpg
+./dist/full/508-kirchner.jpg
+./dist/full/800-frutiger-aero.jpg
+./dist/full/673-fargo.jpg
+./dist/full/458-scarecrow.jpg
+./dist/full/706-expanding-brain.jpg
+./dist/full/750-manet.jpg
+./dist/full/736-obata.jpg
+./dist/full/611-kurosawa.jpg
+./dist/full/298-oliver-jeffers.jpg
+./dist/full/693-peter-arno.jpg
+./dist/full/344-limbo.jpg
+./dist/full/11-art-nouveau.jpg
+./dist/full/794-mola.jpg
+./dist/full/374-photobooth.jpg
+./dist/full/538-beano.jpg
+./dist/full/182-kandinsky.jpg
+./dist/full/437-deep-dream.jpg
+./dist/full/435-stereoscope.jpg
+./dist/full/722-ace-attorney.jpg
+./dist/full/174-3d-chalk.jpg
+./dist/full/656-hammer-horror.jpg
+./dist/full/237-pingu.jpg
+./dist/full/649-ludwig-bemelmans.jpg
+./dist/full/327-gundam.jpg
+./dist/full/393-otomi.jpg
+./dist/full/266-kintsugi.jpg
+./dist/full/799-pin-art.jpg
+./dist/full/453-alebrije.jpg
+./dist/full/73-vga-adventure.jpg
+./dist/full/69-neon-sign.jpg
+./dist/full/439-emoji-mosaic.jpg
+./dist/full/672-david-lachapelle.jpg
+./dist/full/354-saga.jpg
+./dist/full/554-1940s-pulp-cover.jpg
+./dist/full/498-rorschach.jpg
+./dist/full/557-1950s-photojournalism.jpg
+./dist/full/142-ren-stimpy.jpg
+./dist/full/448-frottage.jpg
+./dist/full/211-infrared.jpg
+./dist/full/26-wes-anderson.jpg
+./dist/full/178-vermeer.jpg
+./dist/full/561-1970s-tv-commercial.jpg
+./dist/full/553-1940s-homefront-poster.jpg
+./dist/full/517-guilty-gear.jpg
+./dist/full/765-brom.jpg
+./dist/full/579-yotsuba.jpg
+./dist/full/689-chicory.jpg
+./dist/full/629-mo-willems.jpg
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc "ls -ld styles; rg --files -g 'AGENTS.md' -g '"'!node_modules'"' -g '"'!dist'"' -g '"'!styles'"' -g '"'!logs'"' .; for path in styles/809-clay-render.png styles/810-rice-paddy-art.png styles/811-high-speed-flash.png styles/812-gond.png; do if [ -e \""'$path" ]; then ls -l "$path"; fi; done' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+drwxr-xr-x@ 802 manuelbieh  staff  25664 Oct  3 01:32 styles
+
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse
+hook: PreToolUse Completed
+codex
+The Gond painting is ready, with patterned figures, a tree of life and a seated profile composition. The other three images are still generating.
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'sips -s format png /Users/manuelbieh/.codex/generated_images/01a0ff3d-078c-7fd1-9c01-42d9ca75342f/exec-d5f1929c-8210-47c0-9830-34c16f6d2ce2.png --resampleHeightWidth 1024 1024 --out /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/812-gond.png' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 200ms:
+/Users/manuelbieh/.codex/generated_images/01a0ff3d-078c-7fd1-9c01-42d9ca75342f/exec-d5f1929c-8210-47c0-9830-34c16f6d2ce2.png
+  /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/812-gond.png
+
+hook: PreToolUse
+hook: PreToolUse Completed
+hook: PreToolUse
+hook: PreToolUse Completed
+codex
+All four images are ready. I’m saving the remaining files and checking that each PNG is exactly 1024×1024.
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'sips -s format png /Users/manuelbieh/.codex/generated_images/01a0ff3d-078c-7fd1-9c01-42d9ca75342f/exec-e55c324b-240f-4cca-9913-58b3620a7340.png --resampleHeightWidth 1024 1024 --out /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/809-clay-render.png' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 125ms:
+/Users/manuelbieh/.codex/generated_images/01a0ff3d-078c-7fd1-9c01-42d9ca75342f/exec-e55c324b-240f-4cca-9913-58b3620a7340.png
+  /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/809-clay-render.png
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'sips -s format png /Users/manuelbieh/.codex/generated_images/01a0ff3d-078c-7fd1-9c01-42d9ca75342f/exec-510c1ed5-ab6a-4b0c-9156-eb3ffe6593c1.png --resampleHeightWidth 1024 1024 --out /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/810-rice-paddy-art.png' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 119ms:
+/Users/manuelbieh/.codex/generated_images/01a0ff3d-078c-7fd1-9c01-42d9ca75342f/exec-510c1ed5-ab6a-4b0c-9156-eb3ffe6593c1.png
+  /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/810-rice-paddy-art.png
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'sips -s format png /Users/manuelbieh/.codex/generated_images/01a0ff3d-078c-7fd1-9c01-42d9ca75342f/exec-dbe5f047-a684-43bd-b9ed-959610e4a28e.png --resampleHeightWidth 1024 1024 --out /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/811-high-speed-flash.png' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 110ms:
+/Users/manuelbieh/.codex/generated_images/01a0ff3d-078c-7fd1-9c01-42d9ca75342f/exec-dbe5f047-a684-43bd-b9ed-959610e4a28e.png
+  /Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/811-high-speed-flash.png
+
+hook: PreToolUse
+hook: PreToolUse Completed
+apply patch
+patch: completed
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/logs/809-812-prompts.json
+diff --git a/set-2/logs/809-812-prompts.json b/set-2/logs/809-812-prompts.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..9d712744e5a28b6d4e79137b290286fc00a3836a
+--- /dev/null
++++ b/set-2/logs/809-812-prompts.json
+@@ -0,0 +1,31 @@
++{
++  "tool": "built-in image_gen",
++  "reference_images": [],
++  "output_dimensions": [
++    1024,
++    1024
++  ],
++  "images": [
++    {
++      "name": "809-clay-render",
++      "path": "./styles/809-clay-render.png",
++      "prompt": "Generate one fresh square 1024x1024 image from text only. Use case: stylized-concept.\nStyle is the overriding priority: an untextured gray clay 3D modeling preview, a beautifully sculpted bust-and-body figure at a gray table. Every single surface has precisely the same uniform neutral-gray matte clay material, including skin, eyes, hair, glasses, sweater, coffee, cup, croissant, table and backdrop. All tonal variation comes only from lighting, geometry and soft ambient occlusion. No colored materials, no painted textures.\nThe large central sculpture depicts a woman in her early 30s, with abundant shoulder-length sculpted curls, round tortoiseshell-shaped glasses and subtly indented freckles. Her identity has auburn hair and a mustard-yellow knit sweater, but these are rendered entirely in gray clay. Knit stitches are sculpted into the sweater geometry. She holds a coffee cup with a relaxed, contented expression; a sculpted croissant rests nearby on the gray tabletop.\nComposition: a three-quarter view of the seated upper body, hands and tabletop, enough body visible to feel like a substantial digital character sculpture. Soft studio HDRI, gentle contact shadows, subtle gray seamless background, readable chunky curls and clay glasses. Authentic digital sculpting presentation, not a photograph converted to grayscale. No text, caption, interface, signature, watermark or border."
++    },
++    {
++      "name": "810-rice-paddy-art",
++      "path": "./styles/810-rice-paddy-art.png",
++      "prompt": "Generate one fresh square 1024x1024 image from text only. Use case: photorealistic-natural.\nJapanese tanbo art: an actual enormous portrait planted in a flooded rice paddy, photographed from a high drone in bright summer daylight. A wide aerial landscape, looking steeply down over the full field. The entire portrait must consist of real living rice plants in varieties with deep purple, yellow, white and green leaves, arranged in dense planted rows and organic areas. Reflective water is visible between rice clumps. Tiny farm roads, field berms and small rural Japanese houses at the edges establish gigantic physical scale.\nThe picture planted across almost the entire field depicts a woman in her early 30s with shoulder-length curly hair, round tortoiseshell-shaped glasses, freckles, a knit sweater, and a coffee cup held close in enjoyment. Her auburn hair is interpreted through purple and warm yellow rice; her mustard sweater through golden yellow rice with planted stitch motifs. A crescent-shaped croissant is also part of the planted picture near the cup. Large simplified graphic shapes make her readable from the drone, with each shape visibly composed of rice plants.\nThe woman is the crop artwork, not a real person standing in a field. Flat planted shapes follow the field plane and aerial perspective. Natural farm detail, green surrounding landscape, summer sunlight. Not a printed banner, not paint on grass, not a superimposed illustration. No writing anywhere, captions, signatures or watermarks."
++    },
++    {
++      "name": "811-high-speed-flash",
++      "path": "./styles/811-high-speed-flash.png",
++      "prompt": "Generate one fresh square 1024x1024 image from text only. Use case: photorealistic-natural.\nHarold Edgerton style high-speed flash photograph: an astonishingly crisp fraction of a second frozen by a microsecond strobe. Pure pitch-black featureless studio background. The central visual event is coffee erupting from a tipped cup in a complex sharply defined crown of liquid, with individual spherical droplets and thin splash membranes sparkling in sharp specular light. Flaky croissant crumbs are suspended sharply in midair, and the croissant itself is visible nearby in her other hand.\nA woman in her early 30s fills the frame in a tight, dynamic, off-center head-and-chest shot. Curly auburn shoulder-length hair frozen mid-swing in airborne arcs; freckles; round tortoiseshell glasses; mustard-yellow knit sweater. She had been enjoying a coffee and is now caught startled by the splash, with eyes wide and head recoiling slightly. One hand grips the tilted coffee cup in the prominent lower foreground. Place her startled face higher and farther back, splash spreading diagonally through the foreground. Convincing human anatomy and physical liquid behavior.\nHard laboratory strobe lighting separates hair, face, droplets and sweater from absolute black. Razor-sharp motion-free details, rich color, no motion blur, no trails, no collage or multiple exposure. Authentic high-speed scientific photography with strong visual drama. No text, captions, signatures or watermarks."
++    },
++    {
++      "name": "812-gond",
++      "path": "./styles/812-gond.png",
++      "prompt": "Generate one fresh square 1024x1024 image from text only. Use case: illustration-story.\nAn authentic Gond painting from central India, bright acrylic colors on a plain warm off-white background. The style fully controls anatomy and spatial arrangement: bold flat outlined figures, rhythmic organic curves, decorative profile forms, no optical perspective or realistic shading. Every colored figure, branch, bird and animal is filled throughout with meticulously hand-painted repeated fine dots, short dashes, parallel contour lines and fish-scale patterns, with distinct pattern rhythms in different areas.\nA large stylized woman occupies much of the painting, seated in a freely elongated full-body profile pose beside an intricately branching tree of life with patterned birds and animals. She is in her early 30s, has curly auburn shoulder-length hair expressed as rhythmic rust-red patterned spirals, freckles expressed as fine cheek dots, and round tortoiseshell-colored glasses. Her mustard-yellow knit garment becomes an uninterrupted field of fine repeated dashes and curved bands. She joyfully lifts a small patterned coffee cup. A clearly recognizable crescent croissant rests on a small flat decorative plate nearby.\nInterlock woman and tree into one flowing folkloric composition while keeping both readable; strong vermilion, mustard, forest green, turquoise, deep blue and black accents. Slight visible acrylic and paper character, patient hand-painted linework, rich ornamental detail, plain background showing around silhouettes. This is a flat traditional painting, with stylized anatomy, never a photograph with a filter or a 3D scene. No text, captions, lettering, signatures or watermarks."
++    }
++  ]
++}
++
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'sips -g format -g pixelWidth -g pixelHeight styles/809-clay-render.png styles/810-rice-paddy-art.png styles/811-high-speed-flash.png styles/812-gond.png' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/809-clay-render.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/810-rice-paddy-art.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/811-high-speed-flash.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/812-gond.png
+  format: png
+  pixelWidth: 1024
+  pixelHeight: 1024
+
+diff --git a/set-2/logs/809-812-prompts.json b/set-2/logs/809-812-prompts.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..9d712744e5a28b6d4e79137b290286fc00a3836a
+--- /dev/null
++++ b/set-2/logs/809-812-prompts.json
+@@ -0,0 +1,31 @@
++{
++  "tool": "built-in image_gen",
++  "reference_images": [],
++  "output_dimensions": [
++    1024,
++    1024
++  ],
++  "images": [
++    {
++      "name": "809-clay-render",
++      "path": "./styles/809-clay-render.png",
++      "prompt": "Generate one fresh square 1024x1024 image from text only. Use case: stylized-concept.\nStyle is the overriding priority: an untextured gray clay 3D modeling preview, a beautifully sculpted bust-and-body figure at a gray table. Every single surface has precisely the same uniform neutral-gray matte clay material, including skin, eyes, hair, glasses, sweater, coffee, cup, croissant, table and backdrop. All tonal variation comes only from lighting, geometry and soft ambient occlusion. No colored materials, no painted textures.\nThe large central sculpture depicts a woman in her early 30s, with abundant shoulder-length sculpted curls, round tortoiseshell-shaped glasses and subtly indented freckles. Her identity has auburn hair and a mustard-yellow knit sweater, but these are rendered entirely in gray clay. Knit stitches are sculpted into the sweater geometry. She holds a coffee cup with a relaxed, contented expression; a sculpted croissant rests nearby on the gray tabletop.\nComposition: a three-quarter view of the seated upper body, hands and tabletop, enough body visible to feel like a substantial digital character sculpture. Soft studio HDRI, gentle contact shadows, subtle gray seamless background, readable chunky curls and clay glasses. Authentic digital sculpting presentation, not a photograph converted to grayscale. No text, caption, interface, signature, watermark or border."
++    },
++    {
++      "name": "810-rice-paddy-art",
++      "path": "./styles/810-rice-paddy-art.png",
++      "prompt": "Generate one fresh square 1024x1024 image from text only. Use case: photorealistic-natural.\nJapanese tanbo art: an actual enormous portrait planted in a flooded rice paddy, photographed from a high drone in bright summer daylight. A wide aerial landscape, looking steeply down over the full field. The entire portrait must consist of real living rice plants in varieties with deep purple, yellow, white and green leaves, arranged in dense planted rows and organic areas. Reflective water is visible between rice clumps. Tiny farm roads, field berms and small rural Japanese houses at the edges establish gigantic physical scale.\nThe picture planted across almost the entire field depicts a woman in her early 30s with shoulder-length curly hair, round tortoiseshell-shaped glasses, freckles, a knit sweater, and a coffee cup held close in enjoyment. Her auburn hair is interpreted through purple and warm yellow rice; her mustard sweater through golden yellow rice with planted stitch motifs. A crescent-shaped croissant is also part of the planted picture near the cup. Large simplified graphic shapes make her readable from the drone, with each shape visibly composed of rice plants.\nThe woman is the crop artwork, not a real person standing in a field. Flat planted shapes follow the field plane and aerial perspective. Natural farm detail, green surrounding landscape, summer sunlight. Not a printed banner, not paint on grass, not a superimposed illustration. No writing anywhere, captions, signatures or watermarks."
++    },
++    {
++      "name": "811-high-speed-flash",
++      "path": "./styles/811-high-speed-flash.png",
++      "prompt": "Generate one fresh square 1024x1024 image from text only. Use case: photorealistic-natural.\nHarold Edgerton style high-speed flash photograph: an astonishingly crisp fraction of a second frozen by a microsecond strobe. Pure pitch-black featureless studio background. The central visual event is coffee erupting from a tipped cup in a complex sharply defined crown of liquid, with individual spherical droplets and thin splash membranes sparkling in sharp specular light. Flaky croissant crumbs are suspended sharply in midair, and the croissant itself is visible nearby in her other hand.\nA woman in her early 30s fills the frame in a tight, dynamic, off-center head-and-chest shot. Curly auburn shoulder-length hair frozen mid-swing in airborne arcs; freckles; round tortoiseshell glasses; mustard-yellow knit sweater. She had been enjoying a coffee and is now caught startled by the splash, with eyes wide and head recoiling slightly. One hand grips the tilted coffee cup in the prominent lower foreground. Place her startled face higher and farther back, splash spreading diagonally through the foreground. Convincing human anatomy and physical liquid behavior.\nHard laboratory strobe lighting separates hair, face, droplets and sweater from absolute black. Razor-sharp motion-free details, rich color, no motion blur, no trails, no collage or multiple exposure. Authentic high-speed scientific photography with strong visual drama. No text, captions, signatures or watermarks."
++    },
++    {
++      "name": "812-gond",
++      "path": "./styles/812-gond.png",
++      "prompt": "Generate one fresh square 1024x1024 image from text only. Use case: illustration-story.\nAn authentic Gond painting from central India, bright acrylic colors on a plain warm off-white background. The style fully controls anatomy and spatial arrangement: bold flat outlined figures, rhythmic organic curves, decorative profile forms, no optical perspective or realistic shading. Every colored figure, branch, bird and animal is filled throughout with meticulously hand-painted repeated fine dots, short dashes, parallel contour lines and fish-scale patterns, with distinct pattern rhythms in different areas.\nA large stylized woman occupies much of the painting, seated in a freely elongated full-body profile pose beside an intricately branching tree of life with patterned birds and animals. She is in her early 30s, has curly auburn shoulder-length hair expressed as rhythmic rust-red patterned spirals, freckles expressed as fine cheek dots, and round tortoiseshell-colored glasses. Her mustard-yellow knit garment becomes an uninterrupted field of fine repeated dashes and curved bands. She joyfully lifts a small patterned coffee cup. A clearly recognizable crescent croissant rests on a small flat decorative plate nearby.\nInterlock woman and tree into one flowing folkloric composition while keeping both readable; strong vermilion, mustard, forest green, turquoise, deep blue and black accents. Slight visible acrylic and paper character, patient hand-painted linework, rich ornamental detail, plain background showing around silhouettes. This is a flat traditional painting, with stylized anatomy, never a photograph with a filter or a 3D scene. No text, captions, lettering, signatures or watermarks."
++    }
++  ]
++}
++
+
+hook: PreToolUse
+hook: PreToolUse Completed
+exec
+/bin/zsh -lc 'ls -l logs/809-812-prompts.json' in /Users/manuelbieh/htdocs/dev/gpt-images/set-2
+ succeeded in 0ms:
+-rw-r--r--@ 1 manuelbieh  staff  6693 Oct  3 02:53 logs/809-812-prompts.json
+
+diff --git a/set-2/logs/809-812-prompts.json b/set-2/logs/809-812-prompts.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..9d712744e5a28b6d4e79137b290286fc00a3836a
+--- /dev/null
++++ b/set-2/logs/809-812-prompts.json
+@@ -0,0 +1,31 @@
++{
++  "tool": "built-in image_gen",
++  "reference_images": [],
++  "output_dimensions": [
++    1024,
++    1024
++  ],
++  "images": [
++    {
++      "name": "809-clay-render",
++      "path": "./styles/809-clay-render.png",
++      "prompt": "Generate one fresh square 1024x1024 image from text only. Use case: stylized-concept.\nStyle is the overriding priority: an untextured gray clay 3D modeling preview, a beautifully sculpted bust-and-body figure at a gray table. Every single surface has precisely the same uniform neutral-gray matte clay material, including skin, eyes, hair, glasses, sweater, coffee, cup, croissant, table and backdrop. All tonal variation comes only from lighting, geometry and soft ambient occlusion. No colored materials, no painted textures.\nThe large central sculpture depicts a woman in her early 30s, with abundant shoulder-length sculpted curls, round tortoiseshell-shaped glasses and subtly indented freckles. Her identity has auburn hair and a mustard-yellow knit sweater, but these are rendered entirely in gray clay. Knit stitches are sculpted into the sweater geometry. She holds a coffee cup with a relaxed, contented expression; a sculpted croissant rests nearby on the gray tabletop.\nComposition: a three-quarter view of the seated upper body, hands and tabletop, enough body visible to feel like a substantial digital character sculpture. Soft studio HDRI, gentle contact shadows, subtle gray seamless background, readable chunky curls and clay glasses. Authentic digital sculpting presentation, not a photograph converted to grayscale. No text, caption, interface, signature, watermark or border."
++    },
++    {
++      "name": "810-rice-paddy-art",
++      "path": "./styles/810-rice-paddy-art.png",
++      "prompt": "Generate one fresh square 1024x1024 image from text only. Use case: photorealistic-natural.\nJapanese tanbo art: an actual enormous portrait planted in a flooded rice paddy, photographed from a high drone in bright summer daylight. A wide aerial landscape, looking steeply down over the full field. The entire portrait must consist of real living rice plants in varieties with deep purple, yellow, white and green leaves, arranged in dense planted rows and organic areas. Reflective water is visible between rice clumps. Tiny farm roads, field berms and small rural Japanese houses at the edges establish gigantic physical scale.\nThe picture planted across almost the entire field depicts a woman in her early 30s with shoulder-length curly hair, round tortoiseshell-shaped glasses, freckles, a knit sweater, and a coffee cup held close in enjoyment. Her auburn hair is interpreted through purple and warm yellow rice; her mustard sweater through golden yellow rice with planted stitch motifs. A crescent-shaped croissant is also part of the planted picture near the cup. Large simplified graphic shapes make her readable from the drone, with each shape visibly composed of rice plants.\nThe woman is the crop artwork, not a real person standing in a field. Flat planted shapes follow the field plane and aerial perspective. Natural farm detail, green surrounding landscape, summer sunlight. Not a printed banner, not paint on grass, not a superimposed illustration. No writing anywhere, captions, signatures or watermarks."
++    },
++    {
++      "name": "811-high-speed-flash",
++      "path": "./styles/811-high-speed-flash.png",
++      "prompt": "Generate one fresh square 1024x1024 image from text only. Use case: photorealistic-natural.\nHarold Edgerton style high-speed flash photograph: an astonishingly crisp fraction of a second frozen by a microsecond strobe. Pure pitch-black featureless studio background. The central visual event is coffee erupting from a tipped cup in a complex sharply defined crown of liquid, with individual spherical droplets and thin splash membranes sparkling in sharp specular light. Flaky croissant crumbs are suspended sharply in midair, and the croissant itself is visible nearby in her other hand.\nA woman in her early 30s fills the frame in a tight, dynamic, off-center head-and-chest shot. Curly auburn shoulder-length hair frozen mid-swing in airborne arcs; freckles; round tortoiseshell glasses; mustard-yellow knit sweater. She had been enjoying a coffee and is now caught startled by the splash, with eyes wide and head recoiling slightly. One hand grips the tilted coffee cup in the prominent lower foreground. Place her startled face higher and farther back, splash spreading diagonally through the foreground. Convincing human anatomy and physical liquid behavior.\nHard laboratory strobe lighting separates hair, face, droplets and sweater from absolute black. Razor-sharp motion-free details, rich color, no motion blur, no trails, no collage or multiple exposure. Authentic high-speed scientific photography with strong visual drama. No text, captions, signatures or watermarks."
++    },
++    {
++      "name": "812-gond",
++      "path": "./styles/812-gond.png",
++      "prompt": "Generate one fresh square 1024x1024 image from text only. Use case: illustration-story.\nAn authentic Gond painting from central India, bright acrylic colors on a plain warm off-white background. The style fully controls anatomy and spatial arrangement: bold flat outlined figures, rhythmic organic curves, decorative profile forms, no optical perspective or realistic shading. Every colored figure, branch, bird and animal is filled throughout with meticulously hand-painted repeated fine dots, short dashes, parallel contour lines and fish-scale patterns, with distinct pattern rhythms in different areas.\nA large stylized woman occupies much of the painting, seated in a freely elongated full-body profile pose beside an intricately branching tree of life with patterned birds and animals. She is in her early 30s, has curly auburn shoulder-length hair expressed as rhythmic rust-red patterned spirals, freckles expressed as fine cheek dots, and round tortoiseshell-colored glasses. Her mustard-yellow knit garment becomes an uninterrupted field of fine repeated dashes and curved bands. She joyfully lifts a small patterned coffee cup. A clearly recognizable crescent croissant rests on a small flat decorative plate nearby.\nInterlock woman and tree into one flowing folkloric composition while keeping both readable; strong vermilion, mustard, forest green, turquoise, deep blue and black accents. Slight visible acrylic and paper character, patient hand-painted linework, rich ornamental detail, plain background showing around silhouettes. This is a flat traditional painting, with stylized anatomy, never a photograph with a filter or a 3D scene. No text, captions, lettering, signatures or watermarks."
++    }
++  ]
++}
++
+
+codex
+Generated all four fresh without references and verified 1024×1024 PNG dimensions.
+
+- [809-clay-render.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/809-clay-render.png)
+- [810-rice-paddy-art.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/810-rice-paddy-art.png)
+- [811-high-speed-flash.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/811-high-speed-flash.png)
+- [812-gond.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/812-gond.png)
+
+[Generation prompts](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/logs/809-812-prompts.json)
+diff --git a/set-2/logs/809-812-prompts.json b/set-2/logs/809-812-prompts.json
+new file mode 100644
+index 0000000000000000000000000000000000000000..9d712744e5a28b6d4e79137b290286fc00a3836a
+--- /dev/null
++++ b/set-2/logs/809-812-prompts.json
+@@ -0,0 +1,31 @@
++{
++  "tool": "built-in image_gen",
++  "reference_images": [],
++  "output_dimensions": [
++    1024,
++    1024
++  ],
++  "images": [
++    {
++      "name": "809-clay-render",
++      "path": "./styles/809-clay-render.png",
++      "prompt": "Generate one fresh square 1024x1024 image from text only. Use case: stylized-concept.\nStyle is the overriding priority: an untextured gray clay 3D modeling preview, a beautifully sculpted bust-and-body figure at a gray table. Every single surface has precisely the same uniform neutral-gray matte clay material, including skin, eyes, hair, glasses, sweater, coffee, cup, croissant, table and backdrop. All tonal variation comes only from lighting, geometry and soft ambient occlusion. No colored materials, no painted textures.\nThe large central sculpture depicts a woman in her early 30s, with abundant shoulder-length sculpted curls, round tortoiseshell-shaped glasses and subtly indented freckles. Her identity has auburn hair and a mustard-yellow knit sweater, but these are rendered entirely in gray clay. Knit stitches are sculpted into the sweater geometry. She holds a coffee cup with a relaxed, contented expression; a sculpted croissant rests nearby on the gray tabletop.\nComposition: a three-quarter view of the seated upper body, hands and tabletop, enough body visible to feel like a substantial digital character sculpture. Soft studio HDRI, gentle contact shadows, subtle gray seamless background, readable chunky curls and clay glasses. Authentic digital sculpting presentation, not a photograph converted to grayscale. No text, caption, interface, signature, watermark or border."
++    },
++    {
++      "name": "810-rice-paddy-art",
++      "path": "./styles/810-rice-paddy-art.png",
++      "prompt": "Generate one fresh square 1024x1024 image from text only. Use case: photorealistic-natural.\nJapanese tanbo art: an actual enormous portrait planted in a flooded rice paddy, photographed from a high drone in bright summer daylight. A wide aerial landscape, looking steeply down over the full field. The entire portrait must consist of real living rice plants in varieties with deep purple, yellow, white and green leaves, arranged in dense planted rows and organic areas. Reflective water is visible between rice clumps. Tiny farm roads, field berms and small rural Japanese houses at the edges establish gigantic physical scale.\nThe picture planted across almost the entire field depicts a woman in her early 30s with shoulder-length curly hair, round tortoiseshell-shaped glasses, freckles, a knit sweater, and a coffee cup held close in enjoyment. Her auburn hair is interpreted through purple and warm yellow rice; her mustard sweater through golden yellow rice with planted stitch motifs. A crescent-shaped croissant is also part of the planted picture near the cup. Large simplified graphic shapes make her readable from the drone, with each shape visibly composed of rice plants.\nThe woman is the crop artwork, not a real person standing in a field. Flat planted shapes follow the field plane and aerial perspective. Natural farm detail, green surrounding landscape, summer sunlight. Not a printed banner, not paint on grass, not a superimposed illustration. No writing anywhere, captions, signatures or watermarks."
++    },
++    {
++      "name": "811-high-speed-flash",
++      "path": "./styles/811-high-speed-flash.png",
++      "prompt": "Generate one fresh square 1024x1024 image from text only. Use case: photorealistic-natural.\nHarold Edgerton style high-speed flash photograph: an astonishingly crisp fraction of a second frozen by a microsecond strobe. Pure pitch-black featureless studio background. The central visual event is coffee erupting from a tipped cup in a complex sharply defined crown of liquid, with individual spherical droplets and thin splash membranes sparkling in sharp specular light. Flaky croissant crumbs are suspended sharply in midair, and the croissant itself is visible nearby in her other hand.\nA woman in her early 30s fills the frame in a tight, dynamic, off-center head-and-chest shot. Curly auburn shoulder-length hair frozen mid-swing in airborne arcs; freckles; round tortoiseshell glasses; mustard-yellow knit sweater. She had been enjoying a coffee and is now caught startled by the splash, with eyes wide and head recoiling slightly. One hand grips the tilted coffee cup in the prominent lower foreground. Place her startled face higher and farther back, splash spreading diagonally through the foreground. Convincing human anatomy and physical liquid behavior.\nHard laboratory strobe lighting separates hair, face, droplets and sweater from absolute black. Razor-sharp motion-free details, rich color, no motion blur, no trails, no collage or multiple exposure. Authentic high-speed scientific photography with strong visual drama. No text, captions, signatures or watermarks."
++    },
++    {
++      "name": "812-gond",
++      "path": "./styles/812-gond.png",
++      "prompt": "Generate one fresh square 1024x1024 image from text only. Use case: illustration-story.\nAn authentic Gond painting from central India, bright acrylic colors on a plain warm off-white background. The style fully controls anatomy and spatial arrangement: bold flat outlined figures, rhythmic organic curves, decorative profile forms, no optical perspective or realistic shading. Every colored figure, branch, bird and animal is filled throughout with meticulously hand-painted repeated fine dots, short dashes, parallel contour lines and fish-scale patterns, with distinct pattern rhythms in different areas.\nA large stylized woman occupies much of the painting, seated in a freely elongated full-body profile pose beside an intricately branching tree of life with patterned birds and animals. She is in her early 30s, has curly auburn shoulder-length hair expressed as rhythmic rust-red patterned spirals, freckles expressed as fine cheek dots, and round tortoiseshell-colored glasses. Her mustard-yellow knit garment becomes an uninterrupted field of fine repeated dashes and curved bands. She joyfully lifts a small patterned coffee cup. A clearly recognizable crescent croissant rests on a small flat decorative plate nearby.\nInterlock woman and tree into one flowing folkloric composition while keeping both readable; strong vermilion, mustard, forest green, turquoise, deep blue and black accents. Slight visible acrylic and paper character, patient hand-painted linework, rich ornamental detail, plain background showing around silhouettes. This is a flat traditional painting, with stylized anatomy, never a photograph with a filter or a 3D scene. No text, captions, lettering, signatures or watermarks."
++    }
++  ]
++}
++
+
+hook: Stop
+hook: Stop Completed
+tokens used
+35,184
+Generated all four fresh without references and verified 1024×1024 PNG dimensions.
+
+- [809-clay-render.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/809-clay-render.png)
+- [810-rice-paddy-art.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/810-rice-paddy-art.png)
+- [811-high-speed-flash.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/811-high-speed-flash.png)
+- [812-gond.png](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/styles/812-gond.png)
+
+[Generation prompts](/Users/manuelbieh/htdocs/dev/gpt-images/set-2/logs/809-812-prompts.json)
